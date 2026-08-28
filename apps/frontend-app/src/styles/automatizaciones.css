@@ -1,0 +1,142 @@
+/* Automatizaciones — panel de la profe */
+
+.automatizaciones-page .feature-card {
+  margin-bottom: 1rem;
+}
+
+.automatizaciones-jobs,
+.automatizaciones-runs,
+.automatizaciones-inactive {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.automatizaciones-jobs li,
+.automatizaciones-runs li,
+.automatizaciones-inactive li {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgb(255 255 255 / 8%);
+}
+
+.automatizaciones-inactive li {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+}
+
+.automatizaciones-jobs span,
+.automatizaciones-runs span,
+.automatizaciones-runs time {
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+}
+
+.mensajes-thread {
+  display: grid;
+  gap: 1rem;
+}
+
+.mensajes-thread__list {
+  display: grid;
+  gap: 0.65rem;
+  max-height: 28rem;
+  overflow: auto;
+  padding: 0.25rem;
+}
+
+.mensajes-thread__bubble {
+  max-width: min(32rem, 90%);
+  padding: 0.75rem 0.9rem;
+  border-radius: 1rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.mensajes-thread__bubble--mine {
+  justify-self: end;
+  background: var(--color-yellow-muted);
+  border-color: var(--glass-border-amber);
+}
+
+.mensajes-thread__bubble p {
+  margin: 0 0 0.35rem;
+}
+
+.mensajes-thread__bubble time {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+}
+
+.mensajes-thread__composer {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.resumen-semanal-card__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  list-style: none;
+  margin: 0.75rem 0 1rem;
+  padding: 0;
+}
+
+.resumen-semanal-card__stats li {
+  display: grid;
+  gap: 0.15rem;
+  text-align: center;
+}
+
+.resumen-semanal-card__stats strong {
+  font-size: 1.35rem;
+  color: var(--color-yellow);
+}
+
+.resumen-semanal-card__stats span {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.membresia-editor {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.alumna-detail-section__hint {
+  margin: 0 0 0.75rem;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.auth-error {
+  color: #fca5a5;
+}
+
+.auth-success {
+  color: #86efac;
+  margin: 0.5rem 0 0;
+  font-size: 0.875rem;
+}
+
+.print-progreso-page__toolbar {
+  margin-bottom: 1rem;
+}
+
+@media print {
+  .no-print,
+  .app-sidebar,
+  .app-bottom-nav-wrap,
+  .app-mobile-header,
+  .reunion-banner {
+    display: none !important;
+  }
+
+  .app-content {
+    padding: 0 !important;
+  }
+}

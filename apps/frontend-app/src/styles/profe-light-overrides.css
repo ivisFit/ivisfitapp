@@ -1,0 +1,727 @@
+/* Tema claro — panel profesora */
+
+.app-shell--profe[data-color-scheme="light"] .page h1,
+.app-shell--profe[data-color-scheme="light"] .page h2,
+.app-shell--profe[data-color-scheme="light"] .catalogo-page .page__actions h1,
+.app-shell--profe[data-color-scheme="light"] .profe-dashboard__header h1,
+.app-shell--profe[data-color-scheme="light"] .planes-profe-page__hero > div h1,
+.app-shell--profe[data-color-scheme="light"] .alumna-detail__header h1,
+.app-shell--profe[data-color-scheme="light"] .alumna-detail-body__name,
+.app-shell--profe[data-color-scheme="light"] .alumna-historial__content strong,
+.app-shell--profe[data-color-scheme="light"] .gestion-alimentacion-workspace__title,
+.app-shell--profe[data-color-scheme="light"] .pliegues-hero__copy h1,
+.app-shell--profe[data-color-scheme="light"] .pliegues-settings-card h2,
+.app-shell--profe[data-color-scheme="light"] .pliegues-chart h2,
+.app-shell--profe[data-color-scheme="light"] .pliegues-history-table h2,
+.app-shell--profe[data-color-scheme="light"] .pliegues-form-card h2 {
+  color: var(--color-heading);
+}
+
+.app-shell--profe[data-color-scheme="light"] .pliegues-hero__copy p,
+.app-shell--profe[data-color-scheme="light"] .pliegues-settings-card__copy,
+.app-shell--profe[data-color-scheme="light"] .pliegues-settings-card__toggle,
+.app-shell--profe[data-color-scheme="light"] .pliegues-form-card p,
+.app-shell--profe[data-color-scheme="light"] .progreso-circunferencias-cta p {
+  color: var(--color-text-muted);
+}
+
+.app-shell--profe[data-color-scheme="light"] .pliegues-hero-fixed,
+.app-shell--profe[data-color-scheme="light"] .seguimiento-hero-fixed,
+.app-shell--profe[data-color-scheme="light"] .alimentacion-hero-fixed {
+  background:
+    radial-gradient(circle at 20% 20%, rgb(245 197 24 / 18%), transparent 45%),
+    linear-gradient(160deg, #fffdf8, #f4efe6);
+}
+
+.app-shell--profe[data-color-scheme="light"] .pliegues-period-filter__chip {
+  background: rgb(255 255 255 / 82%);
+  color: var(--color-text-muted);
+}
+
+.app-shell--profe[data-color-scheme="light"] .alumna-detail__header-email,
+.app-shell--profe[data-color-scheme="light"] .alumna-detail-body__subtitle,
+.app-shell--profe[data-color-scheme="light"] .alumna-historial__content p,
+.app-shell--profe[data-color-scheme="light"] .gestion-alimentacion-workspace__email,
+.app-shell--profe[data-color-scheme="light"] .gestion-alimentacion-workspace__lead {
+  color: var(--color-text-muted);
+}
+
+.app-shell--profe[data-color-scheme="light"] .alumna-detail-section__header p,
+.app-shell--profe[data-color-scheme="light"] .alumna-detail__field dt,
+.app-shell--profe[data-color-scheme="light"] .alumna-sheet__row dt,
+.app-shell--profe[data-color-scheme="light"] .alumna-profile-card__hint,
+.app-shell--profe[data-color-scheme="light"] .alumna-historial__meta time {
+  color: var(--color-text-muted);
+}
+
+.app-shell--profe[data-color-scheme="light"] .alumna-detail__field dd,
+.app-shell--profe[data-color-scheme="light"] .alumna-sheet__row dd,
+.app-shell--profe[data-color-scheme="light"] .alumna-sheet__name {
+  color: var(--color-text);
+}
+
+.app-shell--profe[data-color-scheme="light"] .alumna-sheet__row--empty dd {
+  color: rgb(28 24 20 / 38%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .alumna-sheet__header {
+  background: linear-gradient(
+    135deg,
+    rgb(245 197 24 / 16%),
+    rgb(245 197 24 / 5%) 55%,
+    transparent
+  );
+}
+
+.app-shell--profe[data-color-scheme="light"] .alumna-sheet__portrait {
+  background: rgb(245 197 24 / 16%);
+  border-color: rgb(184 148 31 / 35%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .alumna-sheet__membresia {
+  background: rgb(28 24 20 / 5%);
+  border-color: rgb(28 24 20 / 12%);
+  color: #5c5348;
+}
+
+.app-shell--profe[data-color-scheme="light"] .alumna-sheet__membresia--al_dia {
+  background: rgb(34 197 94 / 12%);
+  border-color: rgb(34 197 94 / 32%);
+  color: #15803d;
+}
+
+.app-shell--profe[data-color-scheme="light"] .alumna-sheet__membresia--por_vencer {
+  background: rgb(251 191 36 / 16%);
+  border-color: rgb(217 119 6 / 32%);
+  color: #b45309;
+}
+
+.app-shell--profe[data-color-scheme="light"] .alumna-sheet__membresia--vencida {
+  background: rgb(248 113 113 / 14%);
+  border-color: rgb(220 38 38 / 30%);
+  color: #b42318;
+}
+
+.app-shell--profe[data-color-scheme="light"] .alumna-sheet__actions {
+  border-bottom-color: rgb(28 24 20 / 10%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .alumna-sheet__action {
+  background: rgb(245 197 24 / 12%);
+  border-color: rgb(184 148 31 / 35%);
+  color: var(--color-gold);
+}
+
+.app-shell--profe[data-color-scheme="light"] .alumna-sheet__action:hover {
+  background: rgb(245 197 24 / 22%);
+  border-color: rgb(184 148 31 / 55%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .alumna-sheet__group + .alumna-sheet__group {
+  border-top-color: rgb(28 24 20 / 10%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .alumna-sheet__group--salud {
+  background: rgb(248 113 113 / 6%);
+  border-top-color: rgb(220 38 38 / 20%);
+  border-bottom-color: rgb(220 38 38 / 20%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .alumna-sheet__group--salud .alumna-sheet__group-title,
+.app-shell--profe[data-color-scheme="light"] .alumna-sheet__group--salud .alumna-sheet__group-icon {
+  color: #b42318;
+}
+
+.app-shell--profe[data-color-scheme="light"] .alumna-sheet__group--salud .alumna-sheet__group-icon {
+  background: rgb(248 113 113 / 14%);
+  border-color: rgb(220 38 38 / 28%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .alumna-sheet__group-icon {
+  background: rgb(245 197 24 / 14%);
+  border-color: rgb(184 148 31 / 28%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .alumna-sheet__row {
+  border-bottom-color: rgb(28 24 20 / 9%);
+}
+
+html[data-profe-color-scheme="light"] .alumna-sheet-modal {
+  background: #fffdf8;
+  border-color: rgb(184 148 31 / 28%);
+  color: #1c1814;
+}
+
+html[data-profe-color-scheme="light"] .alumna-sheet-modal-backdrop {
+  background: rgb(28 24 20 / 28%);
+}
+
+html[data-profe-color-scheme="light"] .alumna-sheet-modal__head {
+  border-bottom-color: rgb(28 24 20 / 10%);
+}
+
+html[data-profe-color-scheme="light"] .alumna-sheet-modal__close {
+  background: rgb(255 255 255 / 88%);
+  color: #1c1814;
+  border-color: rgb(28 24 20 / 12%);
+}
+
+html[data-profe-color-scheme="light"] .alumna-sheet-modal__close:hover {
+  background: #fff;
+}
+
+.app-shell--profe[data-color-scheme="light"] .btn--ghost,
+.app-shell--profe[data-color-scheme="light"] .btn--ghost:hover:not(:disabled) {
+  color: var(--color-gold);
+}
+
+.app-shell--profe[data-color-scheme="light"] .profe-dashboard__card-title,
+.app-shell--profe[data-color-scheme="light"] .profe-dashboard__chart-title {
+  color: var(--color-gold);
+}
+
+.app-shell--profe[data-color-scheme="light"] .profe-dashboard__metric-hint {
+  color: var(--color-text-muted);
+}
+
+.app-shell--profe[data-color-scheme="light"] .planes-profe-page__presentation span,
+.app-shell--profe[data-color-scheme="light"] .planes-catalog__header h2 {
+  color: var(--color-gold);
+}
+
+.app-shell--profe[data-color-scheme="light"] .planes-profe-page__presentation strong {
+  color: var(--color-gold);
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-template-card__cta,
+.app-shell--profe[data-color-scheme="light"] .plan-template-card.is-selected .plan-template-card__cta {
+  color: var(--color-gold);
+}
+
+.app-shell--profe[data-color-scheme="light"] .seguimiento-timeline__header h2 {
+  color: var(--color-gold);
+}
+
+.app-shell--profe[data-color-scheme="light"] .profe-page__tabs,
+.app-shell--profe[data-color-scheme="light"] .alumnas-page__tabs {
+  background: rgb(28 24 20 / 6%);
+  border-color: rgb(184 148 31 / 28%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .profe-page__tabs button,
+.app-shell--profe[data-color-scheme="light"] .alumnas-page__tabs button,
+.app-shell--profe[data-color-scheme="light"] .profe-chrome-tabs__tab {
+  color: #5c5348;
+}
+
+.app-shell--profe[data-color-scheme="light"] .profe-chrome-tabs {
+  background: rgb(255 255 255 / 82%);
+}
+
+@media (min-width: 768px) {
+  .app-shell--profe[data-color-scheme="light"] .profe-chrome-tabs {
+    background: transparent;
+  }
+
+  .app-shell--profe[data-color-scheme="light"] .profe-chrome-tabs__tab {
+    background: rgb(255 255 255 / 62%);
+    color: #5c5348;
+  }
+
+  .app-shell--profe[data-color-scheme="light"] .profe-chrome-tabs__tab:hover {
+    background: #fff;
+    color: #1c1814;
+  }
+
+  .app-shell--profe[data-color-scheme="light"] .profe-chrome-tabs__tab.is-active {
+    background: #fff;
+    color: #1c1814;
+    box-shadow: 0 -6px 16px rgb(40 28 12 / 8%);
+  }
+
+  .app-shell--profe[data-color-scheme="light"] .profe-tabbed-content__panel {
+    background: rgb(255 255 255 / 62%);
+  }
+}
+
+.app-shell--profe[data-color-scheme="light"] .profe-chrome-tabs__count {
+  color: #5c5348;
+  background: rgb(28 24 20 / 6%);
+  border-color: rgb(28 24 20 / 10%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .alumnas-list__badge {
+  color: #5c5348;
+  background: rgb(255 255 255 / 88%);
+  border-color: rgb(28 24 20 / 12%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .alumnas-list__item {
+  background: rgb(255 255 255 / 82%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .alumnas-list__item:hover {
+  background: #fff;
+  box-shadow: 0 8px 24px rgb(40 28 12 / 8%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .ejercicio-item,
+.app-shell--profe[data-color-scheme="light"] .alimento-item {
+  background: rgb(255 255 255 / 82%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .ejercicio-item:hover,
+.app-shell--profe[data-color-scheme="light"] .alimento-item:hover {
+  background: #fff;
+}
+
+.app-shell--profe[data-color-scheme="light"] .ejercicio-item__content h3,
+.app-shell--profe[data-color-scheme="light"] .alimento-item__header h3 {
+  color: var(--color-heading);
+}
+
+.app-shell--profe[data-color-scheme="light"] .profile-photo-settings__avatar {
+  background: linear-gradient(145deg, #fffdf8 0%, #f4efe6 100%);
+  color: var(--color-gold);
+}
+
+.app-shell--profe[data-color-scheme="light"] .theme-option {
+  background: rgb(255 255 255 / 82%);
+  color: var(--color-text);
+}
+
+.app-shell--profe[data-color-scheme="light"] .theme-option.active {
+  background: rgb(212 175 55 / 16%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .profe-dashboard__appointment-item,
+.app-shell--profe[data-color-scheme="light"] .profe-dashboard__activity-item,
+.app-shell--profe[data-color-scheme="light"] .automatizaciones-jobs li,
+.app-shell--profe[data-color-scheme="light"] .automatizaciones-runs li,
+.app-shell--profe[data-color-scheme="light"] .automatizaciones-inactive li {
+  border-bottom-color: rgb(28 24 20 / 8%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .profe-dashboard__activity-jewel {
+  background: rgb(255 255 255 / 88%);
+  border-color: rgb(28 24 20 / 12%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .profe-dashboard__activity-jewel-icon {
+  color: #1c1814;
+  text-shadow: none;
+}
+
+.app-shell--profe[data-color-scheme="light"] .profe-dashboard__metric-value {
+  color: var(--color-gold);
+  text-shadow: none;
+}
+
+.app-shell--profe[data-color-scheme="light"] .alumna-detail-hero-fixed {
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 85%, rgb(245 197 24 / 18%) 0%, transparent 50%),
+    linear-gradient(180deg, #fffdf8 0%, #f4efe6 50%, #efe8dc 100%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .alumna-detail-hero-fixed::after {
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgb(247 243 234 / 55%) 45%,
+    var(--bg-brand-deep) 100%
+  );
+}
+
+.app-shell--profe[data-color-scheme="light"] .alumna-detail-hero__title,
+.app-shell--profe[data-color-scheme="light"] .alumna-detail-hero__back {
+  color: #1c1814;
+  text-shadow: none;
+}
+
+.app-shell--profe[data-color-scheme="light"] .alumna-detail-hero__back {
+  background: rgb(255 255 255 / 72%);
+  border-color: rgb(28 24 20 / 12%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .alumna-detail-hero__back:hover {
+  background: #fff;
+}
+
+.app-shell--profe[data-color-scheme="light"] .seguimiento-hero__copy h1,
+.app-shell--profe[data-color-scheme="light"] .seguimiento-hero__ring,
+.app-shell--profe[data-color-scheme="light"] .seguimiento-hero__stats strong,
+.app-shell--profe[data-color-scheme="light"] .seguimiento-day__meta strong {
+  color: #1c1814;
+}
+
+.app-shell--profe[data-color-scheme="light"] .seguimiento-hero__copy p,
+.app-shell--profe[data-color-scheme="light"] .seguimiento-hero__ring span,
+.app-shell--profe[data-color-scheme="light"] .seguimiento-hero__stats span,
+.app-shell--profe[data-color-scheme="light"] .seguimiento-day__number,
+.app-shell--profe[data-color-scheme="light"] .seguimiento-day__date {
+  color: #5c5348;
+}
+
+.app-shell--profe[data-color-scheme="light"] .seguimiento-hero__ring {
+  background:
+    radial-gradient(circle at center, #fffdf8 58%, transparent 60%),
+    conic-gradient(
+      var(--color-yellow) var(--seguimiento-progress, 0%),
+      rgb(28 24 20 / 12%) 0
+    );
+}
+
+.app-shell--profe[data-color-scheme="light"] .field__input,
+.app-shell--profe[data-color-scheme="light"] select.field__input,
+.app-shell--profe[data-color-scheme="light"] .field__textarea,
+.app-shell--profe[data-color-scheme="light"] .nutricion-chat-panel__input,
+.app-shell--profe[data-color-scheme="light"] .plan-nutricional-builder__textarea {
+  color-scheme: light;
+}
+
+.app-shell--profe[data-color-scheme="light"] select.field__input option {
+  background-color: #fff;
+  color: var(--color-text);
+}
+
+.app-shell--profe[data-color-scheme="light"] .alumna-detail__avatar {
+  background: linear-gradient(145deg, #fffdf8 0%, #f4efe6 100%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .seguimiento-hero__stats strong small,
+.app-shell--profe[data-color-scheme="light"] .seguimiento-day__date--pending,
+.app-shell--profe[data-color-scheme="light"] .seguimiento-day__progress,
+.app-shell--profe[data-color-scheme="light"] .seguimiento-day__empty,
+.app-shell--profe[data-color-scheme="light"] .seguimiento-exercises__copy span,
+.app-shell--profe[data-color-scheme="light"] .seguimiento-exercises__pesos.is-empty,
+.app-shell--profe[data-color-scheme="light"] .seguimiento-empty p {
+  color: var(--color-text-muted);
+}
+
+.app-shell--profe[data-color-scheme="light"] .seguimiento-exercises__copy strong,
+.app-shell--profe[data-color-scheme="light"] .seguimiento-empty h2 {
+  color: var(--color-heading);
+}
+
+.app-shell--profe[data-color-scheme="light"] .rutina-builder--alumna .rutina-builder__semana-tabs {
+  background: linear-gradient(
+    to bottom,
+    var(--sidebar-bg) 0%,
+    rgb(255 253 248 / 88%) 70%,
+    transparent 100%
+  );
+}
+
+.app-shell--profe[data-color-scheme="light"] .rutina-builder__toolbar,
+.app-shell--profe[data-color-scheme="light"] .rutina-builder__empty,
+.app-shell--profe[data-color-scheme="light"] .rutina-builder__dia-card--focus,
+.app-shell--profe[data-color-scheme="light"] .rutina-builder__dia-menu-panel,
+.app-shell--profe[data-color-scheme="light"] .rutina-builder--alumna .rutina-builder__save-bar {
+  background: var(--sidebar-bg);
+  border-color: var(--glass-border-amber);
+}
+
+.app-shell--profe[data-color-scheme="light"] .rutina-builder__day-rail-item,
+.app-shell--profe[data-color-scheme="light"] .rutina-builder__day-rail-add,
+.app-shell--profe[data-color-scheme="light"] .rutina-builder--alumna .rutina-builder__semana-tab,
+.app-shell--profe[data-color-scheme="light"] .rutina-builder--alumna .rutina-builder__semana-nav,
+.app-shell--profe[data-color-scheme="light"] .rutina-builder__dia-menu-trigger,
+.app-shell--profe[data-color-scheme="light"] .rutina-builder--alumna .rutina-builder__exercise-row {
+  background: rgb(255 255 255 / 72%);
+  border-color: rgb(28 24 20 / 10%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .rutina-builder__day-rail-item.is-active,
+.app-shell--profe[data-color-scheme="light"] .rutina-builder--alumna .rutina-builder__semana-tab.is-active {
+  background: rgb(212 175 55 / 16%);
+  border-color: rgb(184 148 31 / 40%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .evaluacion-nutricional-resumen,
+.app-shell--profe[data-color-scheme="light"] .plan-nutricional-builder__copiloto,
+.app-shell--profe[data-color-scheme="light"] .plan-nutricional-builder__empty,
+.app-shell--profe[data-color-scheme="light"] .plan-nutricional-builder__dia-menu-panel,
+.app-shell--profe[data-color-scheme="light"] .plan-nutricional-builder__save-bar {
+  background: var(--sidebar-bg);
+  border-color: var(--glass-border-amber);
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-nutricional-builder__day-rail-item,
+.app-shell--profe[data-color-scheme="light"] .plan-nutricional-builder__day-rail-add,
+.app-shell--profe[data-color-scheme="light"] .plan-nutricional-builder__dia-menu-trigger,
+.app-shell--profe[data-color-scheme="light"] .plan-nutricional-comida {
+  background: rgb(255 255 255 / 72%);
+  border-color: rgb(28 24 20 / 10%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-nutricional-builder__day-rail-item.is-active {
+  background: rgb(212 175 55 / 16%);
+  border-color: rgb(184 148 31 / 40%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .evaluacion-nutricional-resumen__summary small,
+.app-shell--profe[data-color-scheme="light"] .plan-nutricional-builder__copiloto-summary small,
+.app-shell--profe[data-color-scheme="light"] .plan-nutricional-builder__toolbar-hint,
+.app-shell--profe[data-color-scheme="light"] .plan-nutricional-builder__save-bar-synced,
+.app-shell--profe[data-color-scheme="light"] .plan-nutricional-builder__empty p {
+  color: var(--color-text-muted);
+}
+
+.app-shell--profe[data-color-scheme="light"] .evaluacion-nutricional-resumen__briefing-text,
+.app-shell--profe[data-color-scheme="light"] .evaluacion-nutricional-resumen__briefing-list {
+  color: var(--color-text);
+}
+
+.app-shell--profe[data-color-scheme="light"] .evaluacion-nutricional-resumen__group,
+.app-shell--profe[data-color-scheme="light"] .evaluacion-nutricional-resumen .composicion-corporal-card {
+  background: rgb(255 255 255 / 72%);
+  border-color: rgb(28 24 20 / 10%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .evaluacion-nutricional-resumen__chips li {
+  background: var(--gold-a10);
+  border-color: rgb(28 24 20 / 10%);
+  color: var(--color-text);
+}
+
+.app-shell--profe[data-color-scheme="light"] .evaluacion-nutricional-resumen__fact dt,
+.app-shell--profe[data-color-scheme="light"] .evaluacion-nutricional-resumen__muted {
+  color: var(--color-text-muted);
+}
+
+.app-shell--profe[data-color-scheme="light"] .evaluacion-nutricional-resumen .alimentacion-macro {
+  background: rgb(255 255 255 / 82%);
+  border-color: rgb(28 24 20 / 10%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .evaluacion-nutricional-resumen .alimentacion-macros__split {
+  background: rgb(28 24 20 / 8%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .mensajes-thread__bubble--mine,
+.app-shell--profe[data-color-scheme="light"] .mensajes-chat-message--mine .mensajes-chat-message__bubble {
+  color: #3d3010;
+}
+
+.app-shell--profe[data-color-scheme="light"] .rutina-builder--alumna .rutina-builder__stepper,
+.app-shell--profe[data-color-scheme="light"] .rutina-builder--alumna .rutina-builder__descanso-select {
+  background: rgb(255 255 255 / 88%);
+  border-color: rgb(28 24 20 / 10%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .rutina-builder--alumna .rutina-builder__semana-tab,
+.app-shell--profe[data-color-scheme="light"] .rutina-builder__day-rail-item,
+.app-shell--profe[data-color-scheme="light"] .rutina-builder__day-rail-add,
+.app-shell--profe[data-color-scheme="light"] .rutina-builder__dia-menu-trigger,
+.app-shell--profe[data-color-scheme="light"] .rutina-builder--alumna .rutina-builder__exercise-row,
+.app-shell--profe[data-color-scheme="light"] .rutina-builder--alumna .rutina-builder__stepper button,
+.app-shell--profe[data-color-scheme="light"] .rutina-builder--alumna .rutina-builder__stepper input,
+.app-shell--profe[data-color-scheme="light"] .rutina-builder--alumna .rutina-builder__descanso-select {
+  color: var(--color-text);
+}
+
+.app-shell--profe[data-color-scheme="light"] .rutina-builder__day-rail-index,
+.app-shell--profe[data-color-scheme="light"] .rutina-builder__day-rail-add,
+.app-shell--profe[data-color-scheme="light"] .rutina-builder--alumna .rutina-builder__exercise-index,
+.app-shell--profe[data-color-scheme="light"] .rutina-builder--alumna .rutina-builder__save-bar-pending {
+  color: var(--color-gold);
+}
+
+.app-shell--profe[data-color-scheme="light"] .rutina-builder__day-rail-meta,
+.app-shell--profe[data-color-scheme="light"] .rutina-builder--alumna .rutina-builder__semana-tab-meta,
+.app-shell--profe[data-color-scheme="light"] .rutina-builder--alumna .rutina-builder__metric,
+.app-shell--profe[data-color-scheme="light"] .rutina-builder--alumna .rutina-builder__save-bar-synced,
+.app-shell--profe[data-color-scheme="light"] .rutina-builder--alumna .rutina-builder__save-bar-hint {
+  color: var(--color-text-muted);
+}
+
+.app-shell--profe[data-color-scheme="light"] .seguimiento-exercises__item {
+  background: rgb(255 255 255 / 72%);
+  border-color: rgb(28 24 20 / 10%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .seguimiento-exercises__check {
+  color: #1c1814;
+  background: rgb(28 24 20 / 8%);
+  border-color: rgb(28 24 20 / 12%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .seguimiento-day__badge--futuro {
+  color: var(--color-text-muted);
+  background: rgb(28 24 20 / 8%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .nutricion-chat-panel__message--assistant {
+  background: rgb(255 255 255 / 88%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .admisiones-panel__empty,
+.app-shell--profe[data-color-scheme="light"] .planes-catalog__empty,
+.app-shell--profe[data-color-scheme="light"] .catalogo-page .alumnas-panel__status {
+  background: rgb(255 255 255 / 62%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .agenda-calendario,
+.app-shell--profe[data-color-scheme="light"] .agenda-calendario__day,
+.app-shell--profe[data-color-scheme="light"] .agenda-calendario__nav,
+.app-shell--profe[data-color-scheme="light"] .agenda-dia-detalle,
+.app-shell--profe[data-color-scheme="light"] .agenda-form-card {
+  background: rgb(255 255 255 / 82%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-template-card:hover {
+  background: #fff;
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__device-toggle-btn {
+  color: #5c5348;
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell.alumna-rutina--experience {
+  --rutina-black: #1c1814;
+  --rutina-black-soft: #fffdf8;
+  --rutina-black-card: #ffffff;
+  --rutina-yellow-muted: rgb(212 175 55 / 16%);
+  color: #1c1814;
+  background:
+    radial-gradient(circle at top left, var(--rutina-yellow-muted), transparent 32rem),
+    linear-gradient(145deg, #fffdf8, #f4efe6);
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell.alumna-rutina--experience
+  :is(h1, h2, h3, h4, p, span, time, label, strong, small, li, button, a, input) {
+  color: #1c1814;
+}
+
+.app-shell--profe[data-color-scheme="light"] .cms-editor-shell--fullscreen,
+.app-shell--profe[data-color-scheme="light"] .cms-editor-shell:fullscreen {
+  background: #f4efe6;
+}
+
+.app-shell--profe[data-color-scheme="light"] .cms-editor-shell--fullscreen .cms-editor-toolbar,
+.app-shell--profe[data-color-scheme="light"] .cms-editor-shell:fullscreen .cms-editor-toolbar {
+  border-bottom-color: rgb(28 24 20 / 10%);
+  background: linear-gradient(180deg, rgb(255 253 248 / 96%) 0%, rgb(244 239 230 / 72%) 72%, transparent 100%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .cms-editor-shell--fullscreen .cms-editor-footer,
+.app-shell--profe[data-color-scheme="light"] .cms-editor-shell:fullscreen .cms-editor-footer {
+  border-top-color: rgb(28 24 20 / 10%);
+  background: linear-gradient(0deg, rgb(255 253 248 / 96%) 0%, rgb(244 239 230 / 72%) 72%, transparent 100%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .cms-editor-toolbar-label {
+  color: #5c5348;
+}
+
+.app-shell--profe[data-color-scheme="light"] .cms-editor-control {
+  color: #1c1814;
+  background: rgb(255 255 255 / 82%);
+  border-color: rgb(28 24 20 / 12%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .cms-editor-preview-stage {
+  border-color: rgb(28 24 20 / 10%);
+  background:
+    radial-gradient(circle at top, rgb(245 197 24 / 10%), transparent 42%),
+    linear-gradient(180deg, #fffdf8 0%, #f4efe6 100%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-card-preview-chrome {
+  background: linear-gradient(135deg, rgb(255 253 248 / 94%) 0%, rgb(244 239 230 / 88%) 100%);
+  border-color: rgb(184 148 31 / 28%);
+  box-shadow: 0 14px 34px rgb(40 28 12 / 12%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .catalogo-page .pagination {
+  background: linear-gradient(
+    180deg,
+    rgb(247 243 234 / 0%) 0%,
+    rgb(247 243 234 / 88%) 28%,
+    rgb(247 243 234 / 98%) 100%
+  );
+}
+
+.app-shell--profe[data-color-scheme="light"] .admision-card__actions .admision-card__reject:hover:not(:disabled) {
+  color: #b42318;
+}
+
+.app-shell--profe[data-color-scheme="light"] .auth-error,
+.app-shell--profe[data-color-scheme="light"] .profe-dashboard__error .auth-error {
+  color: #b42318;
+}
+
+/* Modales (in-tree o portaleados) */
+
+html[data-profe-color-scheme="light"] .confirm-leave-modal,
+html[data-profe-color-scheme="light"] .success-modal,
+html[data-profe-color-scheme="light"] .agenda-dia-modal {
+  background: #fffdf8;
+  border-color: rgb(184 148 31 / 28%);
+  color: #1c1814;
+}
+
+html[data-profe-color-scheme="light"] .confirm-leave-modal-backdrop,
+html[data-profe-color-scheme="light"] .success-modal-backdrop,
+html[data-profe-color-scheme="light"] .agenda-dia-modal-backdrop,
+html[data-profe-color-scheme="light"] .health-review__backdrop {
+  background: rgb(28 24 20 / 28%);
+}
+
+html[data-profe-color-scheme="light"] .health-review__panel,
+html[data-profe-color-scheme="light"] .health-review__header,
+html[data-profe-color-scheme="light"] .health-review__footer {
+  background: #fffdf8;
+  color: #1c1814;
+}
+
+html[data-profe-color-scheme="light"] .confirm-leave-modal__title,
+html[data-profe-color-scheme="light"] .success-modal__title,
+html[data-profe-color-scheme="light"] .health-review__title,
+html[data-profe-color-scheme="light"] .health-review__field-label,
+html[data-profe-color-scheme="light"] .agenda-dia-modal .agenda-dia-detalle__header h3 {
+  color: #1c1814;
+}
+
+html[data-profe-color-scheme="light"] .confirm-leave-modal__message,
+html[data-profe-color-scheme="light"] .success-modal__message,
+html[data-profe-color-scheme="light"] .health-review__subtitle,
+html[data-profe-color-scheme="light"] .health-review__requested,
+html[data-profe-color-scheme="light"] .agenda-dia-modal .agenda-dia-detalle__date {
+  color: #5c5348;
+}
+
+html[data-profe-color-scheme="light"] .health-review__close {
+  color: #1c1814;
+}
+
+html[data-profe-color-scheme="light"] .health-review__close:hover:not(:disabled) {
+  background: rgb(28 24 20 / 8%);
+}
+
+html[data-profe-color-scheme="light"] .health-review__item {
+  background: rgb(255 255 255 / 88%);
+  border-color: rgb(28 24 20 / 10%);
+}
+
+html[data-profe-color-scheme="light"] .agenda-dia-modal .agenda-dia-detalle,
+html[data-profe-color-scheme="light"] .agenda-dia-modal .agenda-dia-detalle__item {
+  background: transparent;
+  border-color: rgb(28 24 20 / 10%);
+}
+
+html[data-profe-color-scheme="light"] .agenda-dia-modal__close {
+  background: rgb(255 255 255 / 88%);
+  color: #1c1814;
+  border-color: rgb(28 24 20 / 12%);
+}
+
+html[data-profe-color-scheme="light"] .gamif-toast {
+  background: #fff;
+  color: #1c1814;
+  box-shadow: 0 10px 28px rgb(40 28 12 / 12%);
+}
+
+html[data-profe-color-scheme="light"] .gamif-toast__detail {
+  color: #5c5348;
+}

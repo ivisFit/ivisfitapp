@@ -1,0 +1,78 @@
+.offline-page {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 20% 15%, rgba(245, 197, 24, 0.08), transparent 45%),
+    #0f0f0f;
+  color: #f5f5f0;
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+.offline-card {
+  max-width: 420px;
+  width: 100%;
+  padding: 40px 32px;
+  border-radius: 20px;
+  border: 1px solid rgba(245, 197, 24, 0.18);
+  background: rgba(255, 255, 255, 0.03);
+  text-align: center;
+  animation: offline-card-in 0.4s ease both;
+}
+
+.offline-card__logo {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #0f0f0f;
+  background: #fdc915;
+  padding: 6px 14px;
+  border-radius: 999px;
+  margin-bottom: 20px;
+}
+
+.offline-card__title {
+  font-family: var(--font-display), serif;
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin: 0 0 12px;
+}
+
+.offline-card__text {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: rgba(245, 245, 240, 0.72);
+  margin: 0 0 24px;
+}
+
+.offline-card__button {
+  appearance: none;
+  cursor: pointer;
+  border: none;
+  background: #fdc915;
+  color: #0f0f0f;
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 12px 28px;
+  border-radius: 12px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.offline-card__button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(245, 197, 24, 0.25);
+}
+
+@keyframes offline-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

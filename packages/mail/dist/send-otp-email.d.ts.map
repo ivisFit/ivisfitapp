@@ -1,0 +1,1 @@
+{"version":3,"file":"send-otp-email.d.ts","sourceRoot":"","sources":["../src/send-otp-email.ts"],"names":[],"mappings":"AAEA,MAAM,WAAW,kBAAkB;IACjC,EAAE,EAAE,MAAM,CAAC;IACX,IAAI,EAAE,MAAM,CAAC;IACb,OAAO,EAAE,MAAM,CAAC;CACjB;AA0BD,wBAAsB,YAAY,CAAC,EACjC,EAAE,EACF,IAAI,EACJ,OAAO,GACR,EAAE,kBAAkB,GAAG,OAAO,CAAC,IAAI,CAAC,CA2BpC"}

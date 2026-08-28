@@ -1,0 +1,1 @@
+{"version":3,"file":"resend-client.d.ts","sourceRoot":"","sources":["../src/resend-client.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,MAAM,EAAE,MAAM,QAAQ,CAAC;AAEhC,wBAAgB,eAAe,IAAI,MAAM,CAUxC;AAED,wBAAgB,YAAY,CAAC,OAAO,SAAa,GAAG,MAAM,CAczD;AAED,wBAAgB,uBAAuB,CACrC,KAAK,EAAE,OAAO,EACd,QAAQ,EAAE,MAAM,GACf,MAAM,CAyBR"}

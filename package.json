@@ -1,0 +1,32 @@
+{
+  "name": "ivisfit-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "npm@10.9.4",
+  "engines": {
+    "node": ">=20",
+    "npm": "10.9.4"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "start": "turbo start"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.5.7",
+    "@tanstack/react-query": "^5.101.4",
+    "@tanstack/react-query-devtools": "^5.101.4",
+    "react-hook-form": "^7.83.0",
+    "tr46": "^6.0.0",
+    "turbo": "2.5.3",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@next/bundle-analyzer": "^16.2.12"
+  }
+}

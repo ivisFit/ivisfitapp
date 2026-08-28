@@ -1,0 +1,104 @@
+.evaluacion-bridge {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  overflow: hidden;
+  pointer-events: all;
+  isolation: isolate;
+  will-change: opacity;
+  color-scheme: light;
+  background: linear-gradient(
+    165deg,
+    #faf8f5 0%,
+    #f7f4ef 46%,
+    #ffffff 100%
+  );
+}
+
+.evaluacion-bridge--handoff {
+  background: #ffffff;
+}
+
+.evaluacion-bridge__glow {
+  position: absolute;
+  top: 38%;
+  left: 50%;
+  width: min(92vw, 28rem);
+  height: min(92vw, 28rem);
+  pointer-events: none;
+  background: radial-gradient(
+    circle,
+    rgb(253 201 21 / 24%) 0%,
+    rgb(253 201 21 / 10%) 38%,
+    transparent 72%
+  );
+  transform: translate(-50%, -50%);
+  will-change: transform, opacity;
+}
+
+.evaluacion-bridge__content {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 0.75rem;
+  justify-items: center;
+  width: min(100%, 22rem);
+  text-align: center;
+  will-change: transform, opacity;
+}
+
+.evaluacion-bridge__logo-wrap {
+  display: grid;
+  place-items: center;
+  width: 5.5rem;
+  height: 5.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.evaluacion-bridge__logo {
+  width: 5.5rem;
+  height: auto;
+  filter: drop-shadow(0 8px 20px rgb(253 201 21 / 22%));
+}
+
+.evaluacion-bridge__title {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1.5rem, 5vw, 1.85rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: #14110f;
+}
+
+.evaluacion-bridge__subtitle {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: #5c574f;
+}
+
+.evaluacion-bridge__spinner {
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-top: 0.5rem;
+  border: 2px solid rgb(184 148 31 / 18%);
+  border-top-color: #c7980a;
+  border-radius: 50%;
+  animation: evaluacion-bridge-spin 0.85s linear infinite;
+}
+
+@keyframes evaluacion-bridge-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .evaluacion-bridge__spinner {
+    animation: none;
+    border-top-color: rgb(184 148 31 / 18%);
+  }
+}

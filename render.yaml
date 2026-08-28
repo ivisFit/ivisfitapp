@@ -1,0 +1,72 @@
+# Render Blueprint — IVIS Fit
+# https://render.com/docs/blueprint-spec
+#
+# Importante: NODE_ENV=production en Render aplica también al BUILD.
+# Por eso el build usa `npm ci --include=dev` y el turbo local del repo.
+
+services:
+  - type: web
+    name: ivisfit-api
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm ci --include=dev && npx turbo run build --filter=@ivisfit/backend-api
+    startCommand: npm run start -w @ivisfit/backend-api
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: BETTER_AUTH_SECRET
+        generateValue: true
+      # URL pública donde el navegador llama a /api/auth (vía proxy del frontend)
+      - key: BETTER_AUTH_URL
+        fromService:
+          type: web
+          name: ivisfit-web
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: FRONTEND_URL
+        fromService:
+          type: web
+          name: ivisfit-web
+          envVarKey: RENDER_EXTERNAL_URL
+      # Con dominio propio (ivisfit.com), setear manualmente en el dashboard:
+      # FRONTEND_URL=https://ivisfit.com
+      # BETTER_AUTH_URL=https://ivisfit.com
+      # TRUSTED_ORIGINS=https://ivisfit.com,https://www.ivisfit.com
+      # CORS_ALLOWED_ORIGINS=https://ivisfit.com,https://www.ivisfit.com
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: TRUSTED_ORIGINS
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM_EMAIL
+        sync: false
+
+  - type: web
+    name: ivisfit-web
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm ci --include=dev && npx turbo run build --filter=@ivisfit/frontend-app
+    startCommand: npm run start -w @ivisfit/frontend-app
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      # Proxy server-side: Next reenvía /api/* hacia el backend (solo API_URL, no público)
+      - key: API_URL
+        fromService:
+          type: web
+          name: ivisfit-api
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: NEXT_PUBLIC_FRONTEND_URL
+        fromService:
+          type: web
+          name: ivisfit-web
+          envVarKey: RENDER_EXTERNAL_URL

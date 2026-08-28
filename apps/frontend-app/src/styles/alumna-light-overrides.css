@@ -1,0 +1,725 @@
+/* Toggle de tema — también en shells sin AppShell */
+.alumna-scheme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  min-height: 2.4rem;
+  padding: 0;
+  color: var(--color-gold);
+  background: rgb(255 255 255 / 6%);
+  border: 1px solid rgb(245 197 24 / 22%);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.alumna-scheme-toggle__stack {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.alumna-scheme-toggle__glyph {
+  grid-area: 1 / 1;
+  opacity: 0;
+  transform: scale(0.82);
+}
+
+.alumna-scheme-toggle__glyph.is-active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.alumna-scheme-toggle:hover {
+  background: rgb(245 197 24 / 14%);
+}
+
+.alumna-scheme-toggle:focus-visible {
+  outline: 2px solid var(--color-yellow);
+  outline-offset: 2px;
+}
+
+.alumna-scheme-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: max(0.75rem, env(safe-area-inset-top)) 1rem 0;
+}
+
+html[data-alumna-color-scheme="light"] .alumna-scheme-toggle,
+html[data-profe-color-scheme="light"] .alumna-scheme-toggle,
+html[data-color-scheme="light"] .alumna-scheme-toggle {
+  color: #1c1814;
+  background: rgb(255 255 255 / 72%);
+  border-color: rgb(28 24 20 / 12%);
+}
+
+/* Tema claro — /rutina: tinta oscura + papel crema */
+
+.app-shell--alumna[data-color-scheme="light"] .alumna-rutina--experience,
+.app-shell--alumna[data-color-scheme="light"] .alumna-rutina {
+  --rutina-black: #1c1814;
+  --rutina-black-soft: #fffdf8;
+  --rutina-black-card: #ffffff;
+  --rutina-yellow-muted: rgb(212 175 55 / 16%);
+  color: #1c1814;
+  background:
+    radial-gradient(circle at top left, var(--rutina-yellow-muted), transparent 32rem),
+    linear-gradient(145deg, #fffdf8, #f4efe6);
+}
+
+.app-shell--alumna[data-color-scheme="light"]
+  .app-content
+  .page-transition
+  > .feature-card.alumna-rutina--experience {
+  background:
+    radial-gradient(circle at top left, var(--rutina-yellow-muted), transparent 32rem),
+    linear-gradient(145deg, #fffdf8, #f4efe6);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .alumna-rutina--experience
+  :is(h1, h2, h3, h4, p, span, time, label, strong, small, li, button, a, input) {
+  color: #1c1814;
+}
+
+.app-shell--alumna[data-color-scheme="light"] .alumna-rutina__plan-label,
+.app-shell--alumna[data-color-scheme="light"] .alumna-rutina__tabs button:hover,
+.app-shell--alumna[data-color-scheme="light"] .training-story__action-btn svg,
+.app-shell--alumna[data-color-scheme="light"] .weight-log__step-btn {
+  color: var(--rutina-yellow);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .alumna-rutina__tabs {
+  background: rgb(28 24 20 / 6%);
+  border-color: rgb(184 148 31 / 28%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .alumna-rutina__tabs button {
+  color: #5c5348;
+}
+
+.app-shell--alumna[data-color-scheme="light"] .alumna-rutina__tabs button.is-active {
+  color: #1c1814;
+}
+
+.app-shell--alumna[data-color-scheme="light"] .training-story {
+  background: #fffdf8;
+  border-color: rgb(184 148 31 / 28%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .training-story__placeholder {
+  background:
+    radial-gradient(circle at 18% 18%, rgb(212 175 55 / 22%), transparent 16rem),
+    linear-gradient(145deg, #fffdf8, #f4efe6);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .training-story__scrim {
+  background:
+    linear-gradient(180deg, rgb(247 243 234 / 42%), rgb(247 243 234 / 92%)),
+    linear-gradient(90deg, rgb(247 243 234 / 58%), transparent 72%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .training-story__segment {
+  background: rgb(28 24 20 / 14%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .training-story__segment.is-active {
+  background: rgb(28 24 20 / 48%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .training-story__action-btn,
+.app-shell--alumna[data-color-scheme="light"] .training-story__complete-btn:not(.is-completed),
+.app-shell--alumna[data-color-scheme="light"] .training-story__nav-btn--ghost {
+  background: rgb(255 255 255 / 88%);
+  border-color: rgb(28 24 20 / 12%);
+  color: #1c1814;
+}
+
+.app-shell--alumna[data-color-scheme="light"] .training-story__complete-btn.is-completed,
+.app-shell--alumna[data-color-scheme="light"] .training-story__nav-btn--primary,
+.app-shell--alumna[data-color-scheme="light"] .training-story__eyebrow,
+.app-shell--alumna[data-color-scheme="light"] .challenge28__eyebrow {
+  color: #1c1814;
+}
+
+.app-shell--alumna[data-color-scheme="light"] .weight-log__input-wrap,
+.app-shell--alumna[data-color-scheme="light"] .weight-log--sheet .weight-log__input-wrap {
+  background: #fff;
+  border-color: rgb(184 148 31 / 28%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .challenge-sheet__tags span {
+  color: #6b5314;
+}
+
+.app-shell--alumna[data-color-scheme="light"] .coach-insight-banner {
+  background: linear-gradient(135deg, rgb(253 201 21 / 16%) 0%, #fffdf8 100%);
+  border-color: rgb(184 148 31 / 28%);
+  color: #1c1814;
+}
+
+.app-shell--alumna[data-color-scheme="light"] .coach-insight-banner__accion,
+.app-shell--alumna[data-color-scheme="light"] .coach-insight-banner__close {
+  color: #5c5348;
+}
+
+.app-shell--alumna[data-color-scheme="light"] a.coach-insight-banner__accion:hover,
+.app-shell--alumna[data-color-scheme="light"] .coach-insight-banner__close:hover {
+  color: #1c1814;
+}
+
+.app-shell--alumna[data-color-scheme="light"] .progreso-chart__empty,
+.app-shell--alumna[data-color-scheme="light"] .progreso-chart-tooltip,
+.app-shell--alumna[data-color-scheme="light"] .progreso-page__no-rutina {
+  color: var(--color-text);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .progreso-chart-tooltip {
+  background: #fff;
+  color: var(--color-text);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .nutricion-wizard__progress-label,
+.app-shell--alumna[data-color-scheme="light"] .gestion-alimentacion-workspace__email {
+  color: var(--color-text-muted);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .gestion-alimentacion-workspace__title {
+  color: var(--color-heading);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .pliegues-hero__copy h1,
+.app-shell--alumna[data-color-scheme="light"] .pliegues-settings-card h2,
+.app-shell--alumna[data-color-scheme="light"] .perfil-hero__name {
+  color: var(--color-heading);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .pliegues-hero__copy p,
+.app-shell--alumna[data-color-scheme="light"] .pliegues-settings-card__copy,
+.app-shell--alumna[data-color-scheme="light"] .pliegues-settings-card__toggle,
+.app-shell--alumna[data-color-scheme="light"] .perfil-hero__email,
+.app-shell--alumna[data-color-scheme="light"] .progreso-chart__summary {
+  color: var(--color-text-muted);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .pliegues-period-filter__chip {
+  background: rgb(255 255 255 / 82%);
+  color: var(--color-text-muted);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .progreso-chart__select select {
+  background: #fff;
+  color: var(--color-text);
+  color-scheme: light;
+}
+
+.app-shell--alumna[data-color-scheme="light"] .progreso-chart__select select option {
+  background-color: #fff;
+  color: var(--color-text);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .progreso-chart--empty .progreso-chart__canvas,
+.app-shell--alumna[data-color-scheme="light"] .progreso-chart__empty {
+  color: var(--color-text-muted);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .checkin-alimentacion {
+  background: linear-gradient(135deg, var(--gold-a10) 0%, rgb(255 255 255 / 78%) 100%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .checkin-alimentacion__chip {
+  background: rgb(255 255 255 / 82%);
+  border-color: rgb(28 24 20 / 12%);
+  color: var(--color-text);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .alimentacion-comida__ingredientes li,
+.app-shell--alumna[data-color-scheme="light"] .alimentacion-compras__list li,
+.app-shell--alumna[data-color-scheme="light"] .alimentacion-macros__split {
+  border-color: rgb(28 24 20 / 8%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .alimentacion-macros__split {
+  background: rgb(28 24 20 / 8%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .checkin-alimentacion__chip:hover:not(:disabled) {
+  color: var(--color-text);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .alimentacion-waiting h1,
+.app-shell--alumna[data-color-scheme="light"] .nutricion-wizard h1,
+.app-shell--alumna[data-color-scheme="light"] .alimentacion-dashboard h1 {
+  color: var(--color-heading);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .gamif-widget--collapsible {
+  background: rgb(255 255 255 / 72%);
+  box-shadow: 0 4px 18px rgb(40 28 12 / 8%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .reunion-banner {
+  background: rgb(255 255 255 / 72%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .mensajes-chat-page,
+.app-shell--alumna[data-color-scheme="light"] .app-assistant-page {
+  background: linear-gradient(180deg, #fffdf8 0%, #f4efe6 100%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .mensajes-chat-page__header,
+.app-shell--alumna[data-color-scheme="light"] .app-assistant-page__header,
+.app-shell--alumna[data-color-scheme="light"] .mensajes-thread--chat .mensajes-thread__composer,
+.app-shell--alumna[data-color-scheme="light"] .app-assistant-page__composer {
+  background: rgb(255 255 255 / 82%);
+  border-color: rgb(28 24 20 / 10%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .mensajes-chat-page__title,
+.app-shell--alumna[data-color-scheme="light"] .app-assistant-page__title {
+  color: var(--color-heading);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .mensajes-chat-page__subtitle,
+.app-shell--alumna[data-color-scheme="light"] .app-assistant-page__brand,
+.app-shell--alumna[data-color-scheme="light"] .mensajes-thread--chat .mensajes-thread__empty,
+.app-shell--alumna[data-color-scheme="light"] .mensajes-thread--chat .mensajes-thread__loading {
+  color: var(--color-text-muted);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .mensajes-chat-message--theirs .mensajes-chat-message__bubble,
+.app-shell--alumna[data-color-scheme="light"] .app-assistant-message--assistant .app-assistant-message__bubble {
+  background: #fff;
+  color: var(--color-text);
+  border-color: rgb(28 24 20 / 10%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .mensajes-chat-message--mine .mensajes-chat-message__bubble,
+.app-shell--alumna[data-color-scheme="light"] .app-assistant-message--user .app-assistant-message__bubble {
+  color: #3d3010;
+}
+
+.app-shell--alumna[data-color-scheme="light"] .mensajes-chat-message__bubble time {
+  color: var(--color-text-muted);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .mensajes-thread--chat .mensajes-thread__composer-input-wrap,
+.app-shell--alumna[data-color-scheme="light"] .app-assistant-page__composer input {
+  background: #fff;
+  border-color: rgb(28 24 20 / 12%);
+  color: var(--color-text);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .mensajes-thread--chat .mensajes-thread__composer textarea {
+  color: var(--color-text);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .mensajes-thread--chat .mensajes-thread__composer textarea::placeholder,
+.app-shell--alumna[data-color-scheme="light"] .app-assistant-page__composer input::placeholder {
+  color: rgb(28 24 20 / 42%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .app-assistant-fab {
+  background: linear-gradient(145deg, #fffdf8 0%, #f4efe6 100%);
+  border-color: rgb(184 148 31 / 28%);
+}
+
+@media (min-width: 768px) {
+  .app-shell--alumna[data-color-scheme="light"] .app-assistant-page {
+    top: calc(var(--alumna-topbar-height) + var(--sidebar-inset));
+    right: var(--sidebar-inset);
+    bottom: var(--sidebar-inset);
+    left: var(--sidebar-width);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--glass-border-amber);
+  }
+}
+
+/* Portales y overlays fuera de .app-shell */
+
+html[data-alumna-color-scheme="light"] .app-assistant-fab {
+  background: linear-gradient(145deg, #fffdf8 0%, #f4efe6 100%);
+  border-color: rgb(184 148 31 / 28%);
+  box-shadow:
+    0 4px 20px rgb(40 28 12 / 12%),
+    0 0 24px rgb(245 197 24 / 18%);
+}
+
+html[data-alumna-color-scheme="light"] .app-assistant-fab__status {
+  border-color: #fffdf8;
+}
+
+html[data-alumna-color-scheme="light"] .gamif-toast {
+  background: #fff;
+  color: #1c1814;
+  box-shadow: 0 10px 28px rgb(40 28 12 / 12%);
+}
+
+html[data-alumna-color-scheme="light"] .gamif-toast__detail {
+  color: #5c5348;
+}
+
+html[data-alumna-color-scheme="light"] .challenge-sheet {
+  --rutina-black: #1c1814;
+  --rutina-black-soft: #fffdf8;
+  --rutina-black-card: #ffffff;
+  --rutina-yellow: var(--color-gold);
+  --rutina-yellow-soft: #b8860b;
+  color: #1c1814;
+}
+
+html[data-alumna-color-scheme="light"] .challenge-sheet__backdrop,
+html[data-alumna-color-scheme="light"] .challenge-exercise-video__backdrop,
+html[data-alumna-color-scheme="light"] .routine-video__backdrop,
+html[data-alumna-color-scheme="light"] .rest-timer__backdrop,
+html[data-alumna-color-scheme="light"] .perfil-edit__backdrop {
+  background: rgb(28 24 20 / 28%);
+}
+
+html[data-alumna-color-scheme="light"] .challenge-sheet__panel {
+  background: linear-gradient(180deg, #fffdf8 0%, #f4efe6 100%);
+  border-color: rgb(184 148 31 / 28%);
+  box-shadow: 0 24px 56px rgb(40 28 12 / 16%);
+}
+
+html[data-alumna-color-scheme="light"] .challenge-sheet__handle,
+html[data-alumna-color-scheme="light"] .app-bottom-nav-more-sheet__handle {
+  background: rgb(28 24 20 / 22%);
+}
+
+html[data-alumna-color-scheme="light"] .challenge-sheet__header span,
+html[data-alumna-color-scheme="light"] .challenge-exercise-video__header span,
+html[data-alumna-color-scheme="light"] .routine-video__header span,
+html[data-alumna-color-scheme="light"] .rest-timer__header span {
+  color: var(--color-gold);
+}
+
+html[data-alumna-color-scheme="light"] .challenge-sheet__header h3,
+html[data-alumna-color-scheme="light"] .challenge-sheet__exercises li,
+html[data-alumna-color-scheme="light"] .challenge-sheet__video-button {
+  color: #1c1814;
+}
+
+html[data-alumna-color-scheme="light"] .challenge-sheet__header button,
+html[data-alumna-color-scheme="light"] .challenge-exercise-video__header button,
+html[data-alumna-color-scheme="light"] .routine-video__header button,
+html[data-alumna-color-scheme="light"] .rest-timer__header button {
+  color: #6b5314;
+  background: rgb(255 255 255 / 88%);
+  border-color: rgb(184 148 31 / 28%);
+}
+
+html[data-alumna-color-scheme="light"] .challenge-sheet__tags span {
+  color: #6b5314;
+  background: rgb(253 201 21 / 16%);
+  border-color: rgb(184 148 31 / 28%);
+}
+
+html[data-alumna-color-scheme="light"] .challenge-sheet__exercises li {
+  background: #fff;
+  border-color: rgb(184 148 31 / 22%);
+}
+
+html[data-alumna-color-scheme="light"] .challenge-sheet__exercises li.is-completed {
+  background: rgb(253 201 21 / 12%);
+  border-color: rgb(184 148 31 / 40%);
+}
+
+html[data-alumna-color-scheme="light"] .challenge-sheet__exercises strong {
+  color: #1c1814;
+}
+
+html[data-alumna-color-scheme="light"] .challenge-sheet__exercise-copy span,
+html[data-alumna-color-scheme="light"] .challenge-sheet__exercises span,
+html[data-alumna-color-scheme="light"] .challenge-sheet__empty,
+html[data-alumna-color-scheme="light"] .challenge-sheet__exercises li.is-completed strong {
+  color: #5c5348;
+}
+
+html[data-alumna-color-scheme="light"] .challenge-sheet__check {
+  background: rgb(28 24 20 / 6%);
+  border-color: rgb(184 148 31 / 28%);
+}
+
+html[data-alumna-color-scheme="light"] .challenge-sheet__video-button {
+  background: rgb(28 24 20 / 6%);
+  border-color: rgb(184 148 31 / 28%);
+}
+
+html[data-alumna-color-scheme="light"] .weight-log--sheet .weight-log__input-wrap,
+html[data-alumna-color-scheme="light"] .weight-log__input-wrap {
+  background: #fff;
+  border-color: rgb(184 148 31 / 28%);
+}
+
+html[data-alumna-color-scheme="light"] .weight-log__field-label,
+html[data-alumna-color-scheme="light"] .weight-log__field span:first-child,
+html[data-alumna-color-scheme="light"] .weight-log__historico,
+html[data-alumna-color-scheme="light"] .weight-log__status--saving,
+html[data-alumna-color-scheme="light"] .weight-log__unit,
+html[data-alumna-color-scheme="light"] .weight-log__input {
+  color: #5c5348;
+}
+
+html[data-alumna-color-scheme="light"] .weight-log__input,
+html[data-alumna-color-scheme="light"] .weight-log__field input {
+  color: #1c1814;
+}
+
+html[data-alumna-color-scheme="light"] .weight-log__step-btn {
+  color: var(--color-gold);
+  background: #fff;
+  border-color: rgb(184 148 31 / 28%);
+}
+
+html[data-alumna-color-scheme="light"] .challenge-exercise-video__panel,
+html[data-alumna-color-scheme="light"] .routine-video__panel,
+html[data-alumna-color-scheme="light"] .rest-timer__panel {
+  background:
+    radial-gradient(circle at top left, rgb(253 201 21 / 16%), transparent 18rem),
+    linear-gradient(145deg, #fffdf8, #f4efe6);
+  border-color: rgb(184 148 31 / 28%);
+  box-shadow: 0 30px 80px rgb(40 28 12 / 16%);
+}
+
+html[data-alumna-color-scheme="light"] .challenge-exercise-video__header h3,
+html[data-alumna-color-scheme="light"] .routine-video__header h3,
+html[data-alumna-color-scheme="light"] .rest-timer__header h3,
+html[data-alumna-color-scheme="light"] .rest-timer__time time,
+html[data-alumna-color-scheme="light"] .rest-timer__secondary {
+  color: #1c1814;
+}
+
+html[data-alumna-color-scheme="light"] .rest-timer__ring-track {
+  stroke: rgb(28 24 20 / 12%);
+}
+
+html[data-alumna-color-scheme="light"] .rest-timer__secondary {
+  background: rgb(255 255 255 / 88%);
+  border-color: rgb(184 148 31 / 28%);
+}
+
+html[data-alumna-color-scheme="light"] .app-bottom-nav-more-sheet__backdrop {
+  background:
+    radial-gradient(
+      120% 85% at 50% 100%,
+      rgb(245 197 24 / 12%) 0%,
+      rgb(247 243 234 / 72%) 42%,
+      rgb(28 24 20 / 28%) 100%
+    );
+}
+
+html[data-alumna-color-scheme="light"] .app-bottom-nav-more-sheet__panel {
+  background: linear-gradient(165deg, #fffdf8 0%, #f4efe6 100%);
+  border-color: rgb(184 148 31 / 28%);
+  box-shadow: 0 24px 48px rgb(40 28 12 / 14%);
+}
+
+html[data-alumna-color-scheme="light"] .app-bottom-nav-more-sheet__title,
+html[data-alumna-color-scheme="light"] .app-bottom-nav-more-sheet__item {
+  color: #1c1814;
+  text-shadow: none;
+}
+
+html[data-alumna-color-scheme="light"] .app-bottom-nav-more-sheet__close {
+  color: #1c1814;
+  background: rgb(255 255 255 / 88%);
+  border-color: rgb(28 24 20 / 12%);
+}
+
+html[data-alumna-color-scheme="light"] .app-bottom-nav-more-sheet__item:hover {
+  background: rgb(255 255 255 / 88%);
+  border-color: rgb(184 148 31 / 22%);
+}
+
+html[data-alumna-color-scheme="light"] .app-bottom-nav-more-sheet__item--active {
+  color: #6b5314;
+  background: rgb(253 201 21 / 16%);
+}
+
+html[data-alumna-color-scheme="light"] .app-bottom-nav-more-sheet__item--active .app-bottom-nav-more-sheet__item-icon {
+  color: #6b5314;
+}
+
+html[data-alumna-color-scheme="light"] .app-bottom-nav-more-sheet__item-chevron {
+  color: rgb(28 24 20 / 35%);
+}
+
+html[data-alumna-color-scheme="light"] .perfil-edit__panel,
+html[data-alumna-color-scheme="light"] .perfil-edit__header {
+  background: #fffdf8;
+  color: #1c1814;
+}
+
+html[data-alumna-color-scheme="light"] .perfil-edit__title {
+  color: #1c1814;
+}
+
+html[data-alumna-color-scheme="light"] .perfil-edit__close:hover {
+  background: rgb(28 24 20 / 8%);
+}
+
+html[data-alumna-color-scheme="light"] .perfil-edit__textarea {
+  background: #fff;
+  color: #1c1814;
+}
+
+/* Shells propios */
+
+html[data-alumna-color-scheme="light"] .evaluacion-nutricional-shell {
+  --eval-paper: #f4efe6;
+  --eval-text: #1c1814;
+  --eval-text-muted: #5c5348;
+  --eval-surface: rgb(255 255 255 / 82%);
+  --eval-border: rgb(28 24 20 / 10%);
+  --eval-shadow-soft: 0 10px 30px rgb(40 28 12 / 8%);
+  --eval-gold-readable: #8a6a12;
+  --eval-gold-strong: #b8860b;
+  color-scheme: light;
+  background: var(--eval-paper);
+  color: var(--eval-text);
+}
+
+html[data-alumna-color-scheme="light"] .evaluacion-nutricional-shell .nutricion-wizard__progress-sticky {
+  background: linear-gradient(
+    180deg,
+    var(--eval-paper) 0%,
+    rgb(244 239 230 / 92%) 80%,
+    rgb(244 239 230 / 0%) 100%
+  );
+}
+
+html[data-alumna-color-scheme="light"] .evaluacion-nutricional-shell .nutricion-wizard__progress-track,
+html[data-alumna-color-scheme="light"] .evaluacion-nutricional-shell .nutricion-wizard__step-dot {
+  background: rgb(28 24 20 / 10%);
+}
+
+html[data-alumna-color-scheme="light"] .evaluacion-nutricional-shell .field__input,
+html[data-alumna-color-scheme="light"] .evaluacion-nutricional-shell select.field__input {
+  color-scheme: light;
+}
+
+html[data-alumna-color-scheme="light"] .evaluacion-nutricional-shell select.field__input option {
+  background-color: #fff;
+  color: var(--eval-text);
+}
+
+html[data-alumna-color-scheme="light"] .evaluacion-nutricional-shell .nutricion-selection-card:hover {
+  background: rgb(255 255 255 / 94%);
+}
+
+html[data-alumna-color-scheme="light"] .evaluacion-nutricional-shell .nutricion-selection-card__icon {
+  background: rgb(253 201 21 / 16%);
+}
+
+html[data-alumna-color-scheme="light"] .evaluacion-nutricional-shell .nutricion-tag-input__suggestions {
+  background: #fff;
+}
+
+html[data-alumna-color-scheme="light"] .evaluacion-nutricional-shell .nutricion-resumen__block {
+  background: rgb(255 255 255 / 72%);
+}
+
+@media (max-width: 767px) {
+  html[data-alumna-color-scheme="light"] .evaluacion-nutricional-shell .nutricion-wizard__nav {
+    background: linear-gradient(
+      0deg,
+      var(--eval-paper) 0%,
+      rgb(244 239 230 / 92%) 80%,
+      rgb(244 239 230 / 0%) 100%
+    );
+  }
+}
+
+html[data-alumna-color-scheme="light"] .tutoriales-shell {
+  color-scheme: light;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgb(245 197 24 / 14%), transparent 60%),
+    #f4efe6;
+  --color-text: #1c1814;
+  --color-heading: #1c1814;
+  --color-text-muted: #5c5348;
+  --color-border: rgb(28 24 20 / 10%);
+  --glass-bg: rgb(255 255 255 / 82%);
+  --glass-border: rgb(28 24 20 / 10%);
+  --glass-border-amber: rgb(184 148 31 / 28%);
+  color: var(--color-text);
+}
+
+html[data-alumna-color-scheme="light"] .tutoriales-progress__track,
+html[data-alumna-color-scheme="light"] .tutoriales-skeleton {
+  background: rgb(28 24 20 / 8%);
+}
+
+html[data-alumna-color-scheme="light"] .bienvenida-shell {
+  color-scheme: light;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgb(245 197 24 / 14%), transparent 60%),
+    #f4efe6;
+  --color-text: #1c1814;
+  --color-heading: #1c1814;
+  --color-text-muted: #5c5348;
+  --glass-bg: rgb(255 255 255 / 82%);
+  --glass-bg-elevated: #fff;
+  --glass-border: rgb(28 24 20 / 10%);
+  color: var(--color-text);
+}
+
+html[data-alumna-color-scheme="light"] .onboarding-card {
+  background: rgb(255 255 255 / 88%);
+}
+
+html[data-alumna-color-scheme="light"] .onboarding-switch,
+html[data-alumna-color-scheme="light"] .onboarding-tour__item {
+  background: #fff;
+}
+
+html[data-alumna-color-scheme="light"] .onboarding-switch__input:checked
+  + .onboarding-switch__track
+  .onboarding-switch__thumb {
+  background: #fffdf8;
+}
+
+/* Páginas AppShell que faltaban */
+
+.app-shell--alumna[data-color-scheme="light"] .ejercicio-item {
+  background: rgb(255 255 255 / 82%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .ejercicio-item:hover {
+  background: #fff;
+}
+
+.app-shell--alumna[data-color-scheme="light"] .ejercicio-item__content h3 {
+  color: var(--color-heading);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .profile-photo-settings__avatar {
+  background: linear-gradient(145deg, #fffdf8 0%, #f4efe6 100%);
+  color: var(--color-gold);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .theme-option {
+  background: rgb(255 255 255 / 82%);
+  color: var(--color-text);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .theme-option.active {
+  background: rgb(212 175 55 / 16%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .reunion-page__card {
+  background: rgb(255 255 255 / 82%);
+  box-shadow: 0 12px 32px rgb(40 28 12 / 8%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .reunion-page__header h1,
+.app-shell--alumna[data-color-scheme="light"] .page h1,
+.app-shell--alumna[data-color-scheme="light"] .page h2 {
+  color: var(--color-heading);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .print-progreso-page__toolbar .btn {
+  color: inherit;
+}

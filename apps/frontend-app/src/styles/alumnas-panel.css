@@ -1,0 +1,267 @@
+.alumnas-page .page__actions p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
+}
+
+.profe-page__tabs,
+.alumnas-page__tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem;
+  padding: 0.35rem;
+  background: rgb(9 7 8 / 72%);
+  border: 1px solid rgb(253 201 21 / 18%);
+  border-radius: 999px;
+}
+
+.profe-page__tabs button,
+.alumnas-page__tabs button {
+  min-height: 2.65rem;
+  color: rgb(255 255 255 / 72%);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    color 180ms ease,
+    background 180ms ease,
+    transform 180ms ease;
+}
+
+.profe-page__tabs button:hover,
+.profe-page__tabs button.is-active,
+.alumnas-page__tabs button:hover,
+.alumnas-page__tabs button.is-active {
+  color: var(--rutina-black, #1a1510);
+  background: linear-gradient(135deg, var(--rutina-yellow, #f5c524), var(--rutina-yellow-soft, #fde68a));
+  box-shadow: 0 12px 28px rgb(225 170 67 / 22%);
+}
+
+.profe-page__tabs button:active,
+.alumnas-page__tabs button:active {
+  transform: scale(0.98);
+}
+
+.alumnas-panel__filters {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 640px) {
+  .alumnas-panel__filters {
+    grid-template-columns: 1.5fr 1fr;
+    align-items: end;
+  }
+}
+
+.alumnas-list__flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+}
+
+.alumnas-list__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgb(255 255 255 / 82%);
+  background: rgb(255 255 255 / 8%);
+  border: 1px solid rgb(255 255 255 / 12%);
+}
+
+.alumnas-list__badge--al_dia {
+  color: #0f1a12;
+  background: rgb(134 239 172 / 85%);
+  border-color: transparent;
+}
+
+.alumnas-list__badge--por_vencer {
+  color: #1a1510;
+  background: rgb(253 224 71 / 85%);
+  border-color: transparent;
+}
+
+.alumnas-list__badge--vencida {
+  color: #fff;
+  background: rgb(239 68 68 / 75%);
+  border-color: transparent;
+}
+
+.alumnas-page .profe-tabbed-content__panel--bare {
+  margin-top: 0.75rem;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+@media (min-width: 768px) {
+  .alumnas-page .profe-tabbed-content__panel--bare {
+    margin-top: 0;
+    padding: 0;
+    padding-top: 1rem;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+  }
+}
+
+.alumnas-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.alumnas-panel__count {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.alumnas-panel__status--empty {
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+.alumnas-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.alumnas-list__item {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  min-height: 3.25rem;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  background: rgb(255 255 255 / 3%);
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.alumnas-list__item:hover {
+  border-color: var(--glass-border-amber);
+  background: rgb(253 201 21 / 8%);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 18%);
+}
+
+.alumnas-list__item:focus-visible {
+  outline: 2px solid var(--color-yellow);
+  outline-offset: 2px;
+}
+
+.alumnas-list__avatar {
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+  letter-spacing: 0.02em;
+  background: var(--color-yellow-muted);
+  color: var(--color-yellow);
+  border: 1px solid rgb(253 201 21 / 35%);
+  overflow: hidden;
+}
+
+.alumnas-list__avatar .user-avatar__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.alumnas-list__info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.alumnas-list__name {
+  font-size: 0.975rem;
+  font-weight: 600;
+  color: var(--color-text);
+  line-height: 1.3;
+}
+
+.alumnas-list__email {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.alumnas-list__chevron {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--color-gold-muted);
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.alumnas-list__item:hover .alumnas-list__chevron {
+  color: var(--color-yellow);
+  transform: translateX(2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .alumnas-list__item,
+  .alumnas-list__chevron {
+    transition: none;
+  }
+
+  .alumnas-list__item:hover {
+    transform: none;
+  }
+
+  .alumnas-list__item:hover .alumnas-list__chevron {
+    transform: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .alumnas-list {
+    gap: 0.75rem;
+  }
+
+  .alumnas-list__item {
+    padding: 0.85rem 1.1rem;
+  }
+}

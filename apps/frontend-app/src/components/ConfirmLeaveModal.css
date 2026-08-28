@@ -1,0 +1,48 @@
+.confirm-leave-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background: rgb(0 0 0 / 72%);
+  backdrop-filter: blur(6px);
+}
+
+.confirm-leave-modal {
+  width: min(100%, 24rem);
+  padding: 1.75rem 1.5rem 1.5rem;
+  text-align: center;
+  background: var(--color-surface-elevated);
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.confirm-leave-modal__title {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.confirm-leave-modal__message {
+  margin: 0 0 1.25rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+.confirm-leave-modal__actions {
+  display: grid;
+  gap: 0.625rem;
+}
+
+.confirm-leave-modal__stay,
+.confirm-leave-modal__leave {
+  width: 100%;
+}
+
+.confirm-leave-modal__leave {
+  color: var(--color-danger, #ef4444);
+}

@@ -1,0 +1,335 @@
+/* Panel de admisiones — solicitudes pendientes */
+
+.alumnas-page .profe-tabbed-content__panel:not(.profe-tabbed-content__panel--bare) {
+  padding: 1rem 1.1rem 1.15rem;
+}
+
+@media (min-width: 768px) {
+  .alumnas-page .profe-tabbed-content__panel:not(.profe-tabbed-content__panel--bare) {
+    padding: 1.15rem 1.35rem 1.4rem;
+    background: var(--glass-bg);
+    box-shadow:
+      var(--glass-shadow-float),
+      inset 0 1px 0 rgb(255 255 255 / 5%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
+  }
+}
+
+.admisiones-panel__empty {
+  margin: 0;
+  padding: 2.25rem 1.25rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  border: 1px dashed var(--glass-border);
+  border-radius: var(--radius-md);
+  background: rgb(255 255 255 / 2%);
+}
+
+.admisiones-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.admisiones-list .feature-card {
+  margin-top: 0;
+}
+
+.admision-card {
+  display: grid;
+  gap: 1.1rem;
+  padding: 1.1rem 1.15rem;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.admision-card:hover {
+  border-color: var(--glass-border-amber);
+  box-shadow:
+    var(--glass-shadow-float),
+    0 0 0 1px rgb(253 201 21 / 6%);
+}
+
+.admision-card__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+}
+
+.admision-card__avatar {
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+  letter-spacing: 0.02em;
+  background: var(--color-yellow-muted);
+  color: var(--color-yellow);
+  border: 1px solid rgb(253 201 21 / 35%);
+  overflow: hidden;
+}
+
+.admision-card__avatar .user-avatar__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.admision-card__identity {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.admision-card__identity h2 {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--color-heading);
+}
+
+.admision-card__identity p {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admision-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  max-width: 100%;
+}
+
+.admision-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.28rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: rgb(255 255 255 / 4%);
+  color: var(--color-text-muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.admision-card__badge--pending {
+  border-color: rgb(253 201 21 / 35%);
+  background: var(--color-yellow-muted);
+  color: var(--color-yellow);
+}
+
+.admision-card__badge--whatsapp {
+  border-color: rgb(34 197 94 / 30%);
+  background: rgb(34 197 94 / 10%);
+  color: var(--color-online);
+}
+
+.admision-card__badge--adjunto {
+  border-color: rgb(96 165 250 / 30%);
+  background: rgb(96 165 250 / 10%);
+  color: rgb(147 197 253 / 95%);
+}
+
+.admision-card__sections {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.admision-card__section {
+  display: grid;
+  gap: 0.65rem;
+  padding: 0.85rem 0.9rem;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  background: rgb(255 255 255 / 2%);
+}
+
+.admision-card__section-title {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-gold-muted);
+}
+
+.admision-card__details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.65rem 1rem;
+  margin: 0;
+}
+
+.admision-card__details dt {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--color-text-muted);
+}
+
+.admision-card__details dd {
+  margin: 0.12rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--color-text);
+  word-break: break-word;
+}
+
+.admision-card__details dd.is-empty {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.admision-card__comprobante {
+  display: grid;
+  gap: 0.65rem;
+  padding: 0.85rem 0.9rem;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  background: rgb(255 255 255 / 2%);
+}
+
+.admision-card__comprobante-label {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-gold-muted);
+}
+
+.admision-card__comprobante-preview {
+  width: 100%;
+  max-width: 22rem;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  background: rgb(0 0 0 / 35%);
+}
+
+.admision-card__comprobante-preview img,
+.admision-card__comprobante-preview iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+  object-fit: contain;
+  background: rgb(0 0 0 / 20%);
+}
+
+.admision-card__comprobante-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: fit-content;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.admision-card__hint {
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+  border: 1px dashed rgb(253 201 21 / 22%);
+  border-radius: var(--radius-md);
+  background: rgb(253 201 21 / 5%);
+}
+
+.admision-card__hint .auth-link {
+  font-weight: 600;
+}
+
+.admision-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid var(--glass-border);
+}
+
+.admision-card__actions .btn--primary {
+  min-width: 7.5rem;
+}
+
+.admision-card__actions .admision-card__reject {
+  color: rgb(248 113 113 / 90%);
+  border-color: rgb(248 113 113 / 25%);
+}
+
+.admision-card__actions .admision-card__reject:hover:not(:disabled) {
+  color: rgb(252 165 165 / 95%);
+  border-color: rgb(248 113 113 / 45%);
+  background: rgb(248 113 113 / 8%);
+}
+
+@media (min-width: 640px) {
+  .admision-card__header {
+    align-items: center;
+  }
+
+  .admision-card__sections {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admision-card__section--full {
+    grid-column: 1 / -1;
+  }
+
+  .admision-card__comprobante {
+    grid-column: 1 / -1;
+  }
+
+  .admision-card__hint {
+    grid-column: 1 / -1;
+  }
+
+  .admision-card__actions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+}
+
+@media (min-width: 900px) {
+  .admision-card {
+    padding: 1.2rem 1.3rem;
+  }
+
+  .admision-card__sections {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .admision-card__section--salud {
+    grid-column: span 2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admision-card {
+    transition: none;
+  }
+}

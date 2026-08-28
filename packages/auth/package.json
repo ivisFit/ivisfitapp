@@ -1,0 +1,29 @@
+{
+  "name": "@ivisfit/auth",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@ivisfit/database": "*",
+    "@ivisfit/mail": "*",
+    "better-auth": "^1.2.8",
+    "mongodb": "^6.16.0"
+  },
+  "devDependencies": {
+    "@ivisfit/typescript-config": "*",
+    "@types/node": "^22.15.21",
+    "typescript": "^5.8.3"
+  }
+}

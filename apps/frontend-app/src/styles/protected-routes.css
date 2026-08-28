@@ -1,0 +1,336 @@
+html:has(.app-shell),
+body:has(.app-shell) {
+  height: 100%;
+  overflow: hidden;
+}
+
+.app-shell {
+  position: relative;
+  isolation: isolate;
+}
+
+.protected-background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background-color: var(--color-black);
+}
+
+.protected-background__mesh {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 75% 55% at 12% 18%, rgb(199 152 10 / 22%) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 50% at 88% 78%, rgb(225 170 67 / 18%) 0%, transparent 52%),
+    radial-gradient(ellipse 55% 45% at 50% 50%, rgb(253 201 21 / 8%) 0%, transparent 60%),
+    linear-gradient(
+      155deg,
+      var(--bg-brand-deep) 0%,
+      var(--bg-brand-base) 45%,
+      var(--bg-brand-deep) 100%
+    );
+}
+
+.protected-background__bokeh-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  animation: bokehDrift 24s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+.protected-background__bokeh-orb--amber {
+  top: -12%;
+  right: 5%;
+  width: min(50vw, 32rem);
+  height: min(50vw, 32rem);
+  background: radial-gradient(circle, rgb(199 152 10 / 32%) 0%, transparent 68%);
+}
+
+.protected-background__bokeh-orb--gold-warm {
+  bottom: -15%;
+  left: -5%;
+  width: min(55vw, 36rem);
+  height: min(55vw, 36rem);
+  background: radial-gradient(
+    circle,
+    rgb(225 170 67 / 28%) 0%,
+    rgb(9 7 8 / 20%) 45%,
+    transparent 70%
+  );
+  animation-delay: -8s;
+}
+
+.protected-background__bokeh-orb--dark-warm {
+  top: 35%;
+  left: 40%;
+  width: min(40vw, 26rem);
+  height: min(40vw, 26rem);
+  background: radial-gradient(circle, rgb(9 7 8 / 55%) 0%, transparent 72%);
+  animation-delay: -14s;
+}
+
+.protected-background__bokeh-orb--amber-secondary {
+  bottom: 20%;
+  right: 25%;
+  width: min(35vw, 22rem);
+  height: min(35vw, 22rem);
+  background: radial-gradient(circle, rgb(253 201 21 / 22%) 0%, transparent 75%);
+  animation-delay: -4s;
+}
+
+.protected-background__pattern {
+  position: absolute;
+  inset: -12%;
+  background-repeat: repeat;
+  background-size: var(--bg-fitness-pattern-size);
+  opacity: 0.04;
+  will-change: transform;
+  transition: transform 0.1s linear;
+}
+
+.protected-background__pattern--alumna {
+  background-image: var(--bg-fitness-pattern-alumna);
+}
+
+.protected-background__pattern--profe {
+  background-image: var(--bg-fitness-pattern-profe);
+}
+
+.protected-background__pattern--default {
+  background-image: var(--bg-fitness-pattern);
+}
+
+.protected-background__pattern--layer-1,
+.protected-background__pattern--layer-2,
+.protected-background__pattern--layer-3 {
+  background-size: var(--bg-fitness-pattern-size);
+  background-repeat: repeat;
+  will-change: transform;
+  transition: transform 0.1s linear;
+}
+
+.protected-background__pattern--layer-2 {
+  opacity: 0.6;
+  background-size: calc(var(--bg-fitness-pattern-size) * 0.8);
+}
+
+.protected-background__pattern--layer-3 {
+  opacity: 0.3;
+  background-size: calc(var(--bg-fitness-pattern-size) * 1.2);
+}
+
+.protected-background__glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.65;
+  animation: protectedGlowDrift 18s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+.protected-background__glow--gold {
+  top: -8%;
+  right: 8%;
+  width: min(42vw, 28rem);
+  height: min(42vw, 28rem);
+  background: radial-gradient(circle, rgb(253 201 21 / 32%) 0%, transparent 70%);
+}
+
+.protected-background__glow--warm {
+  bottom: -10%;
+  left: 4%;
+  width: min(48vw, 32rem);
+  height: min(48vw, 32rem);
+  background: radial-gradient(circle, rgb(225 170 67 / 24%) 0%, transparent 72%);
+  animation-delay: -6s;
+}
+
+.protected-background__vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 0%, rgb(253 201 21 / 7%) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 60% at 100% 100%, rgb(9 7 8 / 45%) 0%, transparent 50%),
+    linear-gradient(
+      180deg,
+      rgb(9 7 8 / 30%) 0%,
+      transparent 40%,
+      rgb(9 7 8 / 65%) 100%
+    );
+}
+
+/* Solo el contenido principal necesita stacking sobre el fondo */
+.app-shell > .app-main {
+  position: relative;
+  z-index: 1;
+}
+
+.app-shell--minimal .protected-background__glow,
+.app-shell--minimal .protected-background__bokeh-orb {
+  display: none;
+}
+
+.app-shell--none .protected-background__pattern {
+  opacity: 0;
+}
+
+.app-shell--dynamic .protected-background__pattern {
+  animation: protectedPatternDrift 48s linear infinite;
+}
+
+.app-shell.no-parallax .protected-background__pattern {
+  transform: none !important;
+}
+
+/* Mouse tracking effect */
+.protected-background__mouse-glow {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(253 201 21 / 8%) 0%, transparent 70%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  will-change: transform;
+}
+
+.protected-background--mouse-active .protected-background__mouse-glow {
+  opacity: 1;
+}
+
+/* Ripple effects */
+.protected-background__ripple {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid rgb(253 201 21 / 40%);
+  opacity: 0;
+  animation: protectedRippleEffect 2s ease-out;
+  pointer-events: none;
+}
+
+@keyframes protectedRippleEffect {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(4);
+    opacity: 0;
+  }
+}
+
+/* Pulse effect for page transitions */
+.protected-background__pulse {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgb(225 170 67 / 10%) 0%, transparent 70%);
+  opacity: 0;
+  pointer-events: none;
+  animation: protectedPulseEffect 1.5s ease-out;
+}
+
+@keyframes protectedPulseEffect {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes bokehDrift {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  100% {
+    transform: translate(-4%, 5%) scale(1.1);
+  }
+}
+
+@keyframes protectedGlowDrift {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  100% {
+    transform: translate(-3%, 4%) scale(1.08);
+  }
+}
+
+@keyframes protectedPatternDrift {
+  0% {
+    transform: translate(0, 0);
+  }
+
+  100% {
+    transform: translate(-40px, -28px);
+  }
+}
+
+@media (max-width: 767px) {
+  .protected-background__glow {
+    opacity: 0.2;
+    filter: blur(40px);
+  }
+
+  .protected-background__glow--gold,
+  .protected-background__glow--warm {
+    opacity: 0.15;
+  }
+
+  .app-shell--mobile-reduced .protected-background__mouse-glow {
+    display: none;
+  }
+
+  .protected-background__pattern {
+    opacity: 0.1;
+  }
+
+  .protected-background__pattern--layer-2,
+  .protected-background__pattern--layer-3 {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .protected-background__glow,
+  .protected-background__pattern,
+  .protected-background__bokeh-orb {
+    animation: none !important;
+  }
+
+  .protected-background__mouse-glow,
+  .protected-background__ripple {
+    display: none !important;
+  }
+}
+
+/* Additional mobile optimizations */
+@media (max-width: 480px) {
+  .protected-background__glow {
+    opacity: 0.15;
+    filter: blur(32px);
+  }
+
+  .protected-background__pattern {
+    opacity: 0.08;
+  }
+}
+
+@media (max-width: 320px) {
+  .protected-background__glow {
+    display: none;
+  }
+
+  .protected-background__pattern {
+    opacity: 0.05;
+  }
+}

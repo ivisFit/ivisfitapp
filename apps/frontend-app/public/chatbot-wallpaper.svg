@@ -1,0 +1,161 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="360" viewBox="0 0 360 360" fill="none">
+  <defs>
+    <pattern id="fitness-doodles" width="360" height="360" patternUnits="userSpaceOnUse">
+      <rect width="360" height="360" fill="#0a0908"/>
+
+      <g stroke="#f4e6c8" stroke-opacity="0.2" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <!-- Dumbbell -->
+        <g transform="translate(18 24) rotate(-12)">
+          <rect x="0" y="8" width="8" height="16" rx="2.5"/>
+          <rect x="36" y="8" width="8" height="16" rx="2.5"/>
+          <line x1="8" y1="16" x2="36" y2="16"/>
+        </g>
+
+        <!-- Kettlebell -->
+        <g transform="translate(108 14) rotate(6)">
+          <path d="M13 4c4.5 0 8 3.2 8 7.5v2.5h-3.5v-2.5c0-2.3-2-4.3-4.5-4.3s-4.5 2-4.5 4.3v10.5c0 5.6 4.5 10 10 10h1c5.5 0 10-4.4 10-10V15"/>
+          <rect x="9" y="24" width="17" height="15" rx="7.5"/>
+        </g>
+
+        <!-- Running shoe -->
+        <g transform="translate(200 20) rotate(-6)">
+          <path d="M4 20h32l5 7H8l-4-7z"/>
+          <path d="M11 20v-5c0-3.5 2.5-7 7-7h9"/>
+          <line x1="16" y1="27" x2="16" y2="20"/>
+          <line x1="23" y1="27" x2="23" y2="20"/>
+        </g>
+
+        <!-- Stopwatch -->
+        <g transform="translate(288 30) rotate(12)">
+          <circle cx="15" cy="17" r="13.5"/>
+          <path d="M15 8v9l6 3.5"/>
+          <line x1="11.5" y1="1.5" x2="18.5" y2="1.5"/>
+          <line x1="15" y1="1.5" x2="15" y2="5"/>
+        </g>
+
+        <!-- Barbell -->
+        <g transform="translate(20 100) rotate(4)">
+          <rect x="0" y="13" width="7" height="20" rx="2"/>
+          <rect x="52" y="13" width="7" height="20" rx="2"/>
+          <line x1="7" y1="23" x2="52" y2="23"/>
+          <rect x="12" y="17" width="5" height="12" rx="1.2"/>
+          <rect x="42" y="17" width="5" height="12" rx="1.2"/>
+        </g>
+
+        <!-- Heart rate pulse -->
+        <g transform="translate(130 110) rotate(-6)">
+          <polyline points="0,20 9,20 13,8 18,32 23,13 28,20 40,20"/>
+        </g>
+
+        <!-- Water bottle -->
+        <g transform="translate(230 96) rotate(8)">
+          <rect x="8" y="11" width="14" height="27" rx="4.5"/>
+          <rect x="10" y="4" width="10" height="7" rx="2"/>
+          <line x1="10" y1="20" x2="20" y2="20"/>
+        </g>
+
+        <!-- Trophy -->
+        <g transform="translate(300 108) rotate(-8)">
+          <path d="M9 6h18v9c0 6.5-4 11-9 11s-9-4.5-9-11V6z"/>
+          <path d="M13 26h10v4H13z"/>
+          <line x1="11" y1="30" x2="25" y2="30"/>
+          <path d="M4 8H2c0 4.5 2.5 6.5 5 6.5"/>
+          <path d="M32 8h2c0 4.5-2.5 6.5-5 6.5"/>
+        </g>
+
+        <!-- Jump rope -->
+        <g transform="translate(24 190) rotate(-16)">
+          <path d="M4 4c9 11 9 24 0 35"/>
+          <rect x="1" y="0.5" width="7" height="11" rx="2.5"/>
+          <rect x="1" y="32" width="7" height="11" rx="2.5"/>
+        </g>
+
+        <!-- Weight plate -->
+        <g transform="translate(100 190) rotate(6)">
+          <circle cx="17" cy="17" r="15.5"/>
+          <circle cx="17" cy="17" r="5.5"/>
+          <line x1="17" y1="1.5" x2="17" y2="8"/>
+          <line x1="17" y1="26" x2="17" y2="32.5"/>
+          <line x1="1.5" y1="17" x2="8" y2="17"/>
+          <line x1="26" y1="17" x2="32.5" y2="17"/>
+        </g>
+
+        <!-- Flexed arm -->
+        <g transform="translate(190 185) rotate(6)">
+          <path d="M6 28c7-2.5 12-9 12-16 0-3.5-2.5-6-5-6s-5 2.5-5 6c0 4.5 2.5 9 7 11.5"/>
+          <path d="M18 12c4.5 0 9 4.5 9 11.5v9"/>
+          <circle cx="27" cy="33" r="4.5"/>
+        </g>
+
+        <!-- Protein shaker -->
+        <g transform="translate(272 182) rotate(-6)">
+          <path d="M11 6h14l-2.5 33H13.5L11 6z"/>
+          <line x1="9" y1="13" x2="27" y2="13"/>
+          <line x1="10" y1="22" x2="26" y2="22"/>
+        </g>
+
+        <!-- Bicycle wheel -->
+        <g transform="translate(30 270) rotate(-10)">
+          <circle cx="18" cy="18" r="15.5"/>
+          <circle cx="18" cy="18" r="3.5"/>
+          <line x1="18" y1="2.5" x2="18" y2="33.5"/>
+          <line x1="2.5" y1="18" x2="33.5" y2="18"/>
+          <line x1="7.5" y1="7.5" x2="28.5" y2="28.5"/>
+          <line x1="28.5" y1="7.5" x2="7.5" y2="28.5"/>
+        </g>
+
+        <!-- Medal -->
+        <g transform="translate(120 280) rotate(-5)">
+          <circle cx="14" cy="19" r="10.5"/>
+          <path d="M9 4l5 7 5-7"/>
+          <path d="M7 4l-2.5 9.5"/>
+          <path d="M21 4l2.5 9.5"/>
+        </g>
+
+        <!-- Apple -->
+        <g transform="translate(196 278) rotate(-4)">
+          <path d="M16 9c-4.5 0-9 3.5-9 10.5s4.5 12.5 9 12.5 9-5.7 9-12.5S20.5 9 16 9z"/>
+          <path d="M16 4.5c1.2-2.3 3.5-3.5 5.8-2.3"/>
+          <line x1="16" y1="4.5" x2="16" y2="9"/>
+        </g>
+
+        <!-- Timer / clock -->
+        <g transform="translate(270 268) rotate(-10)">
+          <rect x="4" y="9" width="28" height="21" rx="4.5"/>
+          <line x1="11" y1="4.5" x2="11" y2="9"/>
+          <line x1="25" y1="4.5" x2="25" y2="9"/>
+          <line x1="13" y1="19.5" x2="23" y2="19.5"/>
+        </g>
+      </g>
+
+      <!-- Gold ambient accent doodles -->
+      <g stroke="#fdc915" stroke-opacity="0.12" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <g transform="translate(70 60) rotate(18)">
+          <rect x="0" y="7" width="7" height="14" rx="2"/>
+          <rect x="30" y="7" width="7" height="14" rx="2"/>
+          <line x1="7" y1="14" x2="30" y2="14"/>
+        </g>
+        <g transform="translate(240 150) rotate(-14)">
+          <polyline points="0,15 8,15 11,6 16,24 20,11 25,15 32,15"/>
+        </g>
+        <g transform="translate(70 320) rotate(10)">
+          <circle cx="11" cy="13" r="10"/>
+          <path d="M11 6.5v6.5l4.5 2.5"/>
+        </g>
+        <g transform="translate(320 40) rotate(-8)">
+          <path d="M9 4c-3 0-6 2.3-6 7s3 8.3 6 8.3 6-3.8 6-8.3-3-7-6-7z"/>
+        </g>
+      </g>
+
+      <!-- Faint filled dots for extra depth (subtle bokeh/gym-light feel) -->
+      <g fill="#fdc915" fill-opacity="0.05">
+        <circle cx="60" cy="150" r="2.5"/>
+        <circle cx="250" cy="60" r="2"/>
+        <circle cx="330" cy="230" r="2.5"/>
+        <circle cx="160" cy="330" r="2"/>
+        <circle cx="10" cy="330" r="2"/>
+      </g>
+    </pattern>
+  </defs>
+  <rect width="360" height="360" fill="url(#fitness-doodles)"/>
+</svg>

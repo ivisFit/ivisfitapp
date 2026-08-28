@@ -1,0 +1,245 @@
+/* Espaciado móvil unificado para toda la app alumna (≤520px). */
+
+@media (max-width: 520px) {
+  .app-content:has(.alumna-rutina),
+  .app-content:has(.alumna-pliegues-view),
+  .app-content:has(.alumna-seguimiento-view),
+  .app-content:has(.alumna-alimentacion-view),
+  .app-content:has(.progreso-page),
+  .app-content:has(.circunferencias-page),
+  .app-content:has(.alimentacion-page) {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .app-content:has(.alumna-pliegues-view) .feature-card,
+  .app-content:has(.alumna-seguimiento-view) .feature-card,
+  .app-content:has(.alumna-alimentacion-view) .feature-card,
+  .app-content:has(.progreso-page) .feature-card,
+  .app-content:has(.circunferencias-page) .feature-card,
+  .app-content:has(.alimentacion-page) .feature-card {
+    padding: 0.75rem;
+    margin-top: 0.65rem;
+  }
+
+  .app-content .feature-card.gamif-widget--collapsible {
+    padding: 0;
+    margin-top: 0;
+  }
+
+  .app-content:has(.circunferencias-page) .pliegues-form-card,
+  .app-content:has(.circunferencias-page) .pliegues-chart,
+  .app-content:has(.circunferencias-page) .pliegues-history-table {
+    padding: 1rem;
+    margin-top: 0;
+  }
+
+  /* Títulos móvil alumna */
+  .pliegues-hero__copy h1,
+  .seguimiento-hero__copy h1 {
+    font-size: 1.35rem;
+    line-height: 1.1;
+    margin-bottom: 0.45rem;
+  }
+
+  .circunferencias-page > h1 {
+    font-size: 1.35rem;
+    line-height: 1.1;
+  }
+
+  .app-content .page-transition > h1 {
+    font-size: 1.25rem;
+  }
+
+  .pliegues-form-card h2,
+  .pliegues-chart h2,
+  .pliegues-history-table h2,
+  .progreso-chart__header h2,
+  .seguimiento-timeline__header h2,
+  .progreso-circunferencias-cta h2 {
+    font-size: 1rem;
+  }
+
+  /* Pliegues */
+  .alumna-pliegues-body {
+    gap: 0.55rem;
+    padding-left: 0;
+    padding-right: 0;
+    padding-bottom: 2rem;
+  }
+
+  .pliegues-chart,
+  .pliegues-history-table,
+  .pliegues-form-card,
+  .pliegues-settings-card {
+    padding: 0.7rem;
+  }
+
+  .circunferencias-page .pliegues-chart,
+  .circunferencias-page .pliegues-history-table,
+  .circunferencias-page .pliegues-form-card {
+    padding: 1rem;
+  }
+
+  .pliegues-settings-card {
+    gap: 0.55rem;
+    padding: 0.7rem;
+  }
+
+  .pliegues-hero {
+    gap: 0.65rem;
+    padding: 0.85rem;
+  }
+
+  .pliegues-hero__top {
+    gap: 0.65rem;
+  }
+
+  .pliegues-summary {
+    gap: 0.45rem;
+  }
+
+  .skinfold-form {
+    gap: 0.55rem;
+  }
+
+  /* Seguimiento */
+  .alumna-seguimiento-body {
+    gap: 0.55rem;
+    padding-left: 0;
+    padding-right: 0;
+    padding-bottom: 2rem;
+  }
+
+  .seguimiento-hero {
+    gap: 0.65rem;
+    padding: 0.85rem;
+  }
+
+  .seguimiento-timeline {
+    gap: 0.55rem;
+  }
+
+  .seguimiento-timeline__list {
+    gap: 0.5rem;
+  }
+
+  .seguimiento-day__summary {
+    padding: 0.7rem;
+  }
+
+  .seguimiento-day__body {
+    padding: 0 0.7rem 0.7rem;
+  }
+
+  .seguimiento-day-row:not(:first-child) .seguimiento-day__rail::before {
+    top: -0.5rem;
+  }
+
+  .seguimiento-exercises {
+    gap: 0.45rem;
+  }
+
+  .seguimiento-exercises__item {
+    padding: 0.65rem 0.7rem;
+    gap: 0.25rem 0.5rem;
+  }
+
+  /* Progreso */
+  .progreso-page.page {
+    gap: 0.65rem;
+  }
+
+  .progreso-page__charts {
+    gap: 0.5rem;
+  }
+
+  .progreso-chart.feature-card {
+    gap: 0.55rem;
+    padding: 0.75rem;
+  }
+
+  /* Circunferencias — más aire interno; menos marco apretado */
+  .circunferencias-page .alumna-pliegues-body {
+    gap: 0.75rem;
+    padding-bottom: 2.5rem;
+  }
+
+  .circunferencias-page .pliegues-hero {
+    gap: 0.75rem;
+    padding: 1.05rem 1.1rem;
+  }
+
+  .circunferencias-page .pliegues-hero__copy h1 {
+    margin-bottom: 0.45rem;
+  }
+
+  .circunferencias-page .pliegues-hero__copy p {
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+
+  .circunferencias-page .pliegues-layout {
+    gap: 0.75rem;
+  }
+
+  .circunferencias-page .pliegues-layout__row {
+    gap: 0.75rem;
+  }
+
+  .circunferencias-page .pliegues-layout__row > .pliegues-form-card,
+  .circunferencias-page .pliegues-layout__row > .pliegues-chart {
+    height: auto;
+  }
+
+  .circunferencias-page .pliegues-form-card h2,
+  .circunferencias-page .pliegues-chart h2,
+  .circunferencias-page .pliegues-history-table h2 {
+    margin-bottom: 0.75rem;
+  }
+
+  .circunferencias-page .skinfold-form {
+    gap: 0.9rem;
+  }
+
+  .circunferencias-page .skinfold-form__grid {
+    gap: 0.8rem;
+  }
+
+  .circunferencias-page .field {
+    gap: 0.45rem;
+  }
+
+  .circunferencias-page .field__label {
+    font-size: 0.82rem;
+  }
+
+  .circunferencias-page .field__input,
+  .circunferencias-page .field__textarea {
+    min-height: 2.75rem;
+    padding: 0.7rem 0.85rem;
+    font-size: 1rem;
+  }
+
+  .circunferencias-page .field__textarea {
+    min-height: 5.5rem;
+  }
+
+  .circunferencias-page .skinfold-form__actions {
+    margin-top: 0.15rem;
+  }
+
+  .circunferencias-page .skinfold-form__actions .btn {
+    width: 100%;
+    min-height: 2.75rem;
+  }
+
+  .circunferencias-page .pliegues-chart__canvas {
+    min-height: 220px;
+    margin-top: 0.35rem;
+  }
+
+  .circunferencias-page .pliegues-history-table__wrap {
+    overflow: visible;
+  }
+}

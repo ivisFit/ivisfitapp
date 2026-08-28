@@ -1,0 +1,689 @@
+/* Gamificación — página /logros, widgets y toasts */
+
+/* Widget compacto (Rutina / Progreso) */
+.gamif-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.gamif-widget--collapsible {
+  gap: 0;
+  margin-top: 0;
+  padding: 0;
+  overflow: hidden;
+  border-color: rgb(253 201 21 / 16%);
+  background:
+    linear-gradient(
+      180deg,
+      rgb(255 255 255 / 5%) 0%,
+      rgb(255 255 255 / 3%) 100%
+    );
+  box-shadow:
+    0 4px 18px rgb(0 0 0 / 18%),
+    inset 0 1px 0 rgb(255 255 255 / 6%);
+}
+
+@media (max-width: 767px) {
+  .app-content:has(.page-transition > .gamif-widget--collapsible:first-child) {
+    padding-top: max(0.35rem, env(safe-area-inset-top));
+  }
+}
+
+.gamif-widget__toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  min-height: 2.375rem;
+  padding: 0.45rem 0.75rem;
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s ease;
+}
+
+.gamif-widget__toggle:hover {
+  background: rgb(255 255 255 / 4%);
+}
+
+.gamif-widget__toggle:focus-visible {
+  outline: 2px solid var(--color-yellow);
+  outline-offset: -2px;
+}
+
+.gamif-widget__level-pill {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 2rem;
+  height: 1.75rem;
+  padding: 0 0.35rem;
+  border: 1px solid rgb(253 201 21 / 22%);
+  border-radius: 999px;
+  background: rgb(253 201 21 / 8%);
+  line-height: 1;
+}
+
+.gamif-widget__level-pill-value {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-yellow);
+}
+
+.gamif-widget__level-pill-label {
+  font-size: 0.5rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(253 201 21 / 72%);
+}
+
+.gamif-widget__summary-xp {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.gamif-widget__summary-xp-bar {
+  height: 0.1875rem;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 10%);
+  overflow: hidden;
+}
+
+.gamif-widget__summary-xp-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--color-yellow), var(--color-gold, #fdc915));
+  transition: width 0.45s ease;
+}
+
+.gamif-widget__summary-xp-text {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--color-text-muted);
+}
+
+.gamif-widget__summary-stats {
+  display: none;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+}
+
+.gamif-widget__summary-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  white-space: nowrap;
+}
+
+.gamif-widget__summary-badges {
+  display: none;
+  align-items: center;
+  gap: 0.15rem;
+  flex-shrink: 0;
+}
+
+.gamif-widget__summary-badge {
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+.gamif-widget__summary-badge-more {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.gamif-widget__chevron {
+  flex-shrink: 0;
+  color: rgb(255 255 255 / 42%);
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.gamif-widget__chevron--open {
+  transform: rotate(180deg);
+  color: var(--color-yellow);
+}
+
+.gamif-widget__details {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.gamif-widget--expanded .gamif-widget__details {
+  grid-template-rows: 1fr;
+}
+
+.gamif-widget__details-inner {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0 0.75rem 0.75rem;
+  border-top: 1px solid rgb(255 255 255 / 6%);
+  opacity: 0;
+  transform: translateY(-0.25rem);
+  transition:
+    opacity 0.28s ease,
+    transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.gamif-widget--expanded .gamif-widget__details-inner {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (min-width: 380px) {
+  .gamif-widget__summary-stats {
+    display: inline-flex;
+  }
+}
+
+@media (min-width: 420px) {
+  .gamif-widget__summary-badges {
+    display: inline-flex;
+  }
+}
+
+.gamif-widget__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.gamif-widget__eyebrow {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.gamif-widget__link {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--color-gold, #fdc915);
+}
+
+.gamif-widget__link:hover {
+  text-decoration: underline;
+}
+
+.gamif-widget__body {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.gamif-widget__level {
+  display: grid;
+  place-items: center;
+  gap: 0.125rem;
+  min-width: 4rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--glass-border-amber);
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg-elevated);
+}
+
+.gamif-widget__level-number {
+  font-family: var(--font-rutina, inherit);
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-yellow);
+}
+
+.gamif-widget__level-label {
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.gamif-widget__xp {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.gamif-widget__xp-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.gamif-widget__xp-bar,
+.gamif-level-card__bar {
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--glass-bg-elevated);
+  overflow: hidden;
+}
+
+.gamif-widget__xp-bar-fill,
+.gamif-level-card__bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-yellow), var(--color-gold, #fdc915));
+  transition: width 0.5s ease;
+}
+
+.gamif-widget__stats {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.gamif-widget__stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.gamif-widget__badges {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  padding-top: 0.625rem;
+  border-top: 1px solid var(--glass-border);
+}
+
+.gamif-widget__badge {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.gamif-widget__badge-more {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.gamif-widget__badges-empty {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.gamif-widget__skeleton {
+  height: 7rem;
+  border-radius: var(--radius-md);
+  background: var(--glass-bg-elevated);
+  animation: gamif-pulse 1.4s ease-in-out infinite;
+}
+
+.gamif-widget__skeleton--thin {
+  height: 2.375rem;
+  margin: 0;
+  border-radius: 0;
+}
+
+/* Página /logros */
+.logros-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.gamif-loading {
+  height: 14rem;
+  animation: gamif-pulse 1.4s ease-in-out infinite;
+}
+
+.gamif-error {
+  display: grid;
+  justify-items: start;
+  gap: 0.35rem;
+  border-color: rgb(248 113 113 / 35%);
+}
+
+.gamif-error p {
+  margin: 0;
+  color: var(--color-error);
+}
+
+.gamif-level-card {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.25rem;
+}
+
+.gamif-level-card__level {
+  display: grid;
+  place-items: center;
+  gap: 0.125rem;
+  min-width: 5.5rem;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--glass-border-amber);
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg-elevated);
+}
+
+.gamif-level-card__number {
+  font-family: var(--font-rutina, inherit);
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-yellow);
+}
+
+.gamif-level-card__label {
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.gamif-level-card__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.gamif-level-card__xp-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.gamif-level-card__bar {
+  height: 0.625rem;
+}
+
+.gamif-level-card__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.gamif-level-card__stats span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.gamif-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.gamif-section__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.gamif-section__header h2 {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-heading);
+}
+
+.gamif-section__count {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.gamif-empty {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.gamif-badges-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: 0.75rem;
+}
+
+.gamif-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glass-shadow-float);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
+}
+
+.gamif-badge--locked {
+  opacity: 0.62;
+  filter: grayscale(0.6);
+  border-style: dashed;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.gamif-level-card__bar-fill {
+  transition: width 0.5s ease;
+}
+
+/* Brillo al completar la barra de XP */
+.gamif-level-card__bar-fill[style*="100%"],
+.gamif-widget__xp-bar-fill[style*="100%"] {
+  box-shadow: var(--glow-amber);
+}
+
+.gamif-badge__icon {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.gamif-badge__info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.gamif-badge__name {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.gamif-badge--locked .gamif-badge__name {
+  color: var(--color-text-muted);
+}
+
+.gamif-badge__desc {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.gamif-badge__date {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--color-gold, #fdc915);
+}
+
+.gamif-activity {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.gamif-activity__item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0.875rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+}
+
+.gamif-activity__icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.gamif-activity__desc {
+  flex: 1;
+  font-size: 0.875rem;
+  color: var(--color-text);
+}
+
+.gamif-activity__xp {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-yellow);
+}
+
+.gamif-activity__date {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+/* Toasts */
+.gamif-toasts {
+  position: fixed;
+  z-index: 60;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: min(20rem, calc(100vw - 2rem));
+  pointer-events: none;
+}
+
+.gamif-toast {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  background: var(--glass-bg-solid-elevated);
+  border: 1px solid var(--glass-border-amber);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glass-shadow-float), var(--glow-amber);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
+  animation: gamif-toast-in 0.25s ease-out;
+}
+
+.gamif-toast__icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.gamif-toast__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.gamif-toast__title {
+  font-weight: 600;
+  color: var(--color-yellow);
+}
+
+.gamif-toast__detail {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+@keyframes gamif-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@keyframes gamif-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 40rem) {
+  .gamif-level-card {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .gamif-level-card__level {
+    margin: 0 auto;
+  }
+
+  .gamif-level-card__xp-row {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .gamif-level-card__stats {
+    justify-content: center;
+  }
+
+  .gamif-badges-grid {
+    grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gamif-widget__skeleton,
+  .gamif-loading,
+  .gamif-toast {
+    animation: none;
+  }
+
+  .gamif-widget__details,
+  .gamif-widget__details-inner,
+  .gamif-widget__chevron,
+  .gamif-widget__summary-xp-fill,
+  .gamif-widget__xp-bar-fill,
+  .gamif-level-card__bar-fill {
+    transition: none;
+  }
+
+  .gamif-widget--expanded .gamif-widget__details-inner {
+    transform: none;
+  }
+}

@@ -1,0 +1,230 @@
+.reunion-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  margin: 0 0 0.85rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  background: rgb(255 255 255 / 3%);
+}
+
+.reunion-banner--today {
+  border-color: var(--gold-a35);
+  background: linear-gradient(135deg, var(--gold-a15), rgb(255 255 255 / 4%));
+}
+
+.reunion-banner--upcoming {
+  border-color: var(--glass-border);
+}
+
+.reunion-banner__content {
+  min-width: 0;
+}
+
+.reunion-banner__eyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.reunion-banner__title {
+  margin: 0.15rem 0 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.reunion-banner__meta {
+  margin: 0.2rem 0 0;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+.reunion-banner__cta,
+.reunion-banner__link {
+  flex-shrink: 0;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--gold-a35);
+  background: var(--gold-a15);
+  color: var(--color-yellow);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.reunion-banner__link {
+  background: transparent;
+  color: var(--color-text-muted);
+  border-color: var(--glass-border);
+}
+
+.reunion-page {
+  display: grid;
+  gap: 1rem;
+}
+
+.reunion-page__header {
+  padding-bottom: 0.35rem;
+}
+
+.reunion-page__header h1 {
+  margin: 0.25rem 0 0;
+}
+
+.reunion-page__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.reunion-page__header--today .reunion-page__eyebrow {
+  color: var(--color-yellow);
+}
+
+.reunion-page__today-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--gold-a35);
+  background: var(--gold-a10);
+  color: var(--color-yellow);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  animation: reunion-chip-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes reunion-chip-pulse {
+  0%,
+  100% {
+    box-shadow: none;
+  }
+  50% {
+    box-shadow: var(--glow-amber);
+  }
+}
+
+.reunion-page__datetime {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.5rem 0 0;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: capitalize;
+}
+
+.reunion-page__datetime svg {
+  flex-shrink: 0;
+  color: var(--color-yellow);
+}
+
+.reunion-page__card {
+  padding: 1.25rem;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--glass-border-amber);
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 3%), transparent 60%),
+    var(--glass-bg-elevated);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  box-shadow: 0 12px 32px rgb(0 0 0 / 22%);
+}
+
+.reunion-page__card h2 {
+  margin: 0 0 0.6rem;
+  font-size: 1rem;
+  color: var(--color-heading);
+}
+
+.reunion-page__card--empty,
+.reunion-page__card--error {
+  display: grid;
+  justify-items: start;
+  gap: 0.35rem;
+}
+
+.reunion-page__card--empty h2 {
+  margin: 0;
+}
+
+.reunion-page__card--empty p,
+.reunion-page__card--error p {
+  margin: 0 0 0.5rem;
+  color: var(--color-text-muted);
+}
+
+.reunion-page__empty-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: 0.25rem;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--glass-border-amber);
+  background: var(--gold-a10);
+  color: var(--color-yellow);
+}
+
+.reunion-page__card--error p {
+  color: var(--color-error);
+}
+
+.reunion-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.reunion-page__meet-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  box-shadow: var(--glow-amber);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.reunion-page__meet-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--glow-amber), var(--glow-amber-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reunion-page__today-chip {
+    animation: none;
+  }
+
+  .reunion-page__meet-btn,
+  .reunion-page__meet-btn:hover:not(:disabled) {
+    transform: none;
+    transition: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .reunion-banner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .reunion-banner__cta,
+  .reunion-banner__link {
+    text-align: center;
+  }
+}

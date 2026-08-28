@@ -1,0 +1,13 @@
+﻿{
+    "permission":  {
+                       "edit":  {
+                                    "*":  "deny",
+                                    "apps/frontend-app/**":  "allow",
+                                    "C:\\Users\\Gaston\\.local\\share\\opencode\\plans\\*.md":  "allow",
+                                    ".opencode\\plans\\*.md":  "allow",
+                                    "apps/backend-api/**":  "allow",
+                                    "packages/**":  "allow"
+                                }
+                   },
+    "$schema":  "https://opencode.ai/config.json"
+}

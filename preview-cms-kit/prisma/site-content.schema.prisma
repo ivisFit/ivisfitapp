@@ -1,0 +1,10 @@
+/// Modelo SiteContent para el Preview CMS.
+/// Copiá este bloque a tu schema.prisma y ejecutá la migración.
+model SiteContent {
+  locale      String   @id
+  /// Overrides parciales del diccionario de contenido (JSON por sección).
+  data        Json     @default("{}")
+  version     Int      @default(1)
+  updatedById String?
+  updatedAt   DateTime @updatedAt
+}

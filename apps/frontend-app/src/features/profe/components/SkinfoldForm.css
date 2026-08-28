@@ -1,0 +1,57 @@
+.skinfold-form-section h2 {
+  color: var(--color-gold, #fdc915);
+  margin: 0 0 0.25rem;
+}
+
+.skinfold-form-section > p {
+  color: var(--color-text-muted);
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+}
+
+.skinfold-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+}
+
+.skinfold-form__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .skinfold-form__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.skinfold-form__unit {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+.skinfold-form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.skinfold-form__success {
+  color: var(--color-gold, #fdc915);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.skinfold-form__hint {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}

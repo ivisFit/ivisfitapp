@@ -1,0 +1,343 @@
+/* Mensajes alumna — chat full-page con la coach */
+
+.mensajes-chat-page {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: calc(
+    var(--bottom-nav-height) + var(--bottom-nav-inset-bottom) +
+      env(safe-area-inset-bottom)
+  );
+  left: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #14110f 0%, #14110f 50%, #090708 100%);
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .mensajes-chat-page {
+    top: 0;
+    bottom: 0;
+    left: var(--sidebar-width);
+    right: 0;
+  }
+}
+
+.mensajes-chat-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: calc(0.85rem + env(safe-area-inset-top, 0px)) 1rem 0.85rem;
+  background: rgb(20 17 15 / 82%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgb(255 255 255 / 8%);
+  flex-shrink: 0;
+}
+
+.mensajes-chat-page__header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.mensajes-chat-page__avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #fff;
+  border: 2px solid rgb(253 201 21 / 35%);
+  flex-shrink: 0;
+}
+
+.mensajes-chat-page__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 18%;
+  transform: scale(1.15);
+  display: block;
+}
+
+.mensajes-chat-page__title {
+  margin: 0;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.mensajes-chat-page__subtitle {
+  margin: 0.15rem 0 0;
+  color: rgb(255 255 255 / 55%);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.mensajes-thread--chat {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.mensajes-thread--chat .mensajes-thread__list {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1rem 0.875rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.mensajes-thread--chat .mensajes-thread__empty,
+.mensajes-thread--chat .mensajes-thread__loading {
+  margin: auto;
+  max-width: 16rem;
+  text-align: center;
+  color: rgb(255 255 255 / 55%);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.mensajes-chat-message {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  max-width: 100%;
+}
+
+.mensajes-chat-message--mine {
+  justify-content: flex-end;
+}
+
+.mensajes-chat-message--theirs {
+  justify-content: flex-start;
+}
+
+.mensajes-chat-message__avatar {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #fff;
+  border: 1.5px solid rgb(253 201 21 / 30%);
+}
+
+.mensajes-chat-message__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 18%;
+  transform: scale(1.15);
+  display: block;
+}
+
+.mensajes-chat-message__bubble {
+  max-width: min(82%, 22rem);
+  padding: 0.625rem 0.8rem;
+  border-radius: var(--radius-xl);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.mensajes-chat-message--theirs .mensajes-chat-message__bubble {
+  background: var(--glass-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-bottom-left-radius: 6px;
+}
+
+.mensajes-chat-message--mine .mensajes-chat-message__bubble {
+  background: var(--color-yellow-muted);
+  color: var(--color-text);
+  border: 1px solid var(--glass-border-amber);
+  border-bottom-right-radius: 6px;
+}
+
+.mensajes-chat-message__sender {
+  display: block;
+  margin-bottom: 0.2rem;
+  color: var(--color-yellow);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.mensajes-chat-message__bubble p {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.mensajes-chat-message__bubble time {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.65rem;
+  color: var(--color-text-muted);
+  text-align: right;
+}
+
+.mensajes-thread--chat .mensajes-thread__error {
+  margin: 0 0.875rem 0.5rem;
+  padding: 0.625rem 0.875rem;
+  border-radius: var(--radius-md);
+  background: rgb(248 113 113 / 10%);
+  border: 1px solid rgb(248 113 113 / 25%);
+  color: #fca5a5;
+  font-size: 0.78rem;
+}
+
+.mensajes-thread--chat .mensajes-thread__composer {
+  flex-shrink: 0;
+  padding: 0.75rem 0.875rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  background: rgb(20 17 15 / 88%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-top: 1px solid rgb(255 255 255 / 8%);
+}
+
+.mensajes-thread--chat .mensajes-thread__composer-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.mensajes-thread--chat .mensajes-thread__composer-input-wrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  padding: 0.45rem 0.45rem 0.45rem 0.875rem;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 6%);
+  border: 1px solid rgb(255 255 255 / 12%);
+}
+
+.mensajes-thread--chat .mensajes-thread__composer-input-wrap:focus-within {
+  border-color: rgb(253 201 21 / 35%);
+  box-shadow: 0 0 0 1px rgb(253 201 21 / 12%);
+}
+
+.mensajes-thread--chat .mensajes-thread__composer textarea {
+  flex: 1;
+  min-width: 0;
+  min-height: 1.5rem;
+  max-height: 6rem;
+  padding: 0.25rem 0;
+  border: 0;
+  background: transparent;
+  color: #f5f1ea;
+  font: inherit;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  resize: none;
+  field-sizing: content;
+}
+
+.mensajes-thread--chat .mensajes-thread__composer textarea::placeholder {
+  color: rgb(255 255 255 / 38%);
+}
+
+.mensajes-thread--chat .mensajes-thread__composer textarea:focus,
+.mensajes-thread--chat .mensajes-thread__composer textarea:focus-visible {
+  outline: none;
+}
+
+.mensajes-thread__composer-submit {
+  width: 2.375rem;
+  height: 2.375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-yellow) 0%, #e8b020 100%);
+  color: #14110f;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.mensajes-thread__composer-submit svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.mensajes-thread__composer-submit:hover:not(:disabled) {
+  transform: scale(1.06);
+}
+
+.mensajes-thread__composer-submit:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.mensajes-thread__composer-submit:focus-visible {
+  outline: 2px solid var(--color-yellow);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mensajes-thread__composer-submit {
+    transition: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .app-shell--alumna .mensajes-chat-page {
+    top: calc(var(--alumna-topbar-height) + var(--sidebar-inset));
+    right: var(--sidebar-inset);
+    bottom: var(--sidebar-inset);
+    left: var(--sidebar-width);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--glass-border-amber);
+  }
+
+  .app-shell--alumna[data-color-scheme="light"] .mensajes-chat-page {
+    background: linear-gradient(180deg, #fffdf8 0%, #f4efe6 100%);
+  }
+
+  .app-shell--alumna[data-color-scheme="light"] .mensajes-chat-page__header {
+    background: rgb(255 255 255 / 78%);
+    border-bottom-color: rgb(28 23 18 / 10%);
+  }
+
+  .app-shell--alumna[data-color-scheme="light"] .mensajes-chat-page__title {
+    color: #1c1814;
+    font-family: var(--font-display), Georgia, serif;
+  }
+
+  .app-shell--alumna[data-color-scheme="light"] .mensajes-chat-page__subtitle,
+  .app-shell--alumna[data-color-scheme="light"] .mensajes-thread--chat .mensajes-thread__empty,
+  .app-shell--alumna[data-color-scheme="light"] .mensajes-thread--chat .mensajes-thread__loading {
+    color: #5c5348;
+  }
+
+  .app-shell--alumna[data-color-scheme="light"] .mensajes-thread--chat .mensajes-thread__composer-input-wrap {
+    background: #fff;
+    border-color: rgb(28 23 18 / 12%);
+  }
+
+  .app-shell--alumna[data-color-scheme="light"] .mensajes-thread--chat .mensajes-thread__composer textarea {
+    color: #1c1814;
+  }
+}

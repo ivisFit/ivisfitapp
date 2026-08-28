@@ -1,0 +1,32 @@
+.link {
+  position: relative;
+  text-decoration: none;
+  font-size: 1.2rem;
+  color: black;
+  display:flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px 0; /* Espacio para el subrayado */
+}
+
+.link::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  bottom: 0; /* Cambiado de -4px a 0 */
+  left: 0;
+  background-color: #FDC915;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.3s ease;
+}
+
+.link:hover {
+  color: #FDC915;
+}
+
+.link:hover::after {
+  transform: scaleX(1);
+}

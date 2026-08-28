@@ -1,0 +1,729 @@
+/* Profe panel pages — rhythm without outer feature-card wrappers */
+
+.catalogo-page,
+.web-admin-page,
+.alumnas-page,
+.planes-profe-page,
+.planes-landing-page {
+  display: grid;
+  gap: 1rem;
+}
+
+.catalogo-page .page__actions,
+.web-admin-page .page__actions,
+.alumnas-page .page__actions,
+.planes-landing-page .page__actions {
+  margin-bottom: 0;
+}
+
+.catalogo-page .page__actions > div {
+  min-width: 0;
+}
+
+.catalogo-page .page__actions h1 {
+  margin: 0 0 0.35rem;
+  font-size: clamp(1.5rem, 2vw, 1.875rem);
+  color: var(--color-gold, #fdc915);
+}
+
+.catalogo-page .page__actions p {
+  margin: 0;
+  max-width: 34rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+.catalogo-page .alumnas-panel__status {
+  margin: 0;
+  padding: 1.5rem 1rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  border: 1px dashed var(--glass-border);
+  border-radius: var(--radius-md);
+  background: rgb(255 255 255 / 2%);
+}
+
+/* Surfaces compartidas del catálogo */
+
+.ejercicio-form-card,
+.alimento-form-card,
+.ejercicios-list-card,
+.alimentos-list-card {
+  display: grid;
+  gap: 1rem;
+  padding: 1.1rem 1.15rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    var(--glass-shadow-float),
+    inset 0 1px 0 rgb(255 255 255 / 5%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
+}
+
+.alimento-form-card h2,
+.ejercicio-form-card h2,
+.planes-landing-form-card h2 {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1rem, 1.5vw, 1.15rem);
+  font-weight: 600;
+  color: rgb(225 170 67 / 95%);
+}
+
+.alimentos-list-card__header,
+.ejercicios-list-card__header,
+.planes-landing-list-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.alimentos-list-card__header h2,
+.ejercicios-list-card__header h2,
+.planes-landing-list-card__header h2 {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--color-heading);
+}
+
+.alimentos-list-card__header span,
+.ejercicios-list-card__header span,
+.planes-landing-list-card__header span {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.ejercicios-list-card {
+  gap: 0;
+}
+
+.ejercicios-list-card .ejercicios-list-card__header,
+.alimentos-list-card .alimentos-list-card__header {
+  margin-bottom: 0;
+  padding-bottom: 0.85rem;
+}
+
+.ejercicios-list-card__header span,
+.alimentos-list-card__header span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: var(--color-gold);
+  background: rgb(253 201 21 / 10%);
+  border: 1px solid rgb(253 201 21 / 20%);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* Ventanita única del catálogo: el panel es el contenedor, sin sub-cards */
+
+.catalogo-page .profe-tabbed-content__panel {
+  display: grid;
+  gap: 1.25rem;
+  padding: 1.1rem 1.15rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    var(--glass-shadow-float),
+    inset 0 1px 0 rgb(255 255 255 / 5%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
+}
+
+.catalogo-page .profe-tabbed-content__panel[hidden] {
+  display: none;
+}
+
+.catalogo-page .pagination {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin-top: 1rem;
+  padding: 0.9rem 0 0.25rem;
+  background: linear-gradient(
+    180deg,
+    rgb(20 18 16 / 0%) 0%,
+    rgb(20 18 16 / 92%) 28%,
+    rgb(20 18 16 / 98%) 100%
+  );
+}
+
+.catalogo-page .profe-embedded-page .ejercicio-form-card,
+.catalogo-page .profe-embedded-page .alimento-form-card,
+.catalogo-page .profe-embedded-page .ejercicios-list-card,
+.catalogo-page .profe-embedded-page .alimentos-list-card {
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.catalogo-page .profe-embedded-page .ejercicios-list-card,
+.catalogo-page .profe-embedded-page .alimentos-list-card {
+  gap: 1rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--glass-border);
+}
+
+@media (min-width: 768px) {
+  .catalogo-page .profe-tabbed-content__panel {
+    padding: 1.35rem 1.4rem 1.5rem;
+    background: var(--glass-bg);
+    border-top: none;
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+  }
+}
+
+.leads-chatbot-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+/* Alumna detail — moved to alumna-detail.css */
+
+.rutina-builder {
+  margin-top: 0;
+}
+
+.planes-profe-page {
+  display: grid;
+  gap: 1rem;
+}
+
+.gestion-alimentacion-workspace,
+.composicion-corporal-card,
+.plan-nutricional-builder__section {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.composicion-corporal-card h4,
+.nutricion-chat-panel h4 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-yellow);
+}
+
+/* Banco de ejercicios y tutoriales (catálogo) */
+
+.ejercicio-form {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.ejercicio-form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.ejercicio-form__checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.ejercicios-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.ejercicio-item {
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  background: rgb(255 255 255 / 2%);
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.ejercicio-item:hover {
+  border-color: var(--glass-border-amber);
+  background: rgb(255 255 255 / 4%);
+  box-shadow: 0 0 0 1px rgb(253 201 21 / 6%);
+}
+
+.ejercicio-item__body {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.ejercicio-item__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.ejercicio-item__content h3 {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.ejercicio-item__descripcion,
+.tutorial-meta {
+  margin: 0.3rem 0 0;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.ejercicio-item__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.ejercicio-item__actions .btn {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8125rem;
+}
+
+.ejercicio-video {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #000;
+  border: 1px solid var(--glass-border);
+}
+
+.ejercicio-video iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+.tutorial-badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgb(248 113 113 / 90%);
+  background: rgb(248 113 113 / 10%);
+  border: 1px solid rgb(248 113 113 / 25%);
+  border-radius: 999px;
+}
+
+.tutorial-sortable-hint {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.tutorial-sortable-list .tutorial-sortable-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.65rem;
+  align-items: start;
+  cursor: default;
+}
+
+.tutorial-sortable-item__toolbar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding-top: 0.15rem;
+}
+
+.tutorial-sortable-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  padding: 0;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  background: rgb(255 255 255 / 3%);
+  color: var(--color-text-muted);
+  cursor: grab;
+  touch-action: none;
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    color 180ms ease;
+}
+
+.tutorial-sortable-handle:hover:not(:disabled) {
+  border-color: var(--glass-border-amber);
+  background: rgb(253 201 21 / 8%);
+  color: var(--color-yellow);
+}
+
+.tutorial-sortable-handle:active:not(:disabled) {
+  cursor: grabbing;
+}
+
+.tutorial-sortable-handle:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.tutorial-sortable-handle:focus-visible {
+  outline: 2px solid var(--color-yellow);
+  outline-offset: 2px;
+}
+
+.tutorial-sortable-item__position {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  padding: 0.1rem 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-yellow);
+  background: rgb(253 201 21 / 10%);
+  border: 1px solid rgb(253 201 21 / 22%);
+  border-radius: 999px;
+}
+
+.tutorial-sortable-item.is-dragging {
+  opacity: 0.72;
+  box-shadow: 0 10px 28px rgb(0 0 0 / 28%);
+  border-color: var(--glass-border-amber);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tutorial-sortable-item {
+    transition: none;
+  }
+}
+
+@media (min-width: 640px) {
+  .ejercicio-item__body {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+    align-items: start;
+  }
+}
+
+@media (max-width: 480px) {
+  .catalogo-page .profe-tabbed-content__panel {
+    padding: 0.95rem 0.9rem;
+  }
+}
+
+/* Agenda de reuniones */
+
+.agenda-layout {
+  display: grid;
+  gap: 1rem;
+}
+
+.agenda-layout__detail {
+  display: grid;
+  gap: 1rem;
+}
+
+.agenda-calendario {
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  background: rgb(255 255 255 / 2%);
+}
+
+.agenda-calendario__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.agenda-calendario__title {
+  margin: 0;
+  font-size: 1.05rem;
+  text-transform: capitalize;
+}
+
+.agenda-calendario__nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  background: rgb(255 255 255 / 3%);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.agenda-calendario__nav:hover {
+  border-color: var(--glass-border-amber);
+  color: var(--color-yellow);
+}
+
+.agenda-calendario__weekdays,
+.agenda-calendario__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
+.agenda-calendario__weekdays {
+  margin-bottom: 0.35rem;
+}
+
+.agenda-calendario__weekday {
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.agenda-calendario__day {
+  min-height: 5.5rem;
+  padding: 0.45rem;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  background: rgb(255 255 255 / 2%);
+  color: var(--color-text);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.agenda-calendario__day:hover {
+  border-color: var(--glass-border-amber);
+}
+
+.agenda-calendario__day.is-outside {
+  opacity: 0.45;
+}
+
+.agenda-calendario__day.has-events {
+  border-color: rgb(253 201 21 / 28%);
+}
+
+.agenda-calendario__day.is-selected {
+  border-color: var(--color-yellow);
+  box-shadow: 0 0 0 1px rgb(253 201 21 / 18%);
+}
+
+.agenda-calendario__day.is-today .agenda-calendario__day-number {
+  color: var(--color-yellow);
+}
+
+.agenda-calendario__day-number {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.agenda-calendario__events {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.agenda-calendario__chip,
+.agenda-calendario__more {
+  display: block;
+  font-size: 0.62rem;
+  line-height: 1.25;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.agenda-dia-detalle,
+.agenda-form-card {
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  background: rgb(255 255 255 / 2%);
+}
+
+.agenda-dia-detalle__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.agenda-dia-detalle__header h3,
+.agenda-form-card h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.agenda-dia-detalle__date {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  text-transform: capitalize;
+}
+
+.agenda-dia-detalle__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.agenda-dia-detalle__item {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  background: rgb(255 255 255 / 2%);
+}
+
+.agenda-dia-detalle__time {
+  margin: 0 0 0.2rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-yellow);
+}
+
+.agenda-dia-detalle__item h4 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.agenda-dia-detalle__alumna,
+.agenda-dia-detalle__descripcion {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.agenda-dia-detalle__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.agenda-reunion-form__row {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.agenda-reunion-form__alumna {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+@media (min-width: 900px) {
+  .agenda-layout {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.9fr);
+    align-items: start;
+  }
+
+  .agenda-reunion-form__row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .agenda-calendario__day {
+    min-height: 3.5rem;
+  }
+
+  .agenda-calendario__chip,
+  .agenda-calendario__more {
+    display: none;
+  }
+
+  .agenda-dia-detalle__item {
+    flex-direction: column;
+  }
+}
+
+.agenda-dia-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgb(0 0 0 / 72%);
+  backdrop-filter: blur(6px);
+}
+
+.agenda-dia-modal {
+  position: relative;
+  width: min(100%, 36rem);
+  max-height: min(88vh, 44rem);
+  overflow: auto;
+  padding: 1rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-border);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-card);
+}
+
+.agenda-dia-modal .agenda-dia-detalle {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.agenda-dia-modal__close {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.65rem;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 4%);
+  color: var(--color-text-muted);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.agenda-dia-modal__close:hover {
+  border-color: var(--glass-border-amber);
+  color: var(--color-yellow);
+}

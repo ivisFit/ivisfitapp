@@ -1,0 +1,250 @@
+/* Health Changes Review - Mobile First */
+
+.health-review {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: health-review-in 0.25s ease-out;
+}
+
+@keyframes health-review-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.health-review__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 60%);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.health-review__panel {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
+  background: var(--color-black);
+  border: 1px solid var(--glass-border-amber);
+  border-bottom: none;
+  box-shadow: var(--glass-shadow-float);
+  animation: health-review-panel-in 0.3s ease-out;
+}
+
+@keyframes health-review-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.health-review__header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--glass-border);
+  background: var(--color-black);
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
+}
+
+.health-review__title {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-heading);
+}
+
+.health-review__subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.health-review__close {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  color: var(--color-text);
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.health-review__close:hover:not(:disabled) {
+  background: rgb(255 255 255 / 8%);
+}
+
+.health-review__close:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.health-review__error {
+  margin: 0 1.25rem 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid rgb(248 113 113 / 35%);
+  background: rgb(248 113 113 / 12%);
+  color: var(--color-error);
+  font-size: 0.85rem;
+}
+
+.health-review__list {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1.25rem;
+}
+
+.health-review__item {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg-elevated);
+  border: 1px solid var(--glass-border);
+}
+
+.health-review__field-info {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.health-review__icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.health-review__field-label {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.health-review__values {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.health-review__value-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.health-review__value-label {
+  flex-shrink: 0;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  min-width: 70px;
+}
+
+.health-review__value {
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+  color: var(--color-text);
+}
+
+.health-review__value--proposed {
+  color: var(--color-yellow);
+  font-weight: 500;
+}
+
+.health-review__requested {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+}
+
+.health-review__actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.health-review__btn-approve,
+.health-review__btn-reject {
+  flex: 1;
+  min-width: 0;
+}
+
+.health-review__footer {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--glass-border);
+  background: var(--color-black);
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+}
+
+.health-review__btn-reject-all,
+.health-review__btn-approve-all {
+  flex: 1;
+}
+
+@media (min-width: 768px) {
+  .health-review {
+    align-items: center;
+  }
+
+  .health-review__panel {
+    max-height: 85vh;
+    border-radius: var(--radius-card);
+    border-bottom: 1px solid var(--glass-border-amber);
+  }
+
+  .health-review__header {
+    border-radius: var(--radius-card) var(--radius-card) 0 0;
+  }
+
+  .health-review__footer {
+    border-radius: 0 0 var(--radius-card) var(--radius-card);
+  }
+
+  .health-review__item {
+    grid-template-columns: 1fr auto;
+    align-items: start;
+  }
+
+  .health-review__actions {
+    flex-direction: column;
+    min-width: 120px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .health-review,
+  .health-review__panel {
+    animation: none;
+  }
+}

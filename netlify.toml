@@ -1,0 +1,9 @@
+[build]
+  command = "npm ci --include=dev && npx turbo run build --filter=@ivisfit/frontend-app"
+  publish = "apps/frontend-app/.next"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

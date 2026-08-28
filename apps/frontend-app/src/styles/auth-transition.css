@@ -1,0 +1,61 @@
+.auth-transition-content {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.auth-transition-stage {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  perspective: 1400px;
+}
+
+.auth-transition-stage--active {
+  min-height: min(100dvh, 100vh);
+  align-items: center;
+}
+
+.auth-transition-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.auth-transition-flip {
+  position: relative;
+  z-index: 2;
+  width: min(100%, 56rem);
+  display: grid;
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: none;
+}
+
+.auth-transition-face {
+  grid-area: 1 / 1;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.auth-transition-face--front {
+  position: relative;
+  z-index: 2;
+}
+
+.auth-transition-face--back {
+  transform: rotateY(180deg);
+}
+
+.auth-transition-stage--active .auth-card:not(.auth-card--register) {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-transition-flip {
+    transform: none !important;
+  }
+}

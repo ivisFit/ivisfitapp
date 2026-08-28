@@ -1,0 +1,123 @@
+.pwa-install-help {
+  position: fixed;
+  inset: 0;
+  z-index: 1400;
+  display: grid;
+  place-items: end center;
+  padding: 1.25rem;
+  padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
+}
+
+.pwa-install-help__backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background: rgb(0 0 0 / 72%);
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+}
+
+.pwa-install-help__dialog {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 24rem);
+  padding: 1.5rem 1.35rem 1.25rem;
+  background: var(--color-surface-elevated, var(--glass-bg-solid));
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.pwa-install-help__close {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.65rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin: 0;
+  padding: 0;
+  color: var(--color-text-muted);
+  font-size: 1.5rem;
+  line-height: 1;
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.pwa-install-help__close:hover {
+  color: var(--color-text);
+  background: rgb(255 255 255 / 8%);
+}
+
+.pwa-install-help__close:focus-visible {
+  outline: 2px solid var(--color-yellow);
+  outline-offset: 2px;
+}
+
+.pwa-install-help__title {
+  margin: 0 2rem 0.4rem 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.pwa-install-help__lead {
+  margin: 0 0 1rem;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+.pwa-install-help__warn {
+  margin: -0.35rem 0 1rem;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--color-gold-muted);
+}
+
+.pwa-install-help__steps {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0 0 1.15rem;
+  padding: 0;
+  list-style: none;
+}
+
+.pwa-install-help__steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  color: var(--color-text);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.pwa-install-help__step-icon,
+.pwa-install-help__step-num {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 1.85rem;
+  height: 1.85rem;
+  color: var(--color-gold);
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: rgb(253 201 21 / 12%);
+  border: 1px solid rgb(253 201 21 / 28%);
+  border-radius: 0.55rem;
+}
+
+.pwa-install-help__actions .btn {
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .pwa-install-help {
+    place-items: center;
+  }
+}

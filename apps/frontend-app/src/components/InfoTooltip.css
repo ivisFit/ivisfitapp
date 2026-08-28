@@ -1,0 +1,86 @@
+.info-tooltip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: 0 0 auto;
+}
+
+.info-tooltip__trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border-amber, rgb(253 201 21 / 22%));
+  background: transparent;
+  color: var(--color-gold, #fdc915);
+  cursor: help;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.info-tooltip__trigger:hover {
+  border-color: var(--color-gold, #fdc915);
+  background: var(--color-gold-muted, rgb(225 170 67 / 15%));
+  color: #fff;
+}
+
+.info-tooltip__trigger:focus-visible {
+  outline: 2px solid var(--color-yellow, #fdc915);
+  outline-offset: 1px;
+}
+
+.info-tooltip__bubble {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  width: max-content;
+  max-width: 16rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: var(--radius-md, 0.5rem);
+  background: var(--glass-bg-solid-elevated, rgb(26 21 16 / 94%));
+  border: 1px solid var(--glass-border-amber, rgb(253 201 21 / 22%));
+  box-shadow: var(--glass-shadow-float, 0 8px 32px rgb(0 0 0 / 28%));
+  color: rgb(255 255 255 / 92%);
+  font-size: 0.78rem;
+  font-weight: 400;
+  line-height: 1.45;
+  text-align: left;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 40;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease,
+    visibility 0.18s;
+}
+
+.info-tooltip__bubble::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 9px;
+  height: 9px;
+  background: var(--glass-bg-solid-elevated, rgb(26 21 16 / 94%));
+  border-left: 1px solid var(--glass-border-amber, rgb(253 201 21 / 22%));
+  border-top: 1px solid var(--glass-border-amber, rgb(253 201 21 / 22%));
+}
+
+.info-tooltip:hover .info-tooltip__bubble,
+.info-tooltip:focus-within .info-tooltip__bubble {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}

@@ -1,0 +1,377 @@
+/* Shell dedicado — evaluación nutricional (tema oscuro de marca, sin AppShell) */
+
+.evaluacion-nutricional-shell {
+  --eval-paper: #090708;
+  --eval-text: #faf8f5;
+  --eval-text-muted: #b0a79b;
+  --eval-surface: rgb(255 255 255 / 6%);
+  --eval-border: rgb(255 255 255 / 12%);
+  --eval-shadow-soft: 0 10px 30px rgb(0 0 0 / 35%);
+  --eval-gold-readable: #fdc915;
+  --eval-gold-strong: #fdc915;
+  --nutricion-wizard-max: 720px;
+  --nutricion-wizard-nav-height: 4.75rem;
+
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: clip;
+  color-scheme: dark;
+  background: var(--eval-paper);
+  color: var(--eval-text);
+}
+
+.evaluacion-nutricional-shell__inner {
+  width: 100%;
+  max-width: var(--nutricion-wizard-max);
+  margin: 0 auto;
+  padding: 1.25rem 1.25rem 0;
+}
+
+.evaluacion-nutricional-shell__status {
+  margin: 2rem 0;
+  color: var(--eval-text-muted);
+  text-align: center;
+}
+
+/* Wizard dentro del shell */
+.evaluacion-nutricional-shell .nutricion-wizard {
+  max-width: 100%;
+  margin: 0;
+  padding: 0 0 calc(var(--nutricion-wizard-nav-height) + 1.25rem);
+}
+
+.evaluacion-nutricional-shell .nutricion-wizard__eyebrow {
+  color: var(--eval-gold-strong);
+}
+
+.evaluacion-nutricional-shell .nutricion-wizard__hero h1 {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1.3rem, 5vw, 1.75rem);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--eval-text);
+}
+
+.evaluacion-nutricional-shell .nutricion-wizard__hero p,
+.evaluacion-nutricional-shell .nutricion-wizard__step-subtitle,
+.evaluacion-nutricional-shell .nutricion-fieldset__hint {
+  color: var(--eval-text-muted);
+}
+
+.evaluacion-nutricional-shell .nutricion-wizard__step-title {
+  color: var(--eval-gold-readable);
+}
+
+.evaluacion-nutricional-shell .nutricion-wizard__progress-sticky {
+  margin: 0 -1.25rem 0.75rem;
+  padding: 0.75rem 1.25rem;
+  background: linear-gradient(
+    180deg,
+    var(--eval-paper) 0%,
+    rgb(9 7 8 / 92%) 80%,
+    rgb(9 7 8 / 0%) 100%
+  );
+}
+
+.evaluacion-nutricional-shell .nutricion-wizard__progress-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.15rem 0.35rem;
+  color: var(--eval-text-muted);
+  font-size: 0.75rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.evaluacion-nutricional-shell .nutricion-wizard__progress-section--short {
+  display: none;
+}
+
+.evaluacion-nutricional-shell .nutricion-wizard__progress-track {
+  background: rgb(255 255 255 / 10%);
+}
+
+.evaluacion-nutricional-shell .nutricion-wizard__step-dot {
+  background: rgb(255 255 255 / 12%);
+}
+
+.evaluacion-nutricional-shell .nutricion-wizard__question-title {
+  max-width: 100%;
+  color: var(--eval-gold-readable);
+}
+
+.evaluacion-nutricional-shell .nutricion-wizard__question-title--with-help {
+  flex-wrap: wrap;
+  justify-content: center;
+  text-align: center;
+}
+
+.evaluacion-nutricional-shell .nutricion-wizard__content {
+  min-width: 0;
+}
+
+.evaluacion-nutricional-shell .nutricion-wizard__hero--compact h1 {
+  color: var(--eval-text);
+}
+
+.evaluacion-nutricional-shell .nutricion-wizard__card {
+  padding: 1.25rem;
+  background: var(--eval-surface);
+  border: 1px solid var(--eval-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--eval-shadow-soft);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.evaluacion-nutricional-shell .field__label,
+.evaluacion-nutricional-shell .nutricion-fieldset__legend {
+  color: var(--eval-text-muted);
+}
+
+.evaluacion-nutricional-shell .field__input,
+.evaluacion-nutricional-shell select.field__input {
+  background: var(--eval-surface);
+  color: var(--eval-text);
+  border-color: var(--eval-border);
+  color-scheme: dark;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.evaluacion-nutricional-shell .field__input:focus,
+.evaluacion-nutricional-shell select.field__input:focus {
+  border-color: rgb(253 201 21 / 55%);
+  box-shadow: 0 0 0 2px rgb(253 201 21 / 18%);
+}
+
+.evaluacion-nutricional-shell select.field__input option {
+  background-color: #14110f;
+  color: var(--eval-text);
+}
+
+.evaluacion-nutricional-shell .btn--ghost {
+  background: var(--eval-surface);
+  color: var(--eval-gold-readable);
+  border-color: rgb(253 201 21 / 35%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.evaluacion-nutricional-shell .auth-error {
+  color: #c24141;
+}
+
+.evaluacion-nutricional-shell .nutricion-selection-card {
+  background: var(--eval-surface);
+  border-color: var(--eval-border);
+}
+
+.evaluacion-nutricional-shell .nutricion-selection-card:hover {
+  border-color: rgb(253 201 21 / 40%);
+  background: rgb(255 255 255 / 9%);
+}
+
+.evaluacion-nutricional-shell .nutricion-selection-card--active {
+  border-color: rgb(253 201 21 / 55%);
+  background: var(--color-yellow-muted);
+  box-shadow: 0 8px 24px rgb(199 152 10 / 12%);
+}
+
+.evaluacion-nutricional-shell .nutricion-selection-card__icon {
+  background: rgb(255 255 255 / 8%);
+  color: var(--eval-gold-readable);
+}
+
+.evaluacion-nutricional-shell .nutricion-selection-card__label {
+  color: var(--eval-text);
+}
+
+.evaluacion-nutricional-shell .nutricion-selection-card__description {
+  color: var(--eval-text-muted);
+}
+
+.evaluacion-nutricional-shell .nutricion-chip {
+  background: var(--eval-surface);
+  color: var(--eval-text-muted);
+  border-color: rgb(253 201 21 / 22%);
+}
+
+.evaluacion-nutricional-shell .nutricion-chip:hover {
+  color: var(--eval-text);
+  border-color: rgb(253 201 21 / 40%);
+}
+
+.evaluacion-nutricional-shell .nutricion-chip--active {
+  background: var(--color-yellow-muted);
+  color: var(--eval-gold-readable);
+  border-color: rgb(253 201 21 / 55%);
+}
+
+.evaluacion-nutricional-shell .nutricion-tag-input__control {
+  background: var(--eval-surface);
+  border-color: var(--eval-border);
+}
+
+.evaluacion-nutricional-shell .nutricion-tag-input__field {
+  color: var(--eval-text);
+}
+
+.evaluacion-nutricional-shell .nutricion-tag-input__suggestions {
+  background: #14110f;
+  border-color: var(--eval-border);
+  box-shadow: var(--eval-shadow-soft);
+}
+
+.evaluacion-nutricional-shell .nutricion-tag-input__suggestion {
+  color: var(--eval-text);
+}
+
+.evaluacion-nutricional-shell .nutricion-tag {
+  color: var(--eval-gold-readable);
+}
+
+.evaluacion-nutricional-shell .nutricion-resumen__block {
+  background: rgb(255 255 255 / 4%);
+  border-color: var(--eval-border);
+}
+
+.evaluacion-nutricional-shell .nutricion-resumen__header h3 {
+  color: var(--eval-gold-readable);
+}
+
+.evaluacion-nutricional-shell .nutricion-resumen__edit {
+  color: var(--eval-gold-strong);
+}
+
+.evaluacion-nutricional-shell .nutricion-resumen__row dt {
+  color: var(--eval-text-muted);
+}
+
+.evaluacion-nutricional-shell .nutricion-resumen__row dd {
+  color: var(--eval-text);
+}
+
+/* Nav sin bottom nav de la app */
+.evaluacion-nutricional-shell .nutricion-wizard__nav {
+  bottom: 0;
+  padding: 0.85rem 1.25rem;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: none;
+  box-shadow: none;
+}
+
+@media (min-width: 768px) {
+  .evaluacion-nutricional-shell__inner {
+    padding: 2rem 1.5rem 0;
+  }
+
+  .evaluacion-nutricional-shell .nutricion-wizard {
+    padding-bottom: calc(var(--nutricion-wizard-nav-height) + 2rem);
+  }
+
+  .evaluacion-nutricional-shell .nutricion-wizard__progress-label {
+    flex-direction: row;
+    font-size: 0.82rem;
+  }
+
+  .evaluacion-nutricional-shell .nutricion-wizard__progress-count::after {
+    content: " —";
+  }
+
+  .evaluacion-nutricional-shell .nutricion-wizard__question {
+    min-height: min(50vh, 420px);
+  }
+
+  .evaluacion-nutricional-shell .nutricion-wizard__question-control--wide {
+    max-width: 100%;
+  }
+
+  .evaluacion-nutricional-shell .nutricion-wizard__nav {
+    left: 50%;
+    right: auto;
+    bottom: 1.25rem;
+    width: min(720px, calc(100% - 3rem));
+    transform: translateX(-50%);
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .evaluacion-nutricional-shell__inner {
+    padding: max(1rem, env(safe-area-inset-top)) 1rem 0;
+  }
+
+  .evaluacion-nutricional-shell .nutricion-wizard {
+    padding-bottom: calc(
+      var(--nutricion-wizard-nav-height) + env(safe-area-inset-bottom) + 1.25rem
+    );
+  }
+
+  .evaluacion-nutricional-shell .nutricion-wizard__progress-sticky {
+    top: env(safe-area-inset-top, 0);
+    margin-inline: -1rem;
+    padding-inline: 1rem;
+  }
+
+  .evaluacion-nutricional-shell .nutricion-wizard__progress-label {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+  }
+
+  .evaluacion-nutricional-shell .nutricion-wizard__question {
+    align-items: stretch;
+    justify-content: flex-start;
+    min-height: auto;
+    padding: 0.25rem 0 0.5rem;
+  }
+
+  .evaluacion-nutricional-shell .nutricion-wizard__question--resumen {
+    padding-top: 0.25rem;
+  }
+
+  .evaluacion-nutricional-shell .nutricion-wizard__nav {
+    padding: 0.85rem 1rem calc(0.85rem + env(safe-area-inset-bottom));
+    background: linear-gradient(
+      0deg,
+      var(--eval-paper) 0%,
+      rgb(9 7 8 / 92%) 80%,
+      rgb(9 7 8 / 0%) 100%
+    );
+  }
+
+  .evaluacion-nutricional-shell .nutricion-wizard__nav .btn--ghost {
+    flex: 0 1 auto;
+    min-width: 0;
+    padding-inline: 0.75rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .evaluacion-nutricional-shell .nutricion-resumen__row {
+    grid-template-columns: 1fr;
+    gap: 0.15rem;
+  }
+}
+
+@media (max-width: 359px) {
+  .evaluacion-nutricional-shell .nutricion-wizard__progress-section {
+    display: none;
+  }
+
+  .evaluacion-nutricional-shell .nutricion-wizard__progress-section--short {
+    display: inline;
+  }
+}
