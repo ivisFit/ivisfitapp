@@ -7,23 +7,27 @@ import { syncUsuarioAfterCreate } from "./hooks/sync-usuario.js";
 
 const APP_NAME = "IVIS Fit";
 
+function parseOriginList(value: string | undefined): string[] {
+  if (!value) return [];
+
+  return value
+    .split(",")
+    .map((origin) => origin.trim().replace(/\/$/, ""))
+    .filter(Boolean);
+}
+
 function collectTrustedOrigins(
   frontendUrl: string | undefined,
   baseURL: string,
 ): string[] {
   const candidates = [
-    frontendUrl,
-    baseURL,
-    ...(process.env.TRUSTED_ORIGINS?.split(",")
-      .map((origin) => origin.trim())
-      .filter(Boolean) ?? []),
+    ...parseOriginList(frontendUrl),
+    ...parseOriginList(baseURL),
+    ...parseOriginList(process.env.TRUSTED_ORIGINS),
+    ...parseOriginList(process.env.CORS_ALLOWED_ORIGINS),
   ];
 
-  return [
-    ...new Set(
-      candidates.filter((origin): origin is string => Boolean(origin)),
-    ),
-  ];
+  return [...new Set(candidates)];
 }
 
 export function getTrustedOrigins(): string[] {

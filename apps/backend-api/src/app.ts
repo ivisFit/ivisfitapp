@@ -21,7 +21,7 @@ export function createApp() {
           callback(null, true);
           return;
         }
-        callback(new Error(`Origin not allowed: ${origin}`));
+        callback(null, false);
       },
       credentials: true,
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],

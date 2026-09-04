@@ -7,7 +7,7 @@ function parseOriginList(value: string | undefined): string[] {
     ...new Set(
       value
         .split(",")
-        .map((origin) => origin.trim())
+        .map((origin) => origin.trim().replace(/\/$/, ""))
         .filter(Boolean),
     ),
   ];
@@ -15,16 +15,13 @@ function parseOriginList(value: string | undefined): string[] {
 
 /**
  * Orígenes permitidos para el middleware CORS de Express.
- *
- * - Si `CORS_ALLOWED_ORIGINS` está definida, solo esos orígenes son válidos.
- * - Si no, usa `FRONTEND_URL`, `BETTER_AUTH_URL` y `TRUSTED_ORIGINS`.
+ * Une la lista explícita con FRONTEND_URL / BETTER_AUTH_URL / TRUSTED_ORIGINS.
  */
 export function getCorsAllowedOrigins(): string[] {
-  const explicitOrigins = parseOriginList(process.env.CORS_ALLOWED_ORIGINS);
-
-  if (explicitOrigins.length > 0) {
-    return explicitOrigins;
-  }
-
-  return getTrustedOrigins();
+  return [
+    ...new Set([
+      ...parseOriginList(process.env.CORS_ALLOWED_ORIGINS),
+      ...getTrustedOrigins(),
+    ]),
+  ];
 }
