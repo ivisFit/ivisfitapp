@@ -1,13 +1,13 @@
 import 'server-only';
 
 import { unstable_cache } from 'next/cache';
-import { cmsConfig } from "@/config/cms.config";
+import { cmsSharedConfig } from "@/config/cms.config.shared";
 import type { SiteContentResponseDto } from '../types/site-content';
 import { prisma } from './prisma';
 
 function emptyResponse(): SiteContentResponseDto {
   const result = {} as SiteContentResponseDto;
-  for (const locale of cmsConfig.locales) {
+  for (const locale of cmsSharedConfig.locales) {
     result[locale as keyof SiteContentResponseDto] = {
       data: {},
       version: 0,
@@ -20,13 +20,13 @@ function emptyResponse(): SiteContentResponseDto {
 async function readSiteContentOverrides(): Promise<SiteContentResponseDto> {
   try {
     const rows = await prisma.siteContent.findMany({
-      where: { locale: { in: [...cmsConfig.locales] } },
+      where: { locale: { in: [...cmsSharedConfig.locales] } },
     });
     if (rows.length === 0) return emptyResponse();
 
     const result = emptyResponse();
     for (const row of rows) {
-      if (cmsConfig.locales.includes(row.locale)) {
+      if (cmsSharedConfig.locales.includes(row.locale)) {
         result[row.locale as keyof SiteContentResponseDto] = {
           data: (row.data as Record<string, unknown>) ?? {},
           version: row.version,
@@ -47,5 +47,5 @@ async function readSiteContentOverrides(): Promise<SiteContentResponseDto> {
 export const getSiteContentOverrides = unstable_cache(
   readSiteContentOverrides,
   ["site-content-overrides"],
-  { tags: [cmsConfig.revalidateTag], revalidate: 300 },
+  { tags: [cmsSharedConfig.revalidateTag], revalidate: 300 },
 );

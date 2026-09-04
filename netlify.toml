@@ -1,5 +1,5 @@
 [build]
-  command = "npm ci --include=dev && npx turbo run build --filter=@ivisfit/frontend-app"
+  command = "npm ci --include=dev && npx turbo run build --filter=@ivisfit/frontend-app --env-mode=loose"
   publish = "apps/frontend-app/.next"
 
 [build.environment]
