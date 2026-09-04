@@ -1496,6 +1496,27 @@ button.app-bottom-nav-more-sheet__item--button {
   --sidebar-active-gradient: rgb(225 170 67 / 18%);
 }
 
+:is(.app-shell--alumna, .app-shell--profe)[data-color-scheme="light"] .field__input,
+:is(.app-shell--alumna, .app-shell--profe)[data-color-scheme="light"] select.field__input,
+:is(.app-shell--alumna, .app-shell--profe)[data-color-scheme="light"] .field__textarea {
+  color-scheme: light;
+  background: var(--glass-bg-solid);
+  border-color: var(--glass-border);
+  color: var(--color-text);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+:is(.app-shell--alumna, .app-shell--profe)[data-color-scheme="light"] .field__input::placeholder,
+:is(.app-shell--alumna, .app-shell--profe)[data-color-scheme="light"] .field__textarea::placeholder {
+  color: var(--color-placeholder);
+}
+
+:is(.app-shell--alumna, .app-shell--profe)[data-color-scheme="light"] select.field__input option {
+  background-color: #fff;
+  color: var(--color-text);
+}
+
 .app-shell--profe[data-color-scheme="light"] {
   color: var(--color-text);
 }

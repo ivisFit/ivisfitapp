@@ -35,7 +35,6 @@ export const Presentacion = () => {
             alt="Ivis Fernández - Profesora de Educación Física"
             fill
             sizes="(max-width: 600px) 100vw, 50vw"
-            priority
           />
         </Box>
 
@@ -119,7 +118,6 @@ export const Presentacion = () => {
             alt="Ivis Fernández - Profesora de Educación Física"
             fill
             sizes="100vw"
-            priority
           />
         </Box>
 

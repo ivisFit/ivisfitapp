@@ -1,5 +1,6 @@
 @import "./tokens.css";
 @import "./glass.css";
+@import "../components/Input.css";
 @import "./auth.css";
 @import "./register-stepper.css";
 @import "./auth-transition.css";

@@ -3,15 +3,15 @@
 import { Box } from "@mui/material";
 import dynamic from "next/dynamic";
 import { useEffect, useRef } from "react";
-import Scrollbar from "smooth-scrollbar";
+import type Scrollbar from "smooth-scrollbar";
 import type { Plan } from "@/features/landing/data/plans";
 import { Navbar } from "@/features/landing/components/Navbar";
 import { VideoFondo } from "@/features/landing/components/VideoFondo";
 import { ButtonArrow } from "@/features/landing/components/Buttons/ButtonArrow";
-import { Presentacion } from "@/features/landing/components/Presentacion";
 import { ButtonPresentationTransparent } from "@/features/landing/components/Buttons/ButtonPresentationTransparent";
 import { HeroAppPromo } from "@/features/landing/components/HeroAppPromo";
 import { ButtonArrowOscuro } from "@/features/landing/components/Buttons/ButtonArrowOscuro";
+import { LazyMount } from "@/features/landing/components/LazyMount";
 import { HomeText } from "@/features/landing/cms/HomeCmsFields";
 import { useContent } from "@/lib/preview-cms/lib/content-edit/useContent";
 import { useEditOptional } from "@/lib/preview-cms/lib/content-edit/EditProvider";
@@ -78,6 +78,10 @@ const SliderScroll = dynamic(
 );
 const Footer = dynamic(
   () => import("@/features/landing/components/Footer").then((mod) => mod.Footer),
+  { ssr: false },
+);
+const Presentacion = dynamic(
+  () => import("@/features/landing/components/Presentacion").then((mod) => mod.Presentacion),
   { ssr: false },
 );
 
@@ -160,39 +164,47 @@ export function LandingHomePage({ plans, previewSection }: LandingHomePageProps)
 
     if (!scrollContainerRef.current) return;
 
-    try {
-      const scrollbar = Scrollbar.init(scrollContainerRef.current, {
-        damping: 0.05,
-        thumbMinSize: 20,
-        renderByPixels: true,
+    let cancelled = false;
+
+    const handleAnchorClick = (e: MouseEvent) => {
+      const target = e.target instanceof Element ? e.target : null;
+      const link = target?.closest('a[href^="#"]');
+      if (link) {
+        e.preventDefault();
+        const href = link.getAttribute("href");
+        if (href) {
+          scrollToSection(href.substring(1));
+        }
+      }
+    };
+
+    void import("smooth-scrollbar")
+      .then((mod) => {
+        if (cancelled || !scrollContainerRef.current) return;
+        try {
+          const scrollbar = mod.default.init(scrollContainerRef.current, {
+            damping: 0.05,
+            thumbMinSize: 20,
+            renderByPixels: true,
+          });
+          scrollbarRef.current = scrollbar;
+          document.addEventListener("click", handleAnchorClick);
+        } catch (error) {
+          console.warn("Error initializing smooth-scrollbar:", error);
+        }
+      })
+      .catch((error) => {
+        console.warn("Error loading smooth-scrollbar:", error);
       });
 
-      scrollbarRef.current = scrollbar;
-
-      const handleAnchorClick = (e: MouseEvent) => {
-        const target = e.target instanceof Element ? e.target : null;
-        const link = target?.closest('a[href^="#"]');
-        if (link) {
-          e.preventDefault();
-          const href = link.getAttribute('href');
-          if (href) {
-            scrollToSection(href.substring(1));
-          }
-        }
-      };
-
-      document.addEventListener('click', handleAnchorClick);
-
-      return () => {
-        document.removeEventListener('click', handleAnchorClick);
-        if (scrollbarRef.current) {
-          scrollbarRef.current.destroy();
-        }
-      };
-    } catch (error) {
-      console.warn('Error initializing smooth-scrollbar:', error);
-      return undefined;
-    }
+    return () => {
+      cancelled = true;
+      document.removeEventListener("click", handleAnchorClick);
+      if (scrollbarRef.current) {
+        scrollbarRef.current.destroy();
+        scrollbarRef.current = null;
+      }
+    };
   }, [isPreview]);
 
   const scrollToSection = (sectionId: string) => {
@@ -437,23 +449,25 @@ export function LandingHomePage({ plans, previewSection }: LandingHomePageProps)
           
           <Box sx={{ position: "relative", zIndex: 2 }}>
             <Prices />
-            {onlinePlan ? <PlanTotal onlinePlan={onlinePlan} /> : null}
-            {onlinePlan ? <PlanTotal2 onlinePlan={onlinePlan} /> : null}
-            <Transformaciones />
-            <Transformaciones2 />
-            <Transformaciones3 />
-            <Separador textKey="transformacion" />
-            <Presentacion />
-            <IncluyenPlanes plans={plans} />
-            <NutricionAMedida /> 
-            <Testimonios />
-            <Separador textKey="camino" />
-            <EstoEsParaTi />
-            <PreguntasFrecuentes />
-            <Contacto />
-            <Contacto2 />
-            <SliderScroll />
-            <Footer />
+            <LazyMount eager={isPreview}>
+              {onlinePlan ? <PlanTotal onlinePlan={onlinePlan} /> : null}
+              {onlinePlan ? <PlanTotal2 onlinePlan={onlinePlan} /> : null}
+              <Transformaciones />
+              <Transformaciones2 />
+              <Transformaciones3 />
+              <Separador textKey="transformacion" />
+              <Presentacion />
+              <IncluyenPlanes plans={plans} />
+              <NutricionAMedida />
+              <Testimonios />
+              <Separador textKey="camino" />
+              <EstoEsParaTi />
+              <PreguntasFrecuentes />
+              <Contacto />
+              <Contacto2 />
+              <SliderScroll />
+              <Footer />
+            </LazyMount>
           </Box>
         </Box>
       </Box>

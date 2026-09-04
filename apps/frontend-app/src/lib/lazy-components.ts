@@ -22,5 +22,6 @@ export const heavyComponents = {
   AlumnaSeguimientoPage: lazyLoad(() => import("@/features/profe/pages/AlumnaSeguimientoPage").then((m) => ({ default: m.AlumnaSeguimientoPage }))),
   AlumnaPlieguesPage: lazyLoad(() => import("@/features/profe/pages/AlumnaPlieguesPage").then((m) => ({ default: m.AlumnaPlieguesPage }))),
   AlumnaDetailPage: lazyLoad(() => import("@/features/profe/pages/AlumnaDetailPage").then((m) => ({ default: m.AlumnaDetailPage }))),
+  PlanTemplateDetailPage: lazyLoad(() => import("@/features/profe/pages/PlanTemplateDetailPage").then((m) => ({ default: m.PlanTemplateDetailPage }))),
   AlumnaAlimentacionPage: lazyLoad(() => import("@/features/profe/pages/AlumnaAlimentacionPage").then((m) => ({ default: m.AlumnaAlimentacionPage }))),
 };

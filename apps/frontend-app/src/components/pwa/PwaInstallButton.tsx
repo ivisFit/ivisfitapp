@@ -88,12 +88,19 @@ export function PwaInstallButton({
     return (
       <button
         type="button"
-        className={["landing-auth-btn", "landing-auth-btn--login", "pwa-install-cta", className]
+        className={[
+          "landing-auth-btn",
+          "landing-auth-btn--login",
+          "pwa-install-cta",
+          "pwa-install-cta--icon",
+          className,
+        ]
           .filter(Boolean)
           .join(" ")}
         onClick={() => void handleClick()}
+        aria-label="Descargar la app"
       >
-        Descargar la app
+        <Download size={20} aria-hidden />
       </button>
     );
   }

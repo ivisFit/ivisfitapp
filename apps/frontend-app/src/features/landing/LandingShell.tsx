@@ -4,11 +4,7 @@ import type { ReactNode } from "react";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import { createTheme, ThemeProvider } from "@mui/material";
 import ScrollToTop from "@/features/landing/components/ScrollToTop";
-import { LandingReadyGate } from "@/features/landing/components/LandingReadyGate";
-import { WhatsAppButton } from "@/features/landing/components/Buttons/WhatsAppButton";
-import { ChatbotFab } from "@/features/landing/components/Chatbot/ChatbotFab";
-import { WHATSAPP_PHONE } from "@/features/landing/data/plans";
-import "@/features/landing/components/Chatbot/chatbot.css";
+import { DeferredLandingWidgets } from "@/features/landing/components/DeferredLandingWidgets";
 import "@/features/landing/styles/landing.css";
 
 declare module "@mui/material/styles" {
@@ -57,12 +53,7 @@ function LandingShellContent({
     <>
       <ScrollToTop />
       {children}
-      {!isPreview ? (
-        <>
-          <ChatbotFab />
-          <WhatsAppButton phoneNumber={WHATSAPP_PHONE} />
-        </>
-      ) : null}
+      {!isPreview ? <DeferredLandingWidgets /> : null}
     </>
   );
 }
@@ -73,13 +64,7 @@ export function LandingShell({ children, variant = "default" }: LandingShellProp
   return (
     <AppRouterCacheProvider>
       <ThemeProvider theme={landingTheme}>
-        {isPreview ? (
-          <LandingShellContent isPreview>{children}</LandingShellContent>
-        ) : (
-          <LandingReadyGate>
-            <LandingShellContent isPreview={false}>{children}</LandingShellContent>
-          </LandingReadyGate>
-        )}
+        <LandingShellContent isPreview={isPreview}>{children}</LandingShellContent>
       </ThemeProvider>
     </AppRouterCacheProvider>
   );

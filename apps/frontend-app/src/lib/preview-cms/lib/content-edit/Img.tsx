@@ -105,7 +105,7 @@ export function Img({
       sizes={sizes}
       priority={priority}
       unoptimized={isApiUpload}
-      loading={priority ? undefined : loading ?? 'eager'}
+      loading={priority ? undefined : loading ?? 'lazy'}
       onError={handleImageError}
     />
   ) : (

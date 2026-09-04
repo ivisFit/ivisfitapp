@@ -29,7 +29,6 @@ const PROFE_ROUTE_PREFIXES = [
   profeRoutes.agenda,
   profeRoutes.leadsChatbot,
   profeRoutes.animaciones,
-  profeRoutes.automatizaciones,
   sharedRoutes.ajustes,
 ] as const;
 

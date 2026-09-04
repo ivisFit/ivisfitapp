@@ -2598,7 +2598,7 @@
   max-width: 22rem;
   font-size: 0.8125rem;
   line-height: 1.4;
-  color: var(--color-muted);
+  color: var(--color-text-muted);
   text-align: right;
 }
 
@@ -2623,7 +2623,7 @@
 .plan-content-lab__header p {
   margin: 0.25rem 0 0;
   font-size: 0.875rem;
-  color: var(--color-muted, #6b7280);
+  color: var(--color-text-muted);
 }
 
 .plan-content-lab__tabs {
@@ -2716,7 +2716,7 @@
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--color-muted, #6b7280);
+  color: var(--color-text-muted);
 }
 
 .plan-content-lab__viewport {
@@ -2762,6 +2762,35 @@
   min-height: 100%;
   overflow: visible;
   font-family: var(--font-rutina), var(--font-sans), system-ui, sans-serif;
+}
+
+.app-shell--profe:not([data-color-scheme="light"]) .plan-content-lab__alumna-shell {
+  color-scheme: dark;
+  color: #faf8f5;
+  --color-black: #090708;
+  --color-text: #faf8f5;
+  --color-text-muted: #b0a79b;
+  --color-placeholder: rgb(250 248 245 / 45%);
+  --color-heading: #fdc915;
+  --color-gold: #e1aa43;
+  --color-gold-hover: #c7980a;
+  --color-gold-muted: rgb(225 170 67 / 72%);
+  --color-yellow: #fdc915;
+  --color-surface: rgb(255 255 255 / 6%);
+  --color-surface-elevated: rgb(255 255 255 / 10%);
+  --color-border: rgb(255 255 255 / 12%);
+  --bg-brand-deep: #090708;
+  --bg-brand-base: #14110f;
+  --glass-bg: rgb(255 255 255 / 6%);
+  --glass-bg-elevated: rgb(255 255 255 / 10%);
+  --glass-border: rgb(255 255 255 / 12%);
+  --glass-border-amber: rgb(253 201 21 / 22%);
+  --rutina-black: #090708;
+  --rutina-black-soft: #14110f;
+  --rutina-black-card: rgb(255 255 255 / 6%);
+  --rutina-yellow: #e1aa43;
+  --rutina-yellow-soft: #ffd84d;
+  --rutina-yellow-muted: rgb(225 170 67 / 18%);
 }
 
 .plan-content-lab__alumna-shell.alumna-rutina--experience {

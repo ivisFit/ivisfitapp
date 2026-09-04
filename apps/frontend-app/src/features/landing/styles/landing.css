@@ -1,11 +1,7 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=Archivo:ital,wght@0,100..900;1,100..900&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&display=swap');
 @import "./landing-ui.css";
 
 :root {
-  --font-display: "Anton", "Oswald", sans-serif;
-  --font-body: "Archivo", "Poppins", sans-serif;
-  --font-accent: "Cormorant Garamond", serif;
   --brand-gold: #e1aa43;
   --brand-gold-strong: #c7980a;
   --brand-gold-soft: #fdc915;

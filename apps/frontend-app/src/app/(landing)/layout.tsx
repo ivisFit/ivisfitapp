@@ -1,8 +1,11 @@
 import type { ReactNode } from "react";
 import { LandingShell } from "@/features/landing/LandingShell";
 import { LandingCmsWrapper } from "@/features/landing/cms/LandingCmsWrapper";
-import { fetchLandingPlans } from "@/features/landing/lib/landing-plans-api";
+import { landingFontClassName } from "@/features/landing/landing-fonts";
+import { fetchLandingPlans } from "@/features/landing/lib/fetch-landing-plans";
 import { getSiteContentOverrides } from "@/lib/preview-cms/lib/site-content-public";
+
+export const revalidate = 300;
 
 export const metadata = {
   title: "IVIS Fit | Entrenamiento y nutrición personalizada",
@@ -17,10 +20,12 @@ export default async function LandingLayout({ children }: { children: ReactNode 
   ]);
 
   return (
-    <LandingShell>
-      <LandingCmsWrapper plans={plans} overrides={overrides.es?.data ?? {}}>
-        {children}
-      </LandingCmsWrapper>
-    </LandingShell>
+    <div className={landingFontClassName}>
+      <LandingShell>
+        <LandingCmsWrapper plans={plans} overrides={overrides.es?.data ?? {}}>
+          {children}
+        </LandingCmsWrapper>
+      </LandingShell>
+    </div>
   );
 }

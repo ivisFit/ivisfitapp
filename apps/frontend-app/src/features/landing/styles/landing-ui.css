@@ -414,6 +414,22 @@ button.landing-auth-btn {
   color: var(--brand-gold-strong);
 }
 
+.pwa-install-cta--icon {
+  width: 2.75rem;
+  min-width: 2.75rem;
+  padding: 0;
+  border-radius: 999px;
+}
+
+.pwa-install-cta--icon svg {
+  flex-shrink: 0;
+}
+
+.landing-auth-btn--block.pwa-install-cta--icon {
+  width: 2.75rem;
+  margin-inline: auto;
+}
+
 .landing-auth-btn--register {
   color: var(--brand-dark);
   font-weight: 800;

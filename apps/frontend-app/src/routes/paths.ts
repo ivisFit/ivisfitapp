@@ -93,6 +93,10 @@ export function profeAlumnaDetailRoute(id: string) {
   return `/alumnas/${id}`;
 }
 
+export function profePlanTemplateDetailRoute(id: string) {
+  return `${profeRoutes.nuevaRutina}/${id}`;
+}
+
 export type AlumnaDetailTab =
   | "perfil"
   | "rutina"
@@ -124,6 +128,10 @@ export function profeAlumnaAlimentacionRoute(id: string) {
 
 export function isAlumnaDetailPath(pathname: string) {
   return /^\/alumnas\/[^/]+(\/(seguimiento|pliegues|alimentacion))?$/.test(pathname);
+}
+
+export function isPlanTemplateDetailPath(pathname: string) {
+  return /^\/rutinas\/[^/]+$/.test(pathname);
 }
 
 export function isAsistentePath(pathname: string) {

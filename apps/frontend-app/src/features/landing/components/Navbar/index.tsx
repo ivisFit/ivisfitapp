@@ -78,8 +78,9 @@ export const Navbar = () => {
           <Image
             src={logo}
             alt="IVIIS FIT — inicio"
-            width={3000}
-            height={3000}
+            width={320}
+            height={96}
+            sizes="10rem"
             priority
             style={{
               width: scrolled ? "7rem" : "10rem",

@@ -1,11 +1,22 @@
+import { profeRoutes } from "@/routes/paths";
+
 export function normalizePath(path: string) {
   if (!path || path === "/") return "/";
   return path.replace(/\/$/, "") || "/";
 }
 
-/** Coincidencia exacta con la URL actual. */
+/** Coincidencia exacta, o prefijo para el laboratorio de planes. */
 export function isNavLinkActive(pathname: string, href: string) {
-  return normalizePath(pathname) === normalizePath(href);
+  const current = normalizePath(pathname);
+  const target = normalizePath(href);
+  if (current === target) return true;
+
+  const labHref = normalizePath(profeRoutes.nuevaRutina);
+  if (target === labHref && current.startsWith(`${labHref}/`)) {
+    return true;
+  }
+
+  return false;
 }
 
 /** Devuelve el href del ítem de nav que corresponde a la ruta actual. */

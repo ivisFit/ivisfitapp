@@ -1,5 +1,6 @@
 import 'server-only';
 
+import { unstable_cache } from 'next/cache';
 import { cmsConfig } from "@/config/cms.config";
 import type { SiteContentResponseDto } from '../types/site-content';
 import { prisma } from './prisma';
@@ -16,11 +17,7 @@ function emptyResponse(): SiteContentResponseDto {
   return result;
 }
 
-/**
- * Overrides de contenido desde la BD (Server Components / layout raíz).
- * Falla en silencio para no romper el render del sitio.
- */
-export async function getSiteContentOverrides(): Promise<SiteContentResponseDto> {
+async function readSiteContentOverrides(): Promise<SiteContentResponseDto> {
   try {
     const rows = await prisma.siteContent.findMany({
       where: { locale: { in: [...cmsConfig.locales] } },
@@ -42,3 +39,13 @@ export async function getSiteContentOverrides(): Promise<SiteContentResponseDto>
     return emptyResponse();
   }
 }
+
+/**
+ * Overrides de contenido desde la BD (Server Components / layout raíz).
+ * Falla en silencio para no romper el render del sitio.
+ */
+export const getSiteContentOverrides = unstable_cache(
+  readSiteContentOverrides,
+  ["site-content-overrides"],
+  { tags: [cmsConfig.revalidateTag], revalidate: 300 },
+);

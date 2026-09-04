@@ -1,8 +1,12 @@
-import { Box } from "@mui/material"
+"use client";
+
+import { Box } from "@mui/material";
+import { useEffect, useState } from "react";
 
 const videoMp4 = "/videos/video-inicio.mp4";
 const videoWebm = "/videos/video-inicio.webm";
 const posterFallback = "/imgs/imagenback1.jpg";
+const MOBILE_MAX_WIDTH_PX = 768;
 
 type VideoFondoProps = {
   variant?: "default" | "preview";
@@ -46,9 +50,38 @@ function HeroOverlays() {
 
 export const VideoFondo = ({ variant = "default" }: VideoFondoProps) => {
   const isPreview = variant === "preview";
+  const [loadVideo, setLoadVideo] = useState(false);
+
+  useEffect(() => {
+    if (isPreview) return;
+    if (window.matchMedia(`(max-width: ${MOBILE_MAX_WIDTH_PX}px)`).matches) {
+      return;
+    }
+
+    const enable = () => setLoadVideo(true);
+
+    if (typeof window.requestIdleCallback === "function") {
+      const id = window.requestIdleCallback(enable, { timeout: 1200 });
+      return () => window.cancelIdleCallback(id);
+    }
+
+    const timeoutId = window.setTimeout(enable, 1);
+    return () => window.clearTimeout(timeoutId);
+  }, [isPreview]);
 
   return (
-    <Box sx={{width:"100%", minHeight:{ xs: "500px", sm: "calc(100vh - 120px)" }, zIndex:"1", position:"relative", boxSizing:"border-box", overflow:"hidden", backgroundColor:"#090708"}}>
+    <Box sx={{
+      width:"100%",
+      minHeight:{ xs: "500px", sm: "calc(100vh - 120px)" },
+      zIndex:"1",
+      position:"relative",
+      boxSizing:"border-box",
+      overflow:"hidden",
+      backgroundColor:"#090708",
+      backgroundImage: isPreview ? undefined : `url(${posterFallback})`,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+    }}>
       {isPreview ? (
         <Box
           aria-hidden
@@ -60,7 +93,7 @@ export const VideoFondo = ({ variant = "default" }: VideoFondoProps) => {
               "radial-gradient(circle at 20% 30%, rgba(225,170,67,0.12) 0%, rgba(9,7,8,0) 45%), radial-gradient(circle at 80% 70%, rgba(225,170,67,0.08) 0%, rgba(9,7,8,0) 40%)",
           }}
         />
-      ) : (
+      ) : loadVideo ? (
         <video
           id="inicio"
           className="ivis-hero-video"
@@ -76,16 +109,13 @@ export const VideoFondo = ({ variant = "default" }: VideoFondoProps) => {
             height: "100%",
             objectFit: "cover",
             backgroundColor: "#090708",
-            backgroundImage: `url(${posterFallback})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
             pointerEvents: "none"
           }}
           autoPlay
           muted
           loop
           playsInline
-          preload="auto"
+          preload="metadata"
           disablePictureInPicture
           disableRemotePlayback
         >
@@ -93,7 +123,7 @@ export const VideoFondo = ({ variant = "default" }: VideoFondoProps) => {
           <source src={videoMp4} type="video/mp4" />
           Tu navegador no soporta el elemento de video.
         </video>
-      )}
+      ) : null}
 
       <HeroOverlays />
     </Box>

@@ -99,7 +99,7 @@ export const alumnaNav: NavItem[] = [
   { href: alumnaRoutes.miPerfil, label: "Mi perfil", icon: "user", shortLabel: "Perfil" },
 ];
 
-/** Bottom nav profe: 5 ítems (Automatizaciones y Catálogo solo en sidebar) */
+/** Bottom nav profe: 5 ítems (Catálogo solo en sidebar) */
 export const profeBottomNav: NavItem[] = [
   { href: profeRoutes.panel, label: "Panel", icon: "home" },
   {
@@ -159,12 +159,6 @@ export const profeNav: NavItem[] = [
     label: "Agenda",
     icon: "calendar",
     shortLabel: "Agenda",
-  },
-  {
-    href: profeRoutes.automatizaciones,
-    label: "Automatizaciones",
-    icon: "sparkles",
-    shortLabel: "Autos",
   },
 ];
 

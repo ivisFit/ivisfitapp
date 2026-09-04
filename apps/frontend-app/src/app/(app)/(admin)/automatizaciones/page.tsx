@@ -1,5 +1,6 @@
-import { AutomatizacionesPage } from "@/features/profe/pages/AutomatizacionesPage";
+import { redirect } from "next/navigation";
+import { profeRoutes } from "@/routes/paths";
 
 export default function Page() {
-  return <AutomatizacionesPage />;
+  redirect(profeRoutes.panel);
 }

@@ -14,7 +14,8 @@ const surfaceBase = css`
   border-radius: 18px;
   position: relative;
   overflow: hidden;
-  transition: background-size 0.5s ease;
+  transition: box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.35s ease;
 
   &::before {
     content: "";
@@ -54,22 +55,15 @@ export const CardSurface = styled.div<{ $variant: "desktop" | "mobile" }>`
       ? css`
           width: 100%;
           max-width: ${cardLayout.desktopMaxWidth};
-          min-width: ${cardLayout.desktopMinWidth};
+          min-width: 0;
           min-height: 680px;
           height: 100%;
           margin: 0;
-          transition: box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-            border-color 0.35s ease,
-            transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 
           @media (hover: hover) {
             &:hover {
-              transform: translateY(-6px);
-              z-index: 2;
               box-shadow: 0 24px 52px rgba(0, 0, 0, 0.28);
               border-color: rgba(225, 170, 67, 0.45);
-              background-size: 108%;
-              background-position: center top;
             }
 
             &:hover::before {

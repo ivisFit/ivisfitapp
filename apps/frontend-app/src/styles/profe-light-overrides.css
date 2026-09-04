@@ -184,20 +184,6 @@ html[data-profe-color-scheme="light"] .alumna-sheet-modal__close:hover {
   color: var(--color-text-muted);
 }
 
-.app-shell--profe[data-color-scheme="light"] .planes-profe-page__presentation span,
-.app-shell--profe[data-color-scheme="light"] .planes-catalog__header h2 {
-  color: var(--color-gold);
-}
-
-.app-shell--profe[data-color-scheme="light"] .planes-profe-page__presentation strong {
-  color: var(--color-gold);
-}
-
-.app-shell--profe[data-color-scheme="light"] .plan-template-card__cta,
-.app-shell--profe[data-color-scheme="light"] .plan-template-card.is-selected .plan-template-card__cta {
-  color: var(--color-gold);
-}
-
 .app-shell--profe[data-color-scheme="light"] .seguimiento-timeline__header h2 {
   color: var(--color-gold);
 }
@@ -371,17 +357,14 @@ html[data-profe-color-scheme="light"] .alumna-sheet-modal__close:hover {
     );
 }
 
-.app-shell--profe[data-color-scheme="light"] .field__input,
-.app-shell--profe[data-color-scheme="light"] select.field__input,
-.app-shell--profe[data-color-scheme="light"] .field__textarea,
 .app-shell--profe[data-color-scheme="light"] .nutricion-chat-panel__input,
 .app-shell--profe[data-color-scheme="light"] .plan-nutricional-builder__textarea {
   color-scheme: light;
-}
-
-.app-shell--profe[data-color-scheme="light"] select.field__input option {
-  background-color: #fff;
+  background: var(--glass-bg-solid);
+  border-color: var(--glass-border);
   color: var(--color-text);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .app-shell--profe[data-color-scheme="light"] .alumna-detail__avatar {
@@ -416,7 +399,7 @@ html[data-profe-color-scheme="light"] .alumna-sheet-modal__close:hover {
 .app-shell--profe[data-color-scheme="light"] .rutina-builder__empty,
 .app-shell--profe[data-color-scheme="light"] .rutina-builder__dia-card--focus,
 .app-shell--profe[data-color-scheme="light"] .rutina-builder__dia-menu-panel,
-.app-shell--profe[data-color-scheme="light"] .rutina-builder--alumna .rutina-builder__save-bar {
+.app-shell--profe[data-color-scheme="light"] .rutina-builder__save-bar {
   background: var(--sidebar-bg);
   border-color: var(--glass-border-amber);
 }
@@ -523,15 +506,15 @@ html[data-profe-color-scheme="light"] .alumna-sheet-modal__close:hover {
 .app-shell--profe[data-color-scheme="light"] .rutina-builder__day-rail-index,
 .app-shell--profe[data-color-scheme="light"] .rutina-builder__day-rail-add,
 .app-shell--profe[data-color-scheme="light"] .rutina-builder--alumna .rutina-builder__exercise-index,
-.app-shell--profe[data-color-scheme="light"] .rutina-builder--alumna .rutina-builder__save-bar-pending {
+.app-shell--profe[data-color-scheme="light"] .rutina-builder__save-bar-pending {
   color: var(--color-gold);
 }
 
 .app-shell--profe[data-color-scheme="light"] .rutina-builder__day-rail-meta,
 .app-shell--profe[data-color-scheme="light"] .rutina-builder--alumna .rutina-builder__semana-tab-meta,
 .app-shell--profe[data-color-scheme="light"] .rutina-builder--alumna .rutina-builder__metric,
-.app-shell--profe[data-color-scheme="light"] .rutina-builder--alumna .rutina-builder__save-bar-synced,
-.app-shell--profe[data-color-scheme="light"] .rutina-builder--alumna .rutina-builder__save-bar-hint {
+.app-shell--profe[data-color-scheme="light"] .rutina-builder__save-bar-synced,
+.app-shell--profe[data-color-scheme="light"] .rutina-builder__save-bar-hint {
   color: var(--color-text-muted);
 }
 
@@ -573,24 +556,231 @@ html[data-profe-color-scheme="light"] .alumna-sheet-modal__close:hover {
   background: #fff;
 }
 
-.app-shell--profe[data-color-scheme="light"] .plan-content-lab__device-toggle-btn {
-  color: #5c5348;
+/* Lab vista alumna — tema claro */
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__header p,
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__hint,
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__device-label {
+  color: var(--color-text-muted);
 }
 
-.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell.alumna-rutina--experience {
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__device-toggle {
+  background: rgb(255 255 255 / 82%);
+  border-color: rgb(184 148 31 / 28%);
+  box-shadow:
+    0 10px 28px rgb(40 28 12 / 8%),
+    inset 0 1px 0 rgb(255 255 255 / 80%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__device-toggle-btn.is-active {
+  background: #fff;
+  color: #1c1814;
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__viewport {
+  background: #f4efe6;
+  border-color: rgb(28 24 20 / 10%);
+  box-shadow: 0 10px 28px rgb(40 28 12 / 10%);
+  scrollbar-color: rgb(184 148 31 / 45%) #fffdf8;
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__viewport::-webkit-scrollbar-track {
+  background: #fffdf8;
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell {
+  color-scheme: light;
   --rutina-black: #1c1814;
   --rutina-black-soft: #fffdf8;
   --rutina-black-card: #ffffff;
   --rutina-yellow-muted: rgb(212 175 55 / 16%);
+  --glass-bg-elevated: #fff;
+  --glass-border: rgb(28 24 20 / 10%);
   color: #1c1814;
   background:
     radial-gradient(circle at top left, var(--rutina-yellow-muted), transparent 32rem),
     linear-gradient(145deg, #fffdf8, #f4efe6);
 }
 
-.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell.alumna-rutina--experience
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell
   :is(h1, h2, h3, h4, p, span, time, label, strong, small, li, button, a, input) {
   color: #1c1814;
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge28__eyebrow,
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .training-story__eyebrow {
+  color: #1c1814;
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge28__hero h2,
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge28__stats strong,
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge28__day {
+  color: #1c1814;
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge28__hero p,
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge28__stats span,
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge28__ring span,
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge28__day span:last-child {
+  color: #5c5348;
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge28__ring {
+  color: #1c1814;
+  background:
+    radial-gradient(circle at center, #fffdf8 58%, transparent 60%),
+    conic-gradient(var(--color-gold) var(--challenge-progress, 0%), rgb(28 24 20 / 12%) 0);
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge28__hero,
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge28__stats article,
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge28__day {
+  background: #fff;
+  border-color: rgb(184 148 31 / 22%);
+  box-shadow: 0 10px 28px rgb(40 28 12 / 8%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .training-story {
+  background: #fffdf8;
+  border-color: rgb(184 148 31 / 28%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .training-story__placeholder {
+  background:
+    radial-gradient(circle at 18% 18%, rgb(212 175 55 / 22%), transparent 16rem),
+    linear-gradient(145deg, #fffdf8, #f4efe6);
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .training-story__scrim {
+  background:
+    linear-gradient(180deg, rgb(247 243 234 / 42%), rgb(247 243 234 / 92%)),
+    linear-gradient(90deg, rgb(247 243 234 / 58%), transparent 72%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .training-story__segment {
+  background: rgb(28 24 20 / 14%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .training-story__segment.is-active {
+  background: rgb(28 24 20 / 48%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .training-story__action-btn,
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .training-story__complete-btn:not(.is-completed),
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .training-story__nav-btn--ghost {
+  background: rgb(255 255 255 / 88%);
+  border-color: rgb(28 24 20 / 12%);
+  color: #1c1814;
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .training-story__action-btn svg,
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .weight-log__step-btn {
+  color: var(--rutina-yellow);
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge-sheet {
+  --rutina-black: #1c1814;
+  --rutina-black-soft: #fffdf8;
+  --rutina-black-card: #ffffff;
+  --rutina-yellow: var(--color-gold);
+  --rutina-yellow-soft: #b8860b;
+  color: #1c1814;
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge-sheet__backdrop,
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge-exercise-video__backdrop,
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .routine-video__backdrop,
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .rest-timer__backdrop {
+  background: rgb(28 24 20 / 28%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge-sheet__panel {
+  background: linear-gradient(180deg, #fffdf8 0%, #f4efe6 100%);
+  border-color: rgb(184 148 31 / 28%);
+  box-shadow: 0 24px 56px rgb(40 28 12 / 16%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge-sheet__handle {
+  background: rgb(28 24 20 / 22%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge-sheet__header span,
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge-exercise-video__header span,
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .routine-video__header span,
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .rest-timer__header span {
+  color: var(--color-gold);
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge-sheet__header h3,
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge-sheet__exercises li,
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge-sheet__video-button {
+  color: #1c1814;
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge-sheet__header button,
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge-exercise-video__header button,
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .routine-video__header button,
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .rest-timer__header button {
+  color: #6b5314;
+  background: rgb(255 255 255 / 88%);
+  border-color: rgb(184 148 31 / 28%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge-sheet__tags span {
+  color: #6b5314;
+  background: rgb(253 201 21 / 16%);
+  border-color: rgb(184 148 31 / 28%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge-sheet__exercises li {
+  background: #fff;
+  border-color: rgb(184 148 31 / 22%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge-sheet__exercises li.is-completed {
+  background: rgb(253 201 21 / 12%);
+  border-color: rgb(184 148 31 / 40%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge-sheet__exercises strong {
+  color: #1c1814;
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge-sheet__exercise-copy span,
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge-sheet__exercises span,
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge-sheet__empty,
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge-sheet__exercises li.is-completed strong {
+  color: #5c5348;
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .challenge-sheet__check {
+  background: rgb(28 24 20 / 6%);
+  border-color: rgb(184 148 31 / 28%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .weight-log__input-wrap {
+  background: #fff;
+  border-color: rgb(184 148 31 / 28%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .plan-content-lab__bottom-nav {
+  background: rgb(255 255 255 / 92%);
+  border-color: rgb(28 24 20 / 10%);
+  box-shadow: 0 12px 32px rgb(40 28 12 / 12%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .plan-content-lab__bottom-nav-link {
+  color: #5c5348;
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__alumna-shell .plan-content-lab__bottom-nav-link--active {
+  color: var(--color-gold);
+}
+
+.app-shell--profe[data-color-scheme="light"] .plan-content-lab__device-toggle-btn {
+  color: #5c5348;
 }
 
 .app-shell--profe[data-color-scheme="light"] .cms-editor-shell--fullscreen,

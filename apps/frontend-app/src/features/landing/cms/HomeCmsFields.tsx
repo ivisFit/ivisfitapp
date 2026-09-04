@@ -87,7 +87,7 @@ export function HomeGalleryImg({
   priority,
   loading,
 }: HomeGalleryImgProps) {
-  const isPriority = priority ?? true;
+  const isPriority = priority ?? false;
 
   return (
     <HomeImg
@@ -100,7 +100,7 @@ export function HomeGalleryImg({
       width={width}
       height={height}
       priority={isPriority}
-      loading={loading ?? 'eager'}
+      loading={loading ?? (isPriority ? 'eager' : 'lazy')}
     />
   );
 }

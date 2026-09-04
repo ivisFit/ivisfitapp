@@ -1,8 +1,14 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useState } from "react";
-import { ChatbotPanel } from "./ChatbotPanel";
 import { ChatbotAvatar } from "./ChatbotAvatar";
+import "./chatbot.css";
+
+const ChatbotPanel = dynamic(
+  () => import("./ChatbotPanel").then((mod) => mod.ChatbotPanel),
+  { ssr: false },
+);
 
 export function ChatbotFab() {
   const [open, setOpen] = useState(false);
@@ -26,11 +32,13 @@ export function ChatbotFab() {
         </span>
         <span className="chatbot-fab__status" aria-hidden />
       </button>
-      <ChatbotPanel
-        open={open}
-        openKey={openKey}
-        onClose={() => setOpen(false)}
-      />
+      {openKey > 0 ? (
+        <ChatbotPanel
+          open={open}
+          openKey={openKey}
+          onClose={() => setOpen(false)}
+        />
+      ) : null}
     </>
   );
 }
