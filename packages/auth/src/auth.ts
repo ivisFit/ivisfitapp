@@ -16,11 +16,20 @@ function parseOriginList(value: string | undefined): string[] {
     .filter(Boolean);
 }
 
+const DEFAULT_TRUSTED_ORIGINS = [
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  "https://ivisfitapp.netlify.app",
+  "https://ivisfit.com",
+  "https://www.ivisfit.com",
+];
+
 function collectTrustedOrigins(
   frontendUrl: string | undefined,
   baseURL: string,
 ): string[] {
   const candidates = [
+    ...DEFAULT_TRUSTED_ORIGINS,
     ...parseOriginList(frontendUrl),
     ...parseOriginList(baseURL),
     ...parseOriginList(process.env.TRUSTED_ORIGINS),

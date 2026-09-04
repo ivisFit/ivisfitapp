@@ -47,10 +47,14 @@ async function proxy(
     headers.delete("host");
     headers.delete("connection");
     headers.delete("content-length");
-    // El proxy es server-to-server. Reenviar Origin/Referer hace que Express
-    // CORS en Render tire 500 si el frontend de Netlify no está en TRUSTED_ORIGINS.
-    headers.delete("origin");
-    headers.delete("referer");
+
+    const publicOrigin = request.headers.get("origin") || request.nextUrl.origin;
+    headers.set("origin", publicOrigin);
+    headers.set("x-forwarded-host", request.nextUrl.host);
+    headers.set("x-forwarded-proto", request.nextUrl.protocol.replace(":", ""));
+    if (!headers.get("referer")) {
+      headers.set("referer", `${publicOrigin}/`);
+    }
 
     const init: RequestInit = {
       method: request.method,
