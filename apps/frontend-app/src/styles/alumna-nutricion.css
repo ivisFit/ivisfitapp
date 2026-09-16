@@ -2331,14 +2331,12 @@
   background: rgb(255 255 255 / 2%);
   transition:
     border-color 180ms ease,
-    background 180ms ease,
-    box-shadow 180ms ease;
+    background 180ms ease;
 }
 
 .alimento-item:hover {
   border-color: var(--glass-border-amber);
   background: rgb(255 255 255 / 4%);
-  box-shadow: 0 0 0 1px rgb(253 201 21 / 6%);
 }
 
 .alimento-item__info {

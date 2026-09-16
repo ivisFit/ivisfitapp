@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   description: "Panel del profe y app para alumnas",
   manifest: "/manifest.json",
   icons: {
-    apple: "/icon-192.png",
+    apple: "/icon-if-192.png",
   },
   appleWebApp: {
     capable: true,

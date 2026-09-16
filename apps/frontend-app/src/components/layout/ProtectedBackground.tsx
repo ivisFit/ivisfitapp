@@ -32,11 +32,10 @@ export function ProtectedBackground({
   scrollContainerRef,
 }: ProtectedBackgroundProps) {
   const patternRef = useRef<HTMLDivElement>(null);
-  const [reduceMotion, setReduceMotion] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [isMouseActive, setIsMouseActive] = useState(false);
+  const mouseGlowRef = useRef<HTMLDivElement>(null);
   const mouseRafRef = useRef<number | null>(null);
   const pendingMouseRef = useRef<{ x: number; y: number } | null>(null);
+  const [reduceMotion, setReduceMotion] = useState(false);
   const { preferences, isLoading } = useTheme();
   const { backgroundClasses } = useThemeClasses();
 
@@ -48,8 +47,11 @@ export function ProtectedBackground({
     return () => media.removeEventListener("change", updateMotion);
   }, []);
 
+  const showMouseGlow = preferences.mouseEffects && !reduceMotion && !isLoading;
+
   useEffect(() => {
-    if (reduceMotion || !preferences.mouseEffects) {
+    const glow = mouseGlowRef.current;
+    if (!showMouseGlow || !glow) {
       return;
     }
 
@@ -57,19 +59,19 @@ export function ProtectedBackground({
       mouseRafRef.current = null;
       const pending = pendingMouseRef.current;
       if (!pending) return;
-      setMousePosition(pending);
+      glow.style.transform = `translate3d(${pending.x}px, ${pending.y}px, 0) translate(-50%, -50%)`;
+      glow.classList.add("is-active");
     };
 
     const handleMouseMove = (e: MouseEvent) => {
       pendingMouseRef.current = { x: e.clientX, y: e.clientY };
-      setIsMouseActive(true);
       if (mouseRafRef.current === null) {
         mouseRafRef.current = window.requestAnimationFrame(flushMousePosition);
       }
     };
 
     const handleMouseLeave = () => {
-      setIsMouseActive(false);
+      glow.classList.remove("is-active");
     };
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -80,9 +82,11 @@ export function ProtectedBackground({
       window.removeEventListener("mouseleave", handleMouseLeave);
       if (mouseRafRef.current !== null) {
         window.cancelAnimationFrame(mouseRafRef.current);
+        mouseRafRef.current = null;
       }
+      glow.classList.remove("is-active");
     };
-  }, [reduceMotion, preferences.mouseEffects]);
+  }, [showMouseGlow]);
 
   const parallaxFactor = applyIntensityPreset(
     preferences.parallaxIntensity,
@@ -211,20 +215,9 @@ export function ProtectedBackground({
 
       <div className="protected-background__vignette" />
 
-      {preferences.mouseEffects && (
-        <div
-          className={`protected-background__mouse-glow ${
-            isMouseActive ? "protected-background--mouse-active" : ""
-          }`}
-          style={{
-            left: `${mousePosition.x}px`,
-            top: `${mousePosition.y}px`,
-            width: "200px",
-            height: "200px",
-            transform: "translate(-50%, -50%)",
-          }}
-        />
-      )}
+      {showMouseGlow ? (
+        <div ref={mouseGlowRef} className="protected-background__mouse-glow" />
+      ) : null}
     </div>
   );
 }

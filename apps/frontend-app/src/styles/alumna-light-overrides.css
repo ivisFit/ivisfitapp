@@ -3,8 +3,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.4rem;
-  min-height: 2.4rem;
+  width: var(--alumna-topbar-action-height);
+  min-height: var(--alumna-topbar-action-height);
   padding: 0;
   color: var(--color-gold);
   background: rgb(255 255 255 / 6%);
@@ -327,9 +327,9 @@ html[data-color-scheme="light"] .alumna-scheme-toggle {
 
 @media (min-width: 768px) {
   .app-shell--alumna[data-color-scheme="light"] .app-assistant-page {
-    top: calc(var(--alumna-topbar-height) + var(--sidebar-inset));
+    top: var(--app-shell-offset-y);
     right: var(--sidebar-inset);
-    bottom: var(--sidebar-inset);
+    bottom: var(--app-shell-offset-bottom);
     left: var(--sidebar-width);
     border-radius: var(--radius-lg);
     border: 1px solid var(--glass-border-amber);
@@ -383,8 +383,7 @@ html[data-alumna-color-scheme="light"] .challenge-sheet__panel {
   box-shadow: 0 24px 56px rgb(40 28 12 / 16%);
 }
 
-html[data-alumna-color-scheme="light"] .challenge-sheet__handle,
-html[data-alumna-color-scheme="light"] .app-bottom-nav-more-sheet__handle {
+html[data-alumna-color-scheme="light"] .challenge-sheet__handle {
   background: rgb(28 24 20 / 22%);
 }
 
@@ -500,50 +499,67 @@ html[data-alumna-color-scheme="light"] .rest-timer__secondary {
   border-color: rgb(184 148 31 / 28%);
 }
 
+html[data-color-scheme="light"] .app-bottom-nav-more-sheet__backdrop,
+html[data-profe-color-scheme="light"] .app-bottom-nav-more-sheet__backdrop,
 html[data-alumna-color-scheme="light"] .app-bottom-nav-more-sheet__backdrop {
-  background:
-    radial-gradient(
-      120% 85% at 50% 100%,
-      rgb(245 197 24 / 12%) 0%,
-      rgb(247 243 234 / 72%) 42%,
-      rgb(28 24 20 / 28%) 100%
-    );
+  background: rgb(247 243 234 / 42%);
 }
 
-html[data-alumna-color-scheme="light"] .app-bottom-nav-more-sheet__panel {
-  background: linear-gradient(165deg, #fffdf8 0%, #f4efe6 100%);
+html[data-color-scheme="light"] .app-bottom-nav-more-sheet__panel {
+  background: rgb(255 252 247 / 98%);
   border-color: rgb(184 148 31 / 28%);
-  box-shadow: 0 24px 48px rgb(40 28 12 / 14%);
+  box-shadow: 0 -16px 40px rgb(40 28 12 / 10%);
 }
 
-html[data-alumna-color-scheme="light"] .app-bottom-nav-more-sheet__title,
-html[data-alumna-color-scheme="light"] .app-bottom-nav-more-sheet__item {
+html[data-color-scheme="light"] .app-bottom-nav-more-sheet__title {
+  color: #5c5348;
+}
+
+html[data-color-scheme="light"] .app-bottom-nav-more-sheet__item {
   color: #1c1814;
-  text-shadow: none;
 }
 
-html[data-alumna-color-scheme="light"] .app-bottom-nav-more-sheet__close {
+html[data-color-scheme="light"] .app-bottom-nav-more-sheet__close {
   color: #1c1814;
-  background: rgb(255 255 255 / 88%);
-  border-color: rgb(28 24 20 / 12%);
 }
 
-html[data-alumna-color-scheme="light"] .app-bottom-nav-more-sheet__item:hover {
+html[data-color-scheme="light"] .app-bottom-nav-more-sheet__close:hover {
+  background: rgb(245 197 24 / 16%);
+}
+
+html[data-color-scheme="light"] .app-bottom-nav-more-sheet__item:hover {
   background: rgb(255 255 255 / 88%);
   border-color: rgb(184 148 31 / 22%);
 }
 
-html[data-alumna-color-scheme="light"] .app-bottom-nav-more-sheet__item--active {
+html[data-color-scheme="light"] .app-bottom-nav-more-sheet__item--active {
   color: #6b5314;
   background: rgb(253 201 21 / 16%);
 }
 
-html[data-alumna-color-scheme="light"] .app-bottom-nav-more-sheet__item--active .app-bottom-nav-more-sheet__item-icon {
+html[data-color-scheme="light"] .app-bottom-nav-more-sheet__item-icon {
+  color: #6b5314;
+  background: rgb(253 201 21 / 14%);
+  border-color: rgb(184 148 31 / 28%);
+}
+
+html[data-color-scheme="light"] .app-bottom-nav-more-sheet__item--active .app-bottom-nav-more-sheet__item-icon {
+  color: #6b5314;
+  background: rgb(253 201 21 / 22%);
+  border-color: rgb(184 148 31 / 40%);
+  box-shadow: none;
+}
+
+html[data-color-scheme="light"] .app-bottom-nav-more-sheet__item-chevron {
+  color: rgb(28 24 20 / 45%);
+}
+
+html[data-color-scheme="light"] .app-bottom-nav-more-sheet__item:hover .app-bottom-nav-more-sheet__item-chevron {
   color: #6b5314;
 }
 
-html[data-alumna-color-scheme="light"] .app-bottom-nav-more-sheet__item-chevron {
-  color: rgb(28 24 20 / 35%);
+html[data-color-scheme="light"] .app-bottom-nav-more-sheet__install-hint {
+  color: #5c5348;
 }
 
 html[data-alumna-color-scheme="light"] .perfil-edit__panel,

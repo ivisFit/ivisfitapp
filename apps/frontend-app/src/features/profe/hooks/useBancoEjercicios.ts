@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { invalidateCache } from "@/lib/apiCache";
+import { isMongoObjectId, mapDocId, removeFirstById } from "@/lib/map-doc-id";
 
 export type BancoEjercicio = {
   id: string;
@@ -12,8 +13,8 @@ export type BancoEjercicio = {
 };
 
 type EjercicioApiDoc = {
-  _id?: string;
-  id?: string;
+  _id?: unknown;
+  id?: unknown;
   nombre: string;
   videoUrl: string;
   descripcion?: string;
@@ -25,9 +26,12 @@ type EjercicioPayload = {
   descripcion: string;
 };
 
-function mapEjercicioFromApi(doc: EjercicioApiDoc): BancoEjercicio {
+function mapEjercicioFromApi(doc: EjercicioApiDoc | null | undefined): BancoEjercicio | null {
+  if (!doc) return null;
+  const id = mapDocId(doc);
+  if (!id) return null;
   return {
-    id: doc._id ?? doc.id ?? "",
+    id,
     nombre: doc.nombre,
     videoUrl: doc.videoUrl,
     descripcion: doc.descripcion ?? "",
@@ -41,10 +45,12 @@ export function useBancoEjercicios(enabled = true) {
   const [actionId, setActionId] = useState<string | null>(null);
   const requestIdRef = useRef(0);
 
-  const fetchEjercicios = useCallback(async (signal?: AbortSignal) => {
+  const fetchEjercicios = useCallback(async (signal?: AbortSignal, quiet = false) => {
     const requestId = ++requestIdRef.current;
-    setLoading(true);
-    setError(null);
+    if (!quiet) {
+      setLoading(true);
+      setError(null);
+    }
 
     try {
       const data = await apiFetch<EjercicioApiDoc[]>("/api/ejercicios", {
@@ -53,7 +59,11 @@ export function useBancoEjercicios(enabled = true) {
 
       if (requestId !== requestIdRef.current) return;
 
-      setEjercicios(data.map(mapEjercicioFromApi));
+      setEjercicios(
+        data
+          .map(mapEjercicioFromApi)
+          .filter((item): item is BancoEjercicio => item !== null),
+      );
     } catch (err) {
       if (requestId !== requestIdRef.current) return;
       if (err instanceof Error && err.name === "AbortError") return;
@@ -62,7 +72,6 @@ export function useBancoEjercicios(enabled = true) {
           ? err.message
           : "No se pudieron cargar los ejercicios",
       );
-      setEjercicios([]);
     } finally {
       if (requestId === requestIdRef.current) {
         setLoading(false);
@@ -100,11 +109,16 @@ export function useBancoEjercicios(enabled = true) {
           method: "POST",
           body: JSON.stringify(payload),
         });
-        setEjercicios((current) =>
-          [...current, mapEjercicioFromApi(created)].sort((a, b) =>
-            a.nombre.localeCompare(b.nombre, "es"),
-          ),
-        );
+        const mapped = mapEjercicioFromApi(created);
+        if (mapped) {
+          setEjercicios((current) =>
+            [...current, mapped].sort((a, b) =>
+              a.nombre.localeCompare(b.nombre, "es"),
+            ),
+          );
+        } else {
+          void fetchEjercicios();
+        }
         invalidateCache("ejercicios");
         return true;
       } catch (err) {
@@ -116,11 +130,15 @@ export function useBancoEjercicios(enabled = true) {
         setActionId(null);
       }
     },
-    [],
+    [fetchEjercicios],
   );
 
   const updateEjercicio = useCallback(
     async (id: string, payload: EjercicioPayload) => {
+      if (!isMongoObjectId(id)) {
+        setError("No se pudo actualizar el ejercicio");
+        return false;
+      }
       setActionId(id);
       setError(null);
 
@@ -129,13 +147,16 @@ export function useBancoEjercicios(enabled = true) {
           method: "PATCH",
           body: JSON.stringify(payload),
         });
-        setEjercicios((current) =>
-          current
-            .map((ejercicio) =>
-              ejercicio.id === id ? mapEjercicioFromApi(updated) : ejercicio,
-            )
-            .sort((a, b) => a.nombre.localeCompare(b.nombre, "es")),
-        );
+        const mapped = mapEjercicioFromApi(updated);
+        if (mapped) {
+          setEjercicios((current) =>
+            current
+              .map((ejercicio) => (ejercicio.id === id ? mapped : ejercicio))
+              .sort((a, b) => a.nombre.localeCompare(b.nombre, "es")),
+          );
+        } else {
+          void fetchEjercicios();
+        }
         invalidateCache("ejercicios");
         return true;
       } catch (err) {
@@ -149,10 +170,11 @@ export function useBancoEjercicios(enabled = true) {
         setActionId(null);
       }
     },
-    [],
+    [fetchEjercicios],
   );
 
   const deleteEjercicio = useCallback(async (id: string) => {
+    if (!isMongoObjectId(id)) return false;
     setActionId(id);
     setError(null);
 
@@ -160,10 +182,9 @@ export function useBancoEjercicios(enabled = true) {
       await apiFetch<void>(`/api/ejercicios/${id}`, {
         method: "DELETE",
       });
-      setEjercicios((current) =>
-        current.filter((ejercicio) => ejercicio.id !== id),
-      );
+      setEjercicios((current) => removeFirstById(current, id));
       invalidateCache("ejercicios");
+      void fetchEjercicios(undefined, true);
       return true;
     } catch (err) {
       setError(
@@ -173,7 +194,7 @@ export function useBancoEjercicios(enabled = true) {
     } finally {
       setActionId(null);
     }
-  }, []);
+  }, [fetchEjercicios]);
 
   return {
     ejercicios,

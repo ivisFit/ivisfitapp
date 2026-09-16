@@ -71,13 +71,12 @@ export const VideoFondo = ({ variant = "default" }: VideoFondoProps) => {
 
   return (
     <Box sx={{
-      width:"100%",
-      minHeight:{ xs: "500px", sm: "calc(100vh - 120px)" },
-      zIndex:"1",
-      position:"relative",
-      boxSizing:"border-box",
-      overflow:"hidden",
-      backgroundColor:"#090708",
+      position: "absolute",
+      inset: 0,
+      zIndex: 0,
+      overflow: "hidden",
+      boxSizing: "border-box",
+      backgroundColor: "#090708",
       backgroundImage: isPreview ? undefined : `url(${posterFallback})`,
       backgroundSize: "cover",
       backgroundPosition: "center",

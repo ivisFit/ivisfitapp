@@ -50,7 +50,9 @@ export function GestionAlimentos({
     deleteAlimento,
   } = useAlimentos();
   const [form, setForm] = useState(getEmptyForm);
+  const [formKey, setFormKey] = useState(0);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const formCardRef = useRef<HTMLElement>(null);
   const [filtroCategoria, setFiltroCategoria] = useState<AlimentoCategoria | "todas">(
     "todas",
   );
@@ -99,6 +101,7 @@ export function GestionAlimentos({
     actionId === "create" || (editingId !== null && actionId === editingId);
 
   function handleEdit(alimento: Alimento) {
+    if (!alimento.id) return;
     setEditingId(alimento.id);
     setForm({
       nombre: alimento.nombre,
@@ -111,11 +114,16 @@ export function GestionAlimentos({
       grasasG: String(alimento.macrosPorPorcion.grasasG),
       notas: alimento.notas,
     });
+    window.requestAnimationFrame(() => {
+      formCardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      document.getElementById("alimento-nombre")?.focus();
+    });
   }
 
   function resetForm() {
     setEditingId(null);
     setForm(getEmptyForm());
+    setFormKey((current) => current + 1);
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -147,7 +155,7 @@ export function GestionAlimentos({
 
   async function handleDelete(alimento: Alimento) {
     const confirmed = window.confirm(`¿Eliminar "${alimento.nombre}" del catálogo?`);
-    if (!confirmed) return;
+    if (!confirmed || !alimento.id) return;
     await deleteAlimento(alimento.id);
   }
 
@@ -165,13 +173,15 @@ export function GestionAlimentos({
         </div>
       ) : null}
 
-      <section className="alimento-form-card">
+      <section className="alimento-form-card" ref={formCardRef}>
         <h2>{editingAlimento ? "Editar alimento" : "Nuevo alimento"}</h2>
-        <form className="alimento-form" onSubmit={handleSubmit}>
+        <form key={formKey} className="alimento-form" onSubmit={handleSubmit}>
           <Input
             label="Nombre del alimento"
+            id="alimento-nombre"
             name="nombre"
             required
+            autoComplete="off"
             value={form.nombre}
             onChange={(event) =>
               setForm((current) => ({ ...current, nombre: event.target.value }))
@@ -317,14 +327,9 @@ export function GestionAlimentos({
               </Button>
             ) : null}
           </div>
+          {error ? <p className="auth-error">{error}</p> : null}
         </form>
       </section>
-
-      {error ? (
-        <section>
-          <p className="auth-error">{error}</p>
-        </section>
-      ) : null}
 
       <section className="alimentos-list-card">
         <div className="alimentos-list-card__header">

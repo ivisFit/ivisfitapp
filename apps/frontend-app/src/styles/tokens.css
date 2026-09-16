@@ -116,7 +116,16 @@
   --sidebar-width: 312px;
   --sidebar-bg: rgb(255 255 255 / 5%);
   --sidebar-inset: 0.75rem;
-  --alumna-topbar-height: 4rem;
+  --alumna-topbar-action-height: 2.4rem;
+  --alumna-topbar-height: 3rem;
+  --app-shell-chrome-gap: calc(
+    (var(--alumna-topbar-height) - var(--alumna-topbar-action-height)) / 2
+  );
+  --app-shell-offset-y: var(--alumna-topbar-height);
+  --app-shell-offset-bottom: var(--sidebar-inset);
+  --app-shell-pane-height: calc(
+    100dvh - var(--app-shell-offset-y) - var(--app-shell-offset-bottom)
+  );
   --color-gold: #e1aa43;
   --color-gold-hover: #c7980a;
   --color-gold-muted: rgb(225 170 67 / 72%);

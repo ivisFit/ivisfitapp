@@ -4,11 +4,12 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
 import { Button } from "@/components";
-import { getYoutubeEmbedUrl } from "@/features/alumna/lib/rutina-day";
+import { YoutubePreview } from "@/features/profe/components/YoutubePreview";
 import type { Tutorial } from "@/features/profe/hooks/useTutoriales";
 
 type TutorialesSortableItemProps = {
   tutorial: Tutorial;
+  sortableId: string;
   position: number;
   isProcessing: boolean;
   disabled?: boolean;
@@ -18,6 +19,7 @@ type TutorialesSortableItemProps = {
 
 export function TutorialesSortableItem({
   tutorial,
+  sortableId,
   position,
   isProcessing,
   disabled = false,
@@ -33,7 +35,7 @@ export function TutorialesSortableItem({
     transition,
     isDragging,
   } = useSortable({
-    id: tutorial.id,
+    id: sortableId,
     disabled,
   });
 
@@ -41,8 +43,6 @@ export function TutorialesSortableItem({
     transform: CSS.Transform.toString(transform),
     transition,
   };
-
-  const embedUrl = getYoutubeEmbedUrl(tutorial.videoUrl);
 
   return (
     <li
@@ -70,30 +70,12 @@ export function TutorialesSortableItem({
       <div className="ejercicio-item__body">
         <div className="ejercicio-item__info">
           <div className="ejercicio-item__header">
-            <div className="ejercicio-item__content">
-              <h3>
-                {tutorial.titulo}
-                {!tutorial.activo ? (
-                  <span className="tutorial-badge">Oculto</span>
-                ) : null}
-              </h3>
-              {tutorial.descripcion ? (
-                <p className="ejercicio-item__descripcion">
-                  {tutorial.descripcion}
-                </p>
+            <h3>
+              {tutorial.titulo}
+              {!tutorial.activo ? (
+                <span className="tutorial-badge">Oculto</span>
               ) : null}
-              <p className="tutorial-meta">
-                {tutorial.activo ? "Visible" : "Oculto"}
-              </p>
-              <a
-                className="auth-link"
-                href={tutorial.videoUrl}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Abrir en YouTube
-              </a>
-            </div>
+            </h3>
             <div className="ejercicio-item__actions">
               <Button
                 type="button"
@@ -113,24 +95,26 @@ export function TutorialesSortableItem({
               </Button>
             </div>
           </div>
+          {tutorial.descripcion ? (
+            <p className="ejercicio-item__descripcion">
+              {tutorial.descripcion}
+            </p>
+          ) : null}
+          <p className="tutorial-meta">
+            {tutorial.activo ? "Visible" : "Oculto"}
+          </p>
+          <a
+            className="auth-link"
+            href={tutorial.videoUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Abrir en YouTube
+          </a>
         </div>
 
         <div className="ejercicio-item__media">
-          {embedUrl ? (
-            <div className="ejercicio-video">
-              <iframe
-                title={`Video de ${tutorial.titulo}`}
-                src={embedUrl}
-                loading="lazy"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
-              />
-            </div>
-          ) : (
-            <p className="alumnas-panel__status">
-              No se pudo incrustar este link, pero podés abrirlo en YouTube.
-            </p>
-          )}
+          <YoutubePreview videoUrl={tutorial.videoUrl} title={tutorial.titulo} />
         </div>
       </div>
     </li>

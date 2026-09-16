@@ -73,6 +73,7 @@ export function CatalogoView() {
             {
               id: "ejercicios",
               label: ejerciciosLabel,
+              shortLabel: "Ejer.",
               count: ejerciciosCount,
               countLoading: ejerciciosCountLoading,
               controls: "catalogo-panel-ejercicios",
@@ -80,6 +81,7 @@ export function CatalogoView() {
             {
               id: "alimentos",
               label: alimentosLabel,
+              shortLabel: "Alim.",
               count: alimentosCount,
               countLoading: alimentosCountLoading,
               controls: "catalogo-panel-alimentos",
@@ -87,6 +89,7 @@ export function CatalogoView() {
             {
               id: "tutoriales",
               label: tutorialesLabel,
+              shortLabel: "Tutor.",
               count: tutorialesCount,
               countLoading: tutorialesCountLoading,
               controls: "catalogo-panel-tutoriales",

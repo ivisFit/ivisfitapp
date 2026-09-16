@@ -25,7 +25,7 @@ function MoreChevronIcon() {
       strokeLinejoin="round"
       aria-hidden
     >
-      <path d="M15 18l-6-6 6-6" />
+      <path d="M9 18l6-6-6-6" />
     </svg>
   );
 }
@@ -70,14 +70,14 @@ export function PwaInstallButton({
           className="app-bottom-nav-more-sheet__item app-bottom-nav-more-sheet__item--button"
           onClick={() => void handleClick()}
         >
-          <span className="app-bottom-nav-more-sheet__item-chevron">
-            <MoreChevronIcon />
+          <span className="app-bottom-nav-more-sheet__item-icon">
+            <Download size={22} aria-hidden />
           </span>
           <span className="app-bottom-nav-more-sheet__item-label">
             Descargar la app
           </span>
-          <span className="app-bottom-nav-more-sheet__item-icon">
-            <Download size={22} aria-hidden />
+          <span className="app-bottom-nav-more-sheet__item-chevron">
+            <MoreChevronIcon />
           </span>
         </button>
       </li>

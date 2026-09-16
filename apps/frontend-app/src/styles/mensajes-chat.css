@@ -304,9 +304,9 @@
 
 @media (min-width: 768px) {
   .app-shell--alumna .mensajes-chat-page {
-    top: calc(var(--alumna-topbar-height) + var(--sidebar-inset));
+    top: var(--app-shell-offset-y);
     right: var(--sidebar-inset);
-    bottom: var(--sidebar-inset);
+    bottom: var(--app-shell-offset-bottom);
     left: var(--sidebar-width);
     border-radius: var(--radius-lg);
     border: 1px solid var(--glass-border-amber);

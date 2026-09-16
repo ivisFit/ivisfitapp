@@ -1,4 +1,4 @@
-export function getYoutubeEmbedUrl(videoUrl: string) {
+export function getYoutubeVideoId(videoUrl: string) {
   try {
     const url = new URL(videoUrl);
     const hostname = url.hostname.replace(/^www\./, "");
@@ -19,9 +19,20 @@ export function getYoutubeEmbedUrl(videoUrl: string) {
       }
     }
 
-    if (!videoId) return null;
-    return `https://www.youtube.com/embed/${encodeURIComponent(videoId)}`;
+    return videoId || null;
   } catch {
     return null;
   }
+}
+
+export function getYoutubeEmbedUrl(videoUrl: string) {
+  const videoId = getYoutubeVideoId(videoUrl);
+  if (!videoId) return null;
+  return `https://www.youtube.com/embed/${encodeURIComponent(videoId)}`;
+}
+
+export function getYoutubeThumbnailUrl(videoUrl: string) {
+  const videoId = getYoutubeVideoId(videoUrl);
+  if (!videoId) return null;
+  return `https://i.ytimg.com/vi/${encodeURIComponent(videoId)}/hqdefault.jpg`;
 }

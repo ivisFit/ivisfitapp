@@ -28,8 +28,11 @@ export const PanelAdherenciaList = memo(function PanelAdherenciaList({
         </div>
       ) : (
         <ul className="profe-dashboard__adherencia-list">
-          {items.map((item) => (
-            <li key={item.id} className="profe-dashboard__adherencia-item">
+          {items.map((item, index) => (
+            <li
+              key={`${item.id}-${index}`}
+              className="profe-dashboard__adherencia-item"
+            >
               <Link
                 className="profe-dashboard__adherencia-link"
                 href={profeAlumnaDetailRoute(item.id)}

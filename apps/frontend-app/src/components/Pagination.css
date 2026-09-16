@@ -23,11 +23,12 @@
 }
 
 .pagination__button {
+  min-height: 2.5rem;
   padding: 0.4rem 0.85rem;
   font-size: 0.8125rem;
   font-weight: 700;
-  color: rgb(255 255 255 / 78%);
-  background: rgb(255 255 255 / 5%);
+  color: var(--color-text);
+  background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -40,7 +41,7 @@
 .pagination__button:hover:not(:disabled) {
   border-color: var(--glass-border-amber);
   color: var(--color-heading);
-  background: rgb(255 255 255 / 9%);
+  background: var(--glass-bg-elevated);
 }
 
 .pagination__button:focus-visible {

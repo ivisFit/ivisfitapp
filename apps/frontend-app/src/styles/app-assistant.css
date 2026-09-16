@@ -96,6 +96,12 @@
   }
 }
 
+body:has(.app-bottom-nav-more-sheet__backdrop) .app-assistant-fab {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
 /* Full page — fixed chat panel between the app bars (mobile) / full screen (desktop) */
 .app-assistant-page {
   position: fixed;

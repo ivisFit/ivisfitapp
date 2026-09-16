@@ -239,7 +239,7 @@ export function LandingHomePage({ plans, previewSection }: LandingHomePageProps)
       <Box sx={{ 
         flexShrink: 0,
         display: { xs: "block", sm: "none" }, 
-        height: "80px" 
+        height: "120px",
       }} />
 
       <Box
@@ -271,11 +271,15 @@ export function LandingHomePage({ plans, previewSection }: LandingHomePageProps)
           boxSizing: "border-box",
           position: { xs: "static", sm: "relative" }
         }}>
-          <Box sx={{ position: "relative", width: "100%", minHeight: { xs: "auto", sm: "calc(100vh - 120px)" } }}>
+          <Box sx={{
+            position: "relative",
+            width: "100%",
+            minHeight: { xs: "auto", sm: "calc(100dvh - 120px)" },
+          }}>
             <VideoFondo variant={isPreview ? "preview" : "default"} />
             
             <Box sx={{ 
-              minHeight: { xs: "auto", sm: "calc(100vh - 120px)" },
+              minHeight: { xs: "auto", sm: "calc(100dvh - 120px)" },
               position: "absolute", 
               top: "0", 
               zIndex: "1", 
@@ -369,17 +373,15 @@ export function LandingHomePage({ plans, previewSection }: LandingHomePageProps)
             </Box>
             
             <Box sx={{ 
-              position: "absolute", 
-              top: "0", 
-              zIndex: "1", 
+              position: "relative",
+              zIndex: 1, 
               width: "100%", 
-              minHeight: { xs: "calc(100vh - 80px)", sm: "auto" },
               display: { xs: "flex", sm: "none" }, 
               alignItems: "center", 
               justifyContent: "center",
               boxSizing: "border-box",
-              paddingTop: "1.25rem",
-              paddingBottom: "2rem",
+              paddingTop: "1.5rem",
+              paddingBottom: "2.25rem",
             }}>
               <Box sx={{ 
                 display: "flex", 

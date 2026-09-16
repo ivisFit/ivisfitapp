@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiFetch } from "@/lib/api";
+import { mapDocId } from "@/lib/map-doc-id";
 
 export type TutorialAlumna = {
   id: string;
@@ -11,16 +12,18 @@ export type TutorialAlumna = {
 };
 
 type TutorialApiDoc = {
-  _id?: string;
-  id?: string;
+  _id?: unknown;
+  id?: unknown;
   titulo: string;
   videoUrl: string;
   descripcion?: string;
 };
 
-function mapTutorialFromApi(doc: TutorialApiDoc): TutorialAlumna {
+function mapTutorialFromApi(doc: TutorialApiDoc): TutorialAlumna | null {
+  const id = mapDocId(doc);
+  if (!id) return null;
   return {
-    id: doc._id ?? doc.id ?? "",
+    id,
     titulo: doc.titulo,
     videoUrl: doc.videoUrl,
     descripcion: doc.descripcion ?? "",
@@ -45,7 +48,11 @@ export function useTutorialesActivos() {
 
       if (requestId !== requestIdRef.current) return;
 
-      setTutoriales(data.map(mapTutorialFromApi));
+      setTutoriales(
+        data
+          .map(mapTutorialFromApi)
+          .filter((item): item is TutorialAlumna => item !== null),
+      );
     } catch (err) {
       if (requestId !== requestIdRef.current) return;
       if (err instanceof Error && err.name === "AbortError") return;

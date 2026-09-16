@@ -47,6 +47,20 @@
   white-space: nowrap;
 }
 
+.profe-chrome-tabs__label-short {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .profe-chrome-tabs__label-full {
+    display: none;
+  }
+
+  .profe-chrome-tabs__label-short {
+    display: inline;
+  }
+}
+
 .profe-chrome-tabs__count {
   display: inline-flex;
   flex-shrink: 0;

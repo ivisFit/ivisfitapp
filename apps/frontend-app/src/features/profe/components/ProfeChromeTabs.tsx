@@ -3,6 +3,7 @@
 export type ProfeChromeTab = {
   id: string;
   label: string;
+  shortLabel?: string;
   count?: number;
   countLoading?: boolean;
   controls: string;
@@ -39,10 +40,20 @@ export function ProfeChromeTabs({
             id={tabId}
             aria-selected={isActive}
             aria-controls={tab.controls}
+            aria-label={tab.label}
             className={`profe-chrome-tabs__tab${isActive ? " is-active" : ""}`}
             onClick={() => onTabChange(tab.id)}
           >
-            <span className="profe-chrome-tabs__label">{tab.label}</span>
+            <span className="profe-chrome-tabs__label">
+              {tab.shortLabel ? (
+                <>
+                  <span className="profe-chrome-tabs__label-full">{tab.label}</span>
+                  <span className="profe-chrome-tabs__label-short">{tab.shortLabel}</span>
+                </>
+              ) : (
+                tab.label
+              )}
+            </span>
             {showCount ? (
               <span className="profe-chrome-tabs__count" aria-hidden="true">
                 {count}

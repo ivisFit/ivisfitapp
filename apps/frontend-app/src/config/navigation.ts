@@ -99,7 +99,7 @@ export const alumnaNav: NavItem[] = [
   { href: alumnaRoutes.miPerfil, label: "Mi perfil", icon: "user", shortLabel: "Perfil" },
 ];
 
-/** Bottom nav profe: 5 ítems (Catálogo solo en sidebar) */
+/** Bottom nav profe: 4 ítems + Más (Agenda y Web en el sheet) */
 export const profeBottomNav: NavItem[] = [
   { href: profeRoutes.panel, label: "Panel", icon: "home" },
   {
@@ -114,6 +114,16 @@ export const profeBottomNav: NavItem[] = [
     icon: "flask",
     shortLabel: "Lab",
   },
+  {
+    href: profeRoutes.catalogo,
+    label: "Catálogo",
+    icon: "dumbbell",
+    shortLabel: "Catálogo",
+  },
+];
+
+/** Bottom sheet "Más" en mobile profe */
+export const profeMobileMoreNav: NavItem[] = [
   {
     href: profeRoutes.agenda,
     label: "Agenda",

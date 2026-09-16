@@ -4,14 +4,34 @@ import { useEffect, useMemo, useState } from "react";
 import { Input } from "@/components/Input";
 import { ListSkeleton } from "@/components/skeletons/AppSkeleton";
 import { apiFetch } from "@/lib/api";
+import { mapDocId, uniqueListKey } from "@/lib/map-doc-id";
 import { getYoutubeEmbedUrl } from "@/lib/youtube";
 
-type Ejercicio = {
-  _id: string;
+type EjercicioApiDoc = {
+  _id?: unknown;
+  id?: unknown;
   nombre: string;
   videoUrl: string;
   descripcion?: string;
 };
+
+type Ejercicio = {
+  id: string;
+  nombre: string;
+  videoUrl: string;
+  descripcion?: string;
+};
+
+function mapEjercicioFromApi(doc: EjercicioApiDoc): Ejercicio | null {
+  const id = mapDocId(doc);
+  if (!id) return null;
+  return {
+    id,
+    nombre: doc.nombre,
+    videoUrl: doc.videoUrl,
+    descripcion: doc.descripcion ?? "",
+  };
+}
 
 export function BibliotecaPage() {
   const [ejercicios, setEjercicios] = useState<Ejercicio[]>([]);
@@ -23,9 +43,13 @@ export function BibliotecaPage() {
     let cancelled = false;
     async function load() {
       try {
-        const data = await apiFetch<Ejercicio[]>("/api/ejercicios");
+        const data = await apiFetch<EjercicioApiDoc[]>("/api/ejercicios");
         if (!cancelled) {
-          setEjercicios(Array.isArray(data) ? data : []);
+          setEjercicios(
+            (Array.isArray(data) ? data : [])
+              .map(mapEjercicioFromApi)
+              .filter((item): item is Ejercicio => item !== null),
+          );
         }
       } catch (err) {
         if (!cancelled) {
@@ -52,6 +76,7 @@ export function BibliotecaPage() {
         (e.descripcion ?? "").toLowerCase().includes(q),
     );
   }, [busqueda, ejercicios]);
+  const filtradoIds = filtrados.map((item) => item.id);
 
   return (
     <div className="page biblioteca-page">
@@ -82,10 +107,13 @@ export function BibliotecaPage() {
       ) : null}
 
       <ul className="ejercicios-list">
-        {filtrados.map((ejercicio) => {
+        {filtrados.map((ejercicio, index) => {
           const embed = getYoutubeEmbedUrl(ejercicio.videoUrl);
           return (
-            <li className="ejercicio-item" key={ejercicio._id}>
+            <li
+              className="ejercicio-item"
+              key={uniqueListKey(ejercicio.id, index, filtradoIds)}
+            >
               <div className="ejercicio-item__body">
                 <div className="ejercicio-item__content">
                   <h3>{ejercicio.nombre}</h3>

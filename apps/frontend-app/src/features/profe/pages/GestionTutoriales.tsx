@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { Button, Input } from "@/components";
 import { ListSkeleton } from "@/components/skeletons/AppSkeleton";
@@ -42,8 +42,10 @@ export function GestionTutoriales({
     reorderTutoriales,
   } = useTutoriales();
   const [form, setForm] = useState<TutorialPayload>(getEmptyForm);
+  const [formKey, setFormKey] = useState(0);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState("");
+  const formCardRef = useRef<HTMLElement>(null);
 
   const tutorialesFiltrados = tutoriales.filter((tutorial) => {
     const q = busqueda.trim().toLowerCase();
@@ -64,25 +66,28 @@ export function GestionTutoriales({
     }
   }, [tutoriales.length, loading, onCountChange]);
 
-  const editingTutorial = tutoriales.find(
-    (tutorial) => tutorial.id === editingId,
-  );
+  const isEditing = editingId !== null;
   const isSubmitting =
     actionId === "create" || (editingId !== null && actionId === editingId);
 
   function handleEdit(tutorial: Tutorial) {
-    setEditingId(tutorial.id);
+    setEditingId(tutorial.id || null);
     setForm({
       titulo: tutorial.titulo,
-      videoUrl: tutorial.videoUrl,
+      videoUrl: tutorial.videoUrl.trim(),
       descripcion: tutorial.descripcion,
       activo: tutorial.activo,
+    });
+    window.requestAnimationFrame(() => {
+      formCardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      document.getElementById("tutorial-titulo")?.focus();
     });
   }
 
   function resetForm() {
     setEditingId(null);
     setForm(getEmptyForm());
+    setFormKey((current) => current + 1);
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -99,7 +104,12 @@ export function GestionTutoriales({
       ? await updateTutorial(editingId, payload)
       : await createTutorial(payload);
 
-    if (success) resetForm();
+    if (!success) return;
+
+    resetForm();
+    window.setTimeout(() => {
+      setForm(getEmptyForm());
+    }, 0);
   }
 
   async function handleDelete(tutorial: Tutorial) {
@@ -107,7 +117,7 @@ export function GestionTutoriales({
       `¿Eliminar el tutorial "${tutorial.titulo}"?`,
     );
 
-    if (!confirmed) return;
+    if (!confirmed || !tutorial.id) return;
     await deleteTutorial(tutorial.id);
   }
 
@@ -128,41 +138,57 @@ export function GestionTutoriales({
         </div>
       ) : null}
 
-      <section className="ejercicio-form-card">
-        <h2>{editingTutorial ? "Editar tutorial" : "Nuevo tutorial"}</h2>
-        <form className="ejercicio-form" onSubmit={handleSubmit}>
+      <section className="ejercicio-form-card" ref={formCardRef}>
+        <h2>{isEditing ? "Editar tutorial" : "Nuevo tutorial"}</h2>
+        <form
+          key={formKey}
+          className="ejercicio-form"
+          autoComplete="off"
+          onSubmit={handleSubmit}
+        >
           <Input
             label="Título del tutorial"
-            name="titulo"
+            id="tutorial-titulo"
+            name={`tutorial-titulo-${formKey}`}
             required
+            autoComplete="off"
             placeholder="Cómo ver tu rutina"
             value={form.titulo}
             onChange={(event) =>
               setForm((current) => ({ ...current, titulo: event.target.value }))
             }
           />
-          <Input
-            label="Link de YouTube"
-            name="videoUrl"
-            type="url"
-            required
-            placeholder="https://www.youtube.com/watch?v=..."
-            value={form.videoUrl}
-            onChange={(event) =>
-              setForm((current) => ({
-                ...current,
-                videoUrl: event.target.value,
-              }))
-            }
-          />
-          <label className="field" htmlFor="descripcion">
+          <div>
+            <Input
+              label="Link de YouTube"
+              name={`tutorial-video-${formKey}`}
+              type="text"
+              inputMode="url"
+              required
+              autoComplete="off"
+              placeholder="https://www.youtube.com/watch?v=..."
+              value={form.videoUrl}
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  videoUrl: event.target.value,
+                }))
+              }
+            />
+            <p className="field__hint">
+              Visibilidad <strong>No listado</strong>, no Privado. Así se ve en
+              la app y no aparece en el canal.
+            </p>
+          </div>
+          <label className="field" htmlFor={`tutorial-descripcion-${formKey}`}>
             <span className="field__label">Descripción (opcional)</span>
             <textarea
-              id="descripcion"
-              name="descripcion"
+              id={`tutorial-descripcion-${formKey}`}
+              name={`tutorial-descripcion-${formKey}`}
               className="field__input field__textarea"
               rows={3}
               maxLength={500}
+              autoComplete="off"
               placeholder="Qué explica este video..."
               value={form.descripcion}
               onChange={(event) =>
@@ -192,24 +218,19 @@ export function GestionTutoriales({
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting
                 ? "Guardando..."
-                : editingTutorial
+                : isEditing
                   ? "Guardar cambios"
                   : "Agregar tutorial"}
             </Button>
-            {editingTutorial ? (
+            {isEditing ? (
               <Button type="button" variant="ghost" onClick={resetForm}>
                 Cancelar
               </Button>
             ) : null}
           </div>
+          {error ? <p className="auth-error">{error}</p> : null}
         </form>
       </section>
-
-      {error ? (
-        <section>
-          <p className="auth-error">{error}</p>
-        </section>
-      ) : null}
 
       <section className="ejercicios-list-card">
         <div className="ejercicios-list-card__header">

@@ -228,6 +228,34 @@ html[data-profe-color-scheme="light"] .alumna-sheet-modal__close:hover {
   .app-shell--profe[data-color-scheme="light"] .profe-tabbed-content__panel {
     background: rgb(255 255 255 / 62%);
   }
+
+  .app-shell--profe[data-color-scheme="light"] .alumna-detail-tabbed .profe-tabbed-content__panel {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .app-shell--profe[data-color-scheme="light"] .alumna-detail-tabbed .profe-chrome-tabs {
+    border-bottom-color: rgb(28 24 20 / 12%);
+  }
+
+  .app-shell--profe[data-color-scheme="light"] .alumna-detail-tabbed .profe-chrome-tabs__tab {
+    color: #5c5348;
+    background: rgb(255 255 255 / 88%);
+    border-color: rgb(28 24 20 / 12%);
+  }
+
+  .app-shell--profe[data-color-scheme="light"] .alumna-detail-tabbed .profe-chrome-tabs__tab:hover {
+    color: #1c1814;
+    background: #fff;
+  }
+
+  .app-shell--profe[data-color-scheme="light"] .alumna-detail-tabbed .profe-chrome-tabs__tab.is-active {
+    color: #1c1814;
+    background: #fff;
+    border-color: rgb(28 24 20 / 14%);
+    box-shadow: 0 -6px 16px rgb(40 28 12 / 8%);
+  }
 }
 
 .app-shell--profe[data-color-scheme="light"] .profe-chrome-tabs__count {
@@ -261,6 +289,7 @@ html[data-profe-color-scheme="light"] .alumna-sheet-modal__close:hover {
   background: #fff;
 }
 
+.app-shell--profe[data-color-scheme="light"] .ejercicio-item__header h3,
 .app-shell--profe[data-color-scheme="light"] .ejercicio-item__content h3,
 .app-shell--profe[data-color-scheme="light"] .alimento-item__header h3 {
   color: var(--color-heading);
@@ -821,15 +850,6 @@ html[data-profe-color-scheme="light"] .alumna-sheet-modal__close:hover {
   background: linear-gradient(135deg, rgb(255 253 248 / 94%) 0%, rgb(244 239 230 / 88%) 100%);
   border-color: rgb(184 148 31 / 28%);
   box-shadow: 0 14px 34px rgb(40 28 12 / 12%);
-}
-
-.app-shell--profe[data-color-scheme="light"] .catalogo-page .pagination {
-  background: linear-gradient(
-    180deg,
-    rgb(247 243 234 / 0%) 0%,
-    rgb(247 243 234 / 88%) 28%,
-    rgb(247 243 234 / 98%) 100%
-  );
 }
 
 .app-shell--profe[data-color-scheme="light"] .admision-card__actions .admision-card__reject:hover:not(:disabled) {

@@ -1,6 +1,7 @@
-// WhatsAppButton.tsx
-import { FC } from 'react';
-import styled, { keyframes } from 'styled-components';
+"use client";
+
+import { FC, useEffect, useState } from 'react';
+import styled, { css, keyframes } from 'styled-components';
 import { FaWhatsapp } from 'react-icons/fa';
 
 interface WhatsAppButtonProps {
@@ -78,7 +79,7 @@ const blink = keyframes`
   96%           { transform: scaleY(0.1); }
 `;
 
-const TeaserBubble = styled.div`
+const TeaserBubble = styled.div<{ $visible: boolean }>`
   position: fixed;
   bottom: 30px;
   right: 92px;
@@ -92,8 +93,25 @@ const TeaserBubble = styled.div`
   border: 1px solid rgba(253, 201, 21, 0.45);
   border-radius: 999px;
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
-  animation: ${teaserIn} 0.5s ease both, ${bob} 4s ease-in-out 0.5s infinite;
   pointer-events: none;
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s ease,
+    visibility 0.35s ease;
+
+  ${(props) =>
+    props.$visible
+      ? css`
+          opacity: 1;
+          visibility: visible;
+          animation: ${teaserIn} 0.5s ease both, ${bob} 4s ease-in-out 0.5s infinite;
+        `
+      : css`
+          opacity: 0;
+          visibility: hidden;
+          transform: translateY(8px) scale(0.92);
+          animation: none;
+        `}
 
   @media (max-width: 480px) {
     max-width: 180px;
@@ -156,10 +174,30 @@ export const WhatsAppButton: FC<WhatsAppButtonProps> = ({ phoneNumber }) => {
   const sanitizedNumber = phoneNumber.replace(/\D/g, "");
   const message = "¡Hola! Estuve viendo tus planes 2026 y me encantaría entrenar con propósito. ¿Podrías contarme cuál sería el ideal para mí?";
   const whatsappLink = `https://wa.me/${sanitizedNumber}?text=${encodeURIComponent(message)}`;
+  const [teaserVisible, setTeaserVisible] = useState(true);
+
+  useEffect(() => {
+    const hide = () => setTeaserVisible(false);
+    const timeoutId = window.setTimeout(hide, 4500);
+    const onScroll = () => {
+      if (window.scrollY > 80) hide();
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.clearTimeout(timeoutId);
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, []);
 
   return (
     <>
-      <TeaserBubble role="status" aria-label="Preparando algo gigante">
+      <TeaserBubble
+        $visible={teaserVisible}
+        role="status"
+        aria-label="Preparando algo gigante"
+        aria-hidden={!teaserVisible}
+      >
         <TeaserText>
           Preparando algo <b>gigante</b>...
         </TeaserText>

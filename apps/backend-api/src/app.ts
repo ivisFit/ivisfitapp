@@ -21,9 +21,7 @@ export function createApp() {
           callback(null, true);
           return;
         }
-        // No tirar Error: el proxy de Netlify reenvía el Origin del browser
-        // y un throw acá se veía como 500 en el login.
-        callback(null, false);
+        callback(new Error(`Origin not allowed: ${origin}`));
       },
       credentials: true,
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { invalidateCache } from "@/lib/apiCache";
+import { isMongoObjectId, mapDocId, removeFirstById } from "@/lib/map-doc-id";
 
 export type Tutorial = {
   id: string;
@@ -14,8 +15,8 @@ export type Tutorial = {
 };
 
 type TutorialApiDoc = {
-  _id?: string;
-  id?: string;
+  _id?: unknown;
+  id?: unknown;
   titulo: string;
   videoUrl: string;
   descripcion?: string;
@@ -30,9 +31,12 @@ export type TutorialPayload = {
   activo: boolean;
 };
 
-function mapTutorialFromApi(doc: TutorialApiDoc): Tutorial {
+function mapTutorialFromApi(doc: TutorialApiDoc | null | undefined): Tutorial | null {
+  if (!doc) return null;
+  const id = mapDocId(doc);
+  if (!id) return null;
   return {
-    id: doc._id ?? doc.id ?? "",
+    id,
     titulo: doc.titulo,
     videoUrl: doc.videoUrl,
     descripcion: doc.descripcion ?? "",
@@ -49,6 +53,7 @@ function reorderByIds(items: Tutorial[], ids: string[]) {
   const byId = new Map(items.map((item) => [item.id, item]));
   return ids
     .map((id, index) => {
+      if (!id) return null;
       const tutorial = byId.get(id);
       if (!tutorial) return null;
       return { ...tutorial, orden: index };
@@ -63,10 +68,12 @@ export function useTutoriales(enabled = true) {
   const [actionId, setActionId] = useState<string | null>(null);
   const requestIdRef = useRef(0);
 
-  const fetchTutoriales = useCallback(async (signal?: AbortSignal) => {
+  const fetchTutoriales = useCallback(async (signal?: AbortSignal, quiet = false) => {
     const requestId = ++requestIdRef.current;
-    setLoading(true);
-    setError(null);
+    if (!quiet) {
+      setLoading(true);
+      setError(null);
+    }
 
     try {
       const data = await apiFetch<TutorialApiDoc[]>("/api/tutoriales", {
@@ -75,7 +82,13 @@ export function useTutoriales(enabled = true) {
 
       if (requestId !== requestIdRef.current) return;
 
-      setTutoriales(sortTutoriales(data.map(mapTutorialFromApi)));
+      setTutoriales(
+        sortTutoriales(
+          data
+            .map(mapTutorialFromApi)
+            .filter((item): item is Tutorial => item !== null),
+        ),
+      );
     } catch (err) {
       if (requestId !== requestIdRef.current) return;
       if (err instanceof Error && err.name === "AbortError") return;
@@ -84,7 +97,6 @@ export function useTutoriales(enabled = true) {
           ? err.message
           : "No se pudieron cargar los tutoriales",
       );
-      setTutoriales([]);
     } finally {
       if (requestId === requestIdRef.current) {
         setLoading(false);
@@ -121,9 +133,12 @@ export function useTutoriales(enabled = true) {
         method: "POST",
         body: JSON.stringify(payload),
       });
-      setTutoriales((current) =>
-        sortTutoriales([...current, mapTutorialFromApi(created)]),
-      );
+      const mapped = mapTutorialFromApi(created);
+      if (mapped) {
+        setTutoriales((current) => sortTutoriales([...current, mapped]));
+      } else {
+        void fetchTutoriales();
+      }
       invalidateCache("tutoriales");
       return true;
     } catch (err) {
@@ -134,10 +149,14 @@ export function useTutoriales(enabled = true) {
     } finally {
       setActionId(null);
     }
-  }, []);
+  }, [fetchTutoriales]);
 
   const updateTutorial = useCallback(
     async (id: string, payload: TutorialPayload) => {
+      if (!isMongoObjectId(id)) {
+        setError("No se pudo actualizar el tutorial");
+        return false;
+      }
       setActionId(id);
       setError(null);
 
@@ -146,13 +165,16 @@ export function useTutoriales(enabled = true) {
           method: "PATCH",
           body: JSON.stringify(payload),
         });
-        setTutoriales((current) =>
-          sortTutoriales(
-            current.map((tutorial) =>
-              tutorial.id === id ? mapTutorialFromApi(updated) : tutorial,
+        const mapped = mapTutorialFromApi(updated);
+        if (mapped) {
+          setTutoriales((current) =>
+            sortTutoriales(
+              current.map((tutorial) => (tutorial.id === id ? mapped : tutorial)),
             ),
-          ),
-        );
+          );
+        } else {
+          void fetchTutoriales();
+        }
         invalidateCache("tutoriales");
         return true;
       } catch (err) {
@@ -166,10 +188,11 @@ export function useTutoriales(enabled = true) {
         setActionId(null);
       }
     },
-    [],
+    [fetchTutoriales],
   );
 
   const deleteTutorial = useCallback(async (id: string) => {
+    if (!isMongoObjectId(id)) return false;
     setActionId(id);
     setError(null);
 
@@ -177,10 +200,9 @@ export function useTutoriales(enabled = true) {
       await apiFetch<void>(`/api/tutoriales/${id}`, {
         method: "DELETE",
       });
-      setTutoriales((current) =>
-        current.filter((tutorial) => tutorial.id !== id),
-      );
+      setTutoriales((current) => removeFirstById(current, id));
       invalidateCache("tutoriales");
+      void fetchTutoriales(undefined, true);
       return true;
     } catch (err) {
       setError(
@@ -190,7 +212,7 @@ export function useTutoriales(enabled = true) {
     } finally {
       setActionId(null);
     }
-  }, []);
+  }, [fetchTutoriales]);
 
   const reorderTutoriales = useCallback(
     async (ids: string[]) => {
@@ -207,7 +229,13 @@ export function useTutoriales(enabled = true) {
             body: JSON.stringify({ ids }),
           },
         );
-        setTutoriales(sortTutoriales(data.map(mapTutorialFromApi)));
+        setTutoriales(
+          sortTutoriales(
+            data
+              .map(mapTutorialFromApi)
+              .filter((item): item is Tutorial => item !== null),
+          ),
+        );
         invalidateCache("tutoriales");
         return true;
       } catch (err) {

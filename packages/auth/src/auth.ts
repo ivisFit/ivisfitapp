@@ -7,36 +7,23 @@ import { syncUsuarioAfterCreate } from "./hooks/sync-usuario.js";
 
 const APP_NAME = "IVIS Fit";
 
-function parseOriginList(value: string | undefined): string[] {
-  if (!value) return [];
-
-  return value
-    .split(",")
-    .map((origin) => origin.trim().replace(/\/$/, ""))
-    .filter(Boolean);
-}
-
-const DEFAULT_TRUSTED_ORIGINS = [
-  "http://localhost:3000",
-  "http://127.0.0.1:3000",
-  "https://ivisfitapp.netlify.app",
-  "https://ivisfit.com",
-  "https://www.ivisfit.com",
-];
-
 function collectTrustedOrigins(
   frontendUrl: string | undefined,
   baseURL: string,
 ): string[] {
   const candidates = [
-    ...DEFAULT_TRUSTED_ORIGINS,
-    ...parseOriginList(frontendUrl),
-    ...parseOriginList(baseURL),
-    ...parseOriginList(process.env.TRUSTED_ORIGINS),
-    ...parseOriginList(process.env.CORS_ALLOWED_ORIGINS),
+    frontendUrl,
+    baseURL,
+    ...(process.env.TRUSTED_ORIGINS?.split(",")
+      .map((origin) => origin.trim())
+      .filter(Boolean) ?? []),
   ];
 
-  return [...new Set(candidates)];
+  return [
+    ...new Set(
+      candidates.filter((origin): origin is string => Boolean(origin)),
+    ),
+  ];
 }
 
 export function getTrustedOrigins(): string[] {

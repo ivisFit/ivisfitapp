@@ -48,14 +48,6 @@ async function proxy(
     headers.delete("connection");
     headers.delete("content-length");
 
-    const publicOrigin = request.headers.get("origin") || request.nextUrl.origin;
-    headers.set("origin", publicOrigin);
-    headers.set("x-forwarded-host", request.nextUrl.host);
-    headers.set("x-forwarded-proto", request.nextUrl.protocol.replace(":", ""));
-    if (!headers.get("referer")) {
-      headers.set("referer", `${publicOrigin}/`);
-    }
-
     const init: RequestInit = {
       method: request.method,
       headers,

@@ -295,7 +295,7 @@ async function buildAlumnasAtencion() {
     completions.map((c) => [String(c._id), c.count]),
   );
 
-  const items: AlumnaAtencionItem[] = [];
+  const byAlumna = new Map<string, AlumnaAtencionItem>();
 
   for (const rutina of rutinas) {
     let plannedDays = 0;
@@ -309,15 +309,21 @@ async function buildAlumnasAtencion() {
     if (adherencia >= 50) continue;
 
     const populatedAlumna = rutina.alumnaId as { _id?: unknown } | null;
-    items.push({
-      id: String(populatedAlumna?._id ?? rutina.alumnaId),
-      nombre: resolveAlumnaNombre(rutina.alumnaId),
-      adherencia: roundOneDecimal(adherencia),
-    });
+    const id = String(populatedAlumna?._id ?? rutina.alumnaId);
+    const rounded = roundOneDecimal(adherencia);
+    const existing = byAlumna.get(id);
+    if (!existing || rounded < existing.adherencia) {
+      byAlumna.set(id, {
+        id,
+        nombre: resolveAlumnaNombre(rutina.alumnaId),
+        adherencia: rounded,
+      });
+    }
   }
 
-  items.sort((a, b) => a.adherencia - b.adherencia);
-  return items.slice(0, 6);
+  return Array.from(byAlumna.values())
+    .sort((a, b) => a.adherencia - b.adherencia)
+    .slice(0, 6);
 }
 
 async function buildActividadReciente() {

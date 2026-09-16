@@ -1,12 +1,9 @@
 [build]
-  command = "npm ci --include=dev && npx turbo run build --filter=@ivisfit/frontend-app --env-mode=loose"
+  command = "npm ci --include=dev && npx turbo run build --filter=@ivisfit/frontend-app"
   publish = "apps/frontend-app/.next"
 
 [build.environment]
   NODE_VERSION = "22"
-  # Public site/API URLs are inlined into JS and docs; they are not secrets.
-  # Real secrets (MONGODB_URI, BETTER_AUTH_SECRET) stay scanned.
-  SECRETS_SCAN_OMIT_KEYS = "API_URL,NEXT_PUBLIC_API_URL,FRONTEND_URL,NEXT_PUBLIC_FRONTEND_URL,BETTER_AUTH_URL"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"

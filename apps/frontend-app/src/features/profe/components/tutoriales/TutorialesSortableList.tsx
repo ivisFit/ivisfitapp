@@ -18,6 +18,7 @@ import {
 import { useState } from "react";
 import { TutorialesSortableItem } from "@/features/profe/components/tutoriales/TutorialesSortableItem";
 import type { Tutorial } from "@/features/profe/hooks/useTutoriales";
+import { uniqueListKey } from "@/lib/map-doc-id";
 
 type TutorialesSortableListProps = {
   tutoriales: Tutorial[];
@@ -46,12 +47,17 @@ export function TutorialesSortableList({
     }),
   );
 
+  const tutorialIds = tutoriales.map((tutorial) => tutorial.id);
+  const sortableIds = tutoriales.map((tutorial, index) =>
+    uniqueListKey(tutorial.id, index, tutorialIds),
+  );
+
   async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    const oldIndex = tutoriales.findIndex((item) => item.id === active.id);
-    const newIndex = tutoriales.findIndex((item) => item.id === over.id);
+    const oldIndex = sortableIds.findIndex((id) => id === active.id);
+    const newIndex = sortableIds.findIndex((id) => id === over.id);
     if (oldIndex < 0 || newIndex < 0) return;
 
     const nextItems = arrayMove(tutoriales, oldIndex, newIndex);
@@ -75,21 +81,25 @@ export function TutorialesSortableList({
         onDragEnd={(event) => void handleDragEnd(event)}
       >
         <SortableContext
-          items={tutoriales.map((tutorial) => tutorial.id)}
+          items={sortableIds}
           strategy={verticalListSortingStrategy}
         >
           <ul className="ejercicios-list tutorial-sortable-list">
-            {tutoriales.map((tutorial, index) => (
-              <TutorialesSortableItem
-                key={tutorial.id}
-                tutorial={tutorial}
-                position={index + 1}
-                isProcessing={actionId === tutorial.id}
-                disabled={isReordering}
-                onEdit={onEdit}
-                onDelete={onDelete}
-              />
-            ))}
+            {tutoriales.map((tutorial, index) => {
+              const sortableId = uniqueListKey(tutorial.id, index, tutorialIds);
+              return (
+                <TutorialesSortableItem
+                  key={sortableId}
+                  sortableId={sortableId}
+                  tutorial={tutorial}
+                  position={index + 1}
+                  isProcessing={actionId === tutorial.id}
+                  disabled={isReordering}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                />
+              );
+            })}
           </ul>
         </SortableContext>
       </DndContext>

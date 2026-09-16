@@ -3,15 +3,19 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { invalidateCache } from "@/lib/apiCache";
+import { mapDocId } from "@/lib/map-doc-id";
 import type {
   Alimento,
   AlimentoApiDoc,
   AlimentoPayload,
 } from "@/features/profe/types/alimento";
 
-function mapAlimentoFromApi(doc: AlimentoApiDoc): Alimento {
+function mapAlimentoFromApi(doc: AlimentoApiDoc | null | undefined): Alimento | null {
+  if (!doc) return null;
+  const id = mapDocId(doc);
+  if (!id) return null;
   return {
-    id: doc._id ?? doc.id ?? "",
+    id,
     nombre: doc.nombre,
     categoria: doc.categoria,
     porcionReferencia: doc.porcionReferencia,
@@ -38,14 +42,17 @@ export function useAlimentos(enabled = true) {
 
       if (requestId !== requestIdRef.current) return;
 
-      setAlimentos(data.map(mapAlimentoFromApi));
+      setAlimentos(
+        data
+          .map(mapAlimentoFromApi)
+          .filter((item): item is Alimento => item !== null),
+      );
     } catch (err) {
       if (requestId !== requestIdRef.current) return;
       if (err instanceof Error && err.name === "AbortError") return;
       setError(
         err instanceof Error ? err.message : "No se pudieron cargar los alimentos",
       );
-      setAlimentos([]);
     } finally {
       if (requestId === requestIdRef.current) {
         setLoading(false);
@@ -78,27 +85,33 @@ export function useAlimentos(enabled = true) {
     setError(null);
 
     try {
-      const created = await apiFetch<AlimentoApiDoc>("/api/alimentos", {
-        method: "POST",
-        body: JSON.stringify(payload),
-      });
-      setAlimentos((current) =>
-        [...current, mapAlimentoFromApi(created)].sort((a, b) =>
-          a.nombre.localeCompare(b.nombre, "es"),
-        ),
-      );
-      invalidateCache("alimentos");
-      return true;
+        const created = await apiFetch<AlimentoApiDoc>("/api/alimentos", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        const mapped = mapAlimentoFromApi(created);
+        if (mapped) {
+          setAlimentos((current) =>
+            [...current, mapped].sort((a, b) =>
+              a.nombre.localeCompare(b.nombre, "es"),
+            ),
+          );
+        } else {
+          void fetchAlimentos();
+        }
+        invalidateCache("alimentos");
+        return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo crear el alimento");
       return false;
     } finally {
       setActionId(null);
     }
-  }, []);
+  }, [fetchAlimentos]);
 
   const updateAlimento = useCallback(
     async (id: string, payload: AlimentoPayload) => {
+      if (!id) return false;
       setActionId(id);
       setError(null);
 
@@ -107,11 +120,16 @@ export function useAlimentos(enabled = true) {
           method: "PATCH",
           body: JSON.stringify(payload),
         });
-        setAlimentos((current) =>
-          current
-            .map((alimento) => (alimento.id === id ? mapAlimentoFromApi(updated) : alimento))
-            .sort((a, b) => a.nombre.localeCompare(b.nombre, "es")),
-        );
+        const mapped = mapAlimentoFromApi(updated);
+        if (mapped) {
+          setAlimentos((current) =>
+            current
+              .map((alimento) => (alimento.id === id ? mapped : alimento))
+              .sort((a, b) => a.nombre.localeCompare(b.nombre, "es")),
+          );
+        } else {
+          void fetchAlimentos();
+        }
         invalidateCache("alimentos");
         return true;
       } catch (err) {
@@ -123,10 +141,11 @@ export function useAlimentos(enabled = true) {
         setActionId(null);
       }
     },
-    [],
+    [fetchAlimentos],
   );
 
   const deleteAlimento = useCallback(async (id: string) => {
+    if (!id) return false;
     setActionId(id);
     setError(null);
 
@@ -173,7 +192,13 @@ export function useAlimentosBusqueda(query: string) {
         `/api/alimentos?q=${encodeURIComponent(trimmed)}&soloActivos=true`,
         { signal: controller.signal },
       )
-        .then((data) => setResultados(data.map(mapAlimentoFromApi)))
+        .then((data) =>
+          setResultados(
+            data
+              .map(mapAlimentoFromApi)
+              .filter((item): item is Alimento => item !== null),
+          ),
+        )
         .catch((err) => {
           if (err instanceof Error && err.name === "AbortError") return;
           setResultados([]);

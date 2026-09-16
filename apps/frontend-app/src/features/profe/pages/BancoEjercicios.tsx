@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { Button, Input, Pagination } from "@/components";
 import { ListSkeleton } from "@/components/skeletons/AppSkeleton";
 import { useUrlPagination } from "@/hooks/useUrlPagination";
+import { YoutubePreview } from "@/features/profe/components/YoutubePreview";
 import {
   type BancoEjercicio,
   useBancoEjercicios,
 } from "@/features/profe/hooks/useBancoEjercicios";
-import { getYoutubeEmbedUrl } from "@/lib/youtube";
+import { uniqueListKey } from "@/lib/map-doc-id";
 
 const PAGE_SIZE = 10;
 
@@ -37,8 +38,10 @@ export function BancoEjercicios({
     deleteEjercicio,
   } = useBancoEjercicios();
   const [form, setForm] = useState(getEmptyForm);
+  const [formKey, setFormKey] = useState(0);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState("");
+  const formCardRef = useRef<HTMLElement>(null);
 
   const ejerciciosFiltrados = ejercicios.filter((ejercicio) => {
     const q = busqueda.trim().toLowerCase();
@@ -51,14 +54,27 @@ export function BancoEjercicios({
 
   const totalPages = Math.max(1, Math.ceil(ejerciciosFiltrados.length / PAGE_SIZE));
   const { page: currentPage, setPage } = useUrlPagination(totalPages);
-  const pageItems = ejerciciosFiltrados.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE,
-  );
+  const pageStart = (currentPage - 1) * PAGE_SIZE;
+  const pageItems = ejerciciosFiltrados.slice(pageStart, pageStart + PAGE_SIZE);
+  const ejercicioIds = ejerciciosFiltrados.map((ejercicio) => ejercicio.id);
 
   useEffect(() => {
     onRefetchReady?.(refetch);
   }, [onRefetchReady, refetch]);
+
+  useEffect(() => {
+    if (loading) return;
+    if (ejerciciosFiltrados.length === 0) return;
+    if (pageItems.length === 0 && currentPage > 1) {
+      setPage(currentPage - 1);
+    }
+  }, [
+    loading,
+    ejerciciosFiltrados.length,
+    pageItems.length,
+    currentPage,
+    setPage,
+  ]);
 
   useEffect(() => {
     if (!loading) {
@@ -66,22 +82,27 @@ export function BancoEjercicios({
     }
   }, [ejercicios.length, loading, onCountChange]);
 
-  const editingExercise = ejercicios.find((ejercicio) => ejercicio.id === editingId);
+  const isEditing = editingId !== null;
   const isSubmitting =
     actionId === "create" || (editingId !== null && actionId === editingId);
 
   function handleEdit(ejercicio: BancoEjercicio) {
-    setEditingId(ejercicio.id);
+    setEditingId(ejercicio.id || null);
     setForm({
       nombre: ejercicio.nombre,
-      videoUrl: ejercicio.videoUrl,
+      videoUrl: ejercicio.videoUrl.trim(),
       descripcion: ejercicio.descripcion,
+    });
+    window.requestAnimationFrame(() => {
+      formCardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      document.getElementById("ejercicio-nombre")?.focus();
     });
   }
 
   function resetForm() {
     setEditingId(null);
     setForm(getEmptyForm());
+    setFormKey((current) => current + 1);
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -97,7 +118,12 @@ export function BancoEjercicios({
       ? await updateEjercicio(editingId, payload)
       : await createEjercicio(payload);
 
-    if (success) resetForm();
+    if (!success) return;
+
+    resetForm();
+    window.setTimeout(() => {
+      setForm(getEmptyForm());
+    }, 0);
   }
 
   async function handleDelete(ejercicio: BancoEjercicio) {
@@ -105,7 +131,7 @@ export function BancoEjercicios({
       `¿Eliminar "${ejercicio.nombre}" del banco de ejercicios?`,
     );
 
-    if (!confirmed) return;
+    if (!confirmed || !ejercicio.id) return;
     await deleteEjercicio(ejercicio.id);
   }
 
@@ -123,40 +149,56 @@ export function BancoEjercicios({
         </div>
       ) : null}
 
-      <section className="ejercicio-form-card">
-        <h2>{editingExercise ? "Editar ejercicio" : "Nuevo ejercicio"}</h2>
-        <form className="ejercicio-form" onSubmit={handleSubmit}>
+      <section className="ejercicio-form-card" ref={formCardRef}>
+        <h2>{isEditing ? "Editar ejercicio" : "Nuevo ejercicio"}</h2>
+        <form
+          key={formKey}
+          className="ejercicio-form"
+          autoComplete="off"
+          onSubmit={handleSubmit}
+        >
           <Input
             label="Nombre del ejercicio"
-            name="nombre"
+            id="ejercicio-nombre"
+            name={`ejercicio-nombre-${formKey}`}
             required
+            autoComplete="off"
             value={form.nombre}
             onChange={(event) =>
               setForm((current) => ({ ...current, nombre: event.target.value }))
             }
           />
-          <Input
-            label="Link de YouTube"
-            name="videoUrl"
-            type="url"
-            required
-            placeholder="https://www.youtube.com/watch?v=..."
-            value={form.videoUrl}
-            onChange={(event) =>
-              setForm((current) => ({
-                ...current,
-                videoUrl: event.target.value,
-              }))
-            }
-          />
-          <label className="field" htmlFor="descripcion">
+          <div>
+            <Input
+              label="Link de YouTube"
+              name={`ejercicio-video-${formKey}`}
+              type="text"
+              inputMode="url"
+              required
+              autoComplete="off"
+              placeholder="https://www.youtube.com/watch?v=..."
+              value={form.videoUrl}
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  videoUrl: event.target.value,
+                }))
+              }
+            />
+            <p className="field__hint">
+              Visibilidad <strong>No listado</strong>, no Privado. Así se ve en
+              la app y no aparece en el canal.
+            </p>
+          </div>
+          <label className="field" htmlFor={`ejercicio-descripcion-${formKey}`}>
             <span className="field__label">Descripcion (opcional)</span>
             <textarea
-              id="descripcion"
-              name="descripcion"
+              id={`ejercicio-descripcion-${formKey}`}
+              name={`ejercicio-descripcion-${formKey}`}
               className="field__input field__textarea"
               rows={3}
               maxLength={500}
+              autoComplete="off"
               placeholder="Indicaciones tecnicas, enfoque muscular, errores comunes..."
               value={form.descripcion}
               onChange={(event) =>
@@ -171,24 +213,19 @@ export function BancoEjercicios({
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting
                 ? "Guardando..."
-                : editingExercise
+                : isEditing
                   ? "Guardar cambios"
                   : "Agregar ejercicio"}
             </Button>
-            {editingExercise ? (
+            {isEditing ? (
               <Button type="button" variant="ghost" onClick={resetForm}>
                 Cancelar
               </Button>
             ) : null}
           </div>
+          {error ? <p className="auth-error">{error}</p> : null}
         </form>
       </section>
-
-      {error ? (
-        <section>
-          <p className="auth-error">{error}</p>
-        </section>
-      ) : null}
 
       <section className="ejercicios-list-card">
         <div className="ejercicios-list-card__header">
@@ -224,31 +261,20 @@ export function BancoEjercicios({
         ) : null}
 
         <ul className="ejercicios-list">
-          {pageItems.map((ejercicio) => {
+          {pageItems.map((ejercicio, index) => {
             const isProcessing = actionId === ejercicio.id;
-            const embedUrl = getYoutubeEmbedUrl(ejercicio.videoUrl);
+            const listKey = uniqueListKey(
+              ejercicio.id,
+              pageStart + index,
+              ejercicioIds,
+            );
 
             return (
-              <li className="ejercicio-item" key={ejercicio.id}>
+              <li className="ejercicio-item" key={listKey}>
                 <div className="ejercicio-item__body">
                   <div className="ejercicio-item__info">
                     <div className="ejercicio-item__header">
-                      <div className="ejercicio-item__content">
-                        <h3>{ejercicio.nombre}</h3>
-                        {ejercicio.descripcion ? (
-                          <p className="ejercicio-item__descripcion">
-                            {ejercicio.descripcion}
-                          </p>
-                        ) : null}
-                        <a
-                          className="auth-link"
-                          href={ejercicio.videoUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          Abrir en YouTube
-                        </a>
-                      </div>
+                      <h3>{ejercicio.nombre}</h3>
                       <div className="ejercicio-item__actions">
                         <Button
                           type="button"
@@ -268,25 +294,26 @@ export function BancoEjercicios({
                         </Button>
                       </div>
                     </div>
+                    {ejercicio.descripcion ? (
+                      <p className="ejercicio-item__descripcion">
+                        {ejercicio.descripcion}
+                      </p>
+                    ) : null}
+                    <a
+                      className="auth-link"
+                      href={ejercicio.videoUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Abrir en YouTube
+                    </a>
                   </div>
 
                   <div className="ejercicio-item__media">
-                    {embedUrl ? (
-                      <div className="ejercicio-video">
-                        <iframe
-                          title={`Video de ${ejercicio.nombre}`}
-                          src={embedUrl}
-                          loading="lazy"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                          allowFullScreen
-                        />
-                      </div>
-                    ) : (
-                      <p className="alumnas-panel__status">
-                        No se pudo incrustar este link, pero podés abrirlo en
-                        YouTube.
-                      </p>
-                    )}
+                    <YoutubePreview
+                      videoUrl={ejercicio.videoUrl}
+                      title={ejercicio.nombre}
+                    />
                   </div>
                 </div>
               </li>

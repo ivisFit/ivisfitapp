@@ -188,15 +188,19 @@ body:has(.app-shell) {
 /* Mouse tracking effect */
 .protected-background__mouse-glow {
   position: absolute;
+  top: 0;
+  left: 0;
+  width: 200px;
+  height: 200px;
   border-radius: 50%;
   background: radial-gradient(circle, rgb(253 201 21 / 8%) 0%, transparent 70%);
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.3s ease;
-  will-change: transform;
+  transform: translate3d(0, 0, 0) translate(-50%, -50%);
 }
 
-.protected-background--mouse-active .protected-background__mouse-glow {
+.protected-background__mouse-glow.is-active {
   opacity: 1;
 }
 
