@@ -57,6 +57,36 @@ export const planNutricionalController = {
     res.json(plan);
   },
 
+  async getWorkspace(req: Request, res: Response) {
+    const usuario = await getUsuarioForSession(req);
+    if (usuario.rol !== "profe") {
+      throw new AppError(403, "No tenés permiso para esta acción");
+    }
+
+    const alumnaId =
+      typeof req.query.alumnaId === "string" ? req.query.alumnaId : undefined;
+    if (!alumnaId) {
+      throw new AppError(400, "alumnaId es requerido");
+    }
+
+    const workspace = await planNutricionalService.getProfeWorkspace(alumnaId);
+    res.json({
+      borrador: workspace.borrador,
+      publicado: workspace.publicado,
+      editing: workspace.editing,
+    });
+  },
+
+  async createNewVersion(req: Request, res: Response) {
+    const usuario = await getUsuarioForSession(req);
+    if (usuario.rol !== "profe") {
+      throw new AppError(403, "Solo la profe puede crear versiones del plan");
+    }
+
+    const plan = await planNutricionalService.createNewVersion(getParamId(req));
+    res.status(201).json(plan);
+  },
+
   async getById(req: Request, res: Response) {
     const usuario = await getUsuarioForSession(req);
     const plan = await planNutricionalService.getById(getParamId(req));
@@ -135,9 +165,9 @@ export const planNutricionalController = {
       throw new AppError(403, "Solo la profe puede generar borradores");
     }
 
-    const { alumnaId, planId } = req.body;
+    const { alumnaId, planId, diasPlantilla } = req.body;
     const job = createJob(() =>
-      planNutricionalService.generateDraft(alumnaId, planId),
+      planNutricionalService.generateDraft(alumnaId, planId, diasPlantilla),
     );
     res.status(202).json({ jobId: job.jobId, status: job.status });
   },

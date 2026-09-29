@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 import path from "node:path";
 import withBundleAnalyzer from "@next/bundle-analyzer";
 import withPWA from "@ducanh2912/next-pwa";
+import { shouldPrecacheManifestUrl } from "./lib/pwa-precache-filter";
 
 const cspHeader = `
   default-src 'self';
@@ -27,24 +28,33 @@ const bundleAnalyzer = withBundleAnalyzer({
 const pwaConfig = {
   dest: "public",
   register: true,
-  skipWaiting: true,
+  reloadOnOnline: true,
   disable: process.env.NODE_ENV === "development",
   buildExcludes: [/middleware-manifest\.json$/],
+  publicExcludes: [
+    "!noprecache/**/*",
+    "!videos/**/*",
+    "!imgs/**/*",
+    "!auth/fondovideo.mp4",
+  ],
   fallbacks: {
     document: "/offline",
   },
-  runtimeCaching: [
-    {
-      urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
-      handler: "CacheFirst",
-      options: {
-        cacheName: "google-fonts",
-        expiration: {
-          maxEntries: 4,
-          maxAgeSeconds: 365 * 24 * 60 * 60,
-        },
+  workboxOptions: {
+    skipWaiting: false,
+    clientsClaim: true,
+    maximumFileSizeToCacheInBytes: 2 * 1024 * 1024,
+    manifestTransforms: [
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      async (manifestEntries: any) => {
+        const manifest = manifestEntries.filter(({ url }: { url: string }) =>
+          shouldPrecacheManifestUrl(url),
+        );
+        return { manifest, warnings: [] };
       },
-    },
+    ],
+  },
+  runtimeCaching: [
     {
       urlPattern: /^https:\/\/images\.unsplash\.com\/.*/i,
       handler: "CacheFirst",
@@ -52,28 +62,6 @@ const pwaConfig = {
         cacheName: "unsplash-images",
         expiration: {
           maxEntries: 50,
-          maxAgeSeconds: 30 * 24 * 60 * 60,
-        },
-      },
-    },
-    {
-      urlPattern: /\.(?:eot|otf|ttc|ttf|woff|woff2|font.css)$/i,
-      handler: "CacheFirst",
-      options: {
-        cacheName: "static-fonts",
-        expiration: {
-          maxEntries: 4,
-          maxAgeSeconds: 365 * 24 * 60 * 60,
-        },
-      },
-    },
-    {
-      urlPattern: /\.(?:jpg|jpeg|gif|png|svg|ico|webp)$/i,
-      handler: "CacheFirst",
-      options: {
-        cacheName: "static-images",
-        expiration: {
-          maxEntries: 100,
           maxAgeSeconds: 30 * 24 * 60 * 60,
         },
       },
@@ -112,7 +100,23 @@ const nextConfig: NextConfig = {
           ]
         : [];
 
+    const prodStaticCache =
+      process.env.NODE_ENV === "production"
+        ? [
+            {
+              source: "/_next/static/:path*",
+              headers: [
+                {
+                  key: "Cache-Control",
+                  value: "public, max-age=31536000, immutable",
+                },
+              ],
+            },
+          ]
+        : [];
+
     return [
+      ...prodStaticCache,
       {
         source: "/manifest.json",
         headers: [

@@ -1,5 +1,6 @@
 import {
   calculateMacrosObjetivo,
+  type ComidaPlan,
   type CreateEvaluacionNutricionalInput,
   type CreatePlanNutricionalInput,
   type MacrosObjetivo,
@@ -123,6 +124,38 @@ function enforceComidasCount(
   });
 }
 
+type PlanDraftContent = Pick<
+  CreatePlanNutricionalInput,
+  "titulo" | "observacionesProfe" | "macrosObjetivo" | "dias" | "generadoPorIa"
+>;
+
+function cloneComidas(comidas: ComidaPlan[]): ComidaPlan[] {
+  return comidas.map((comida) => ({
+    ...comida,
+    ingredientes: comida.ingredientes.map((ingrediente) => ({ ...ingrediente })),
+  }));
+}
+
+/** Replica las comidas del primer día generado por IA en cada nombre del esqueleto. */
+export function expandPlanDraftToDays(
+  draft: PlanDraftContent,
+  skeleton: { nombre: string }[],
+): PlanDraftContent {
+  const templateComidas = draft.dias[0]?.comidas ?? [];
+  const nombres =
+    skeleton.length > 0
+      ? skeleton
+      : [{ nombre: draft.dias[0]?.nombre ?? "Día tipo" }];
+
+  return {
+    ...draft,
+    dias: nombres.map(({ nombre }) => ({
+      nombre,
+      comidas: cloneComidas(templateComidas),
+    })),
+  };
+}
+
 export type ComposicionCorporalContext = {
   pesoKg?: number;
   imc?: number;
@@ -229,5 +262,58 @@ Mensaje del usuario: ${mensaje}
 Respondé en 2-4 oraciones, práctico y empático. Si es sustitución de alimento, proponé alternativas concretas respetando restricciones.`;
 
     return generateNutritionText(instruction, fallback, 1024);
+  },
+
+  async sustitucionAlimento(input: {
+    alimento: string;
+    gramos: number;
+    evaluacion?: EvaluacionContext;
+    plan?: Pick<
+      CreatePlanNutricionalInput,
+      "titulo" | "macrosObjetivo" | "dias" | "observacionesProfe"
+    >;
+    alumnaNombre?: string;
+    sugerenciasCatalogo?: {
+      nombre: string;
+      gramos: number;
+      categoria: string;
+    }[];
+    preserveAlternatives?: boolean;
+  }) {
+    const bullets =
+      input.sugerenciasCatalogo && input.sugerenciasCatalogo.length > 0
+        ? `Podés probar:\n${input.sugerenciasCatalogo
+            .slice(0, 4)
+            .map(
+              (item) =>
+                `• ${item.nombre}: ~${item.gramos} g (equivalente a ${input.gramos} g de ${input.alimento})`,
+            )
+            .join("\n")}\nRespetá tu plan y las porciones del día.`
+        : `Equivalentes para ${input.gramos} g de ${input.alimento} según tu catálogo.`;
+
+    const listaObligatoria =
+      input.sugerenciasCatalogo?.length && input.preserveAlternatives
+        ? `\nINCLUÍ TEXTUALMENTE estas alternativas (mismos gramos):\n${input.sugerenciasCatalogo
+            .map((item) => `- ${item.nombre}: ${item.gramos} g`)
+            .join("\n")}`
+        : "";
+
+    const instruction = `Sos asistente nutricional para la alumna${input.alumnaNombre ? ` ${input.alumnaNombre}` : ""}.
+Quieren sustituir ${input.gramos} g de "${input.alimento}".
+${input.evaluacion ? `Evaluación (restricciones y preferencias): ${JSON.stringify(input.evaluacion)}` : ""}
+${input.plan ? `Plan publicado: ${JSON.stringify(input.plan)}` : ""}
+${
+  input.sugerenciasCatalogo?.length
+    ? `Alternativas del catálogo (OBLIGATORIO usar estas con estos gramos): ${JSON.stringify(input.sugerenciasCatalogo)}`
+    : ""
+}
+${listaObligatoria}
+
+Respondé en español rioplatense, empático y concreto:
+- Presentá 2 a 4 alternativas con los gramos indicados (no inventes otros alimentos distintos).
+- Respetá alergias, restricciones y alimentos evitados.
+Máximo 6 oraciones cortas más la lista de alternativas.`;
+
+    return generateNutritionText(instruction, bullets, 1024);
   },
 };

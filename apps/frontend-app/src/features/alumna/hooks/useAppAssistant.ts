@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiFetch } from "@/lib/api";
+import { SUSTITUCION_KEYWORDS } from "@/features/alumna/components/alimentacion/SustitucionAlimentoFlow";
 
 export type AppAssistantMessage = {
   id: string;
@@ -27,6 +28,7 @@ export type ChipSet =
   | "checkin"
   | "checkin_alimentacion"
   | "motivo"
+  | "sustitucion"
   | "none";
 
 type HistorialMensaje = {
@@ -269,6 +271,13 @@ export function useAppAssistant() {
       const trimmed = text.trim();
       if (!trimmed || loading) return;
 
+      if (SUSTITUCION_KEYWORDS.test(trimmed)) {
+        setCategoria("alimentacion");
+        setChipSet("sustitucion");
+        setMessages((prev) => [...prev, createMessage("user", trimmed)]);
+        return;
+      }
+
       await ensureFreshDay();
 
       const activeCategoria = nextCategoria ?? categoria;
@@ -434,6 +443,19 @@ export function useAppAssistant() {
     setChipSet("checkin_alimentacion");
   }, []);
 
+  const openSustitucionFlow = useCallback(() => {
+    setCategoria("alimentacion");
+    setChipSet("sustitucion");
+    setMessages((prev) => [
+      ...prev,
+      createMessage("user", "Hacer una sustitución"),
+      createMessage(
+        "assistant",
+        "Contame qué alimento querés cambiar y cuántos gramos comiste o querés reemplazar.",
+      ),
+    ]);
+  }, []);
+
   const askProgress = useCallback(async () => {
     const parts = [
       cumplimientoResumen ? `Cumplimiento: ${cumplimientoResumen}.` : null,
@@ -478,6 +500,7 @@ export function useAppAssistant() {
     sendCheckin,
     sendCheckinAlimentacion,
     openCheckinAlimentacion,
+    openSustitucionFlow,
     askProgress,
   };
 }

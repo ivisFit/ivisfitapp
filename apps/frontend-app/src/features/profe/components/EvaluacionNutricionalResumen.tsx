@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Drumstick, Droplets, Flame, Wheat } from "lucide-react";
 import { InfoTooltip } from "@/components";
-import { FormSkeleton } from "@/components/skeletons/AppSkeleton";
+import { FormSkeleton, SkeletonCard } from "@/components/skeletons/AppSkeleton";
 import { apiFetch } from "@/lib/api";
 import type { EvaluacionNutricionalApiDoc } from "@/features/alumna/types/evaluacion-nutricional";
 import type {
@@ -146,11 +146,12 @@ function MacrosSugeridosKpi({ macros }: { macros: MacrosObjetivo }) {
 }
 
 function GroupField({ field }: { field: EvaluacionResumenField }) {
+  const valueText = String(field.value ?? "");
   const asChips = CHIP_FIELD_LABELS.has(field.label);
-  const empty = isEmptyFieldValue(field.value);
+  const empty = isEmptyFieldValue(valueText);
   const chips = empty
     ? []
-    : field.value
+    : valueText
         .split(",")
         .map((item) => item.trim())
         .filter(Boolean);
@@ -173,7 +174,7 @@ function GroupField({ field }: { field: EvaluacionResumenField }) {
               empty ? "evaluacion-nutricional-resumen__muted" : undefined
             }
           >
-            {field.value}
+            {valueText}
           </span>
         )}
       </dd>
@@ -236,8 +237,10 @@ export function EvaluacionNutricionalResumen({
 
   if (loading) {
     return (
-      <div className="sk sk--card-elevated" aria-busy="true" aria-label="Cargando evaluación">
-        <FormSkeleton fields={2} />
+      <div aria-busy="true" aria-label="Cargando evaluación">
+        <SkeletonCard elevated>
+          <FormSkeleton fields={2} showButton={false} />
+        </SkeletonCard>
       </div>
     );
   }

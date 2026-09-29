@@ -88,13 +88,15 @@ export function BibliotecaPage() {
         </div>
       </section>
 
-      <Input
-        label="Buscar ejercicio"
-        name="busquedaBiblioteca"
-        placeholder="Nombre del ejercicio..."
-        value={busqueda}
-        onChange={(event) => setBusqueda(event.target.value)}
-      />
+      <div className="biblioteca-page__search-wrap">
+        <Input
+          label="Buscar ejercicio"
+          name="busquedaBiblioteca"
+          placeholder="Nombre del ejercicio..."
+          value={busqueda}
+          onChange={(event) => setBusqueda(event.target.value)}
+        />
+      </div>
 
       {loading ? (
         <div aria-busy="true" aria-label="Cargando biblioteca">

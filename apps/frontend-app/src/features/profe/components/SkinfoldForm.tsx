@@ -6,10 +6,12 @@ import { Button, Input } from "@/components";
 import { CircunferenciaForm } from "@/components/mediciones/CircunferenciaForm";
 import { apiFetch, ApiError } from "@/lib/api";
 import type { Sexo } from "@/types/usuario";
+import { JP7_PLIEGUE_SITES } from "@/lib/jp7-pliegues";
 import type {
   CreateMedicionPayload,
   MedicionApiDoc,
   MetodoCalculo,
+  PlieguesJP3,
   PlieguesJP7,
 } from "@/features/profe/types/medicion";
 import "./SkinfoldForm.css";
@@ -31,8 +33,11 @@ type FormState = {
   pectoral: string;
   abdominal: string;
   muslo: string;
-  axilarMedia: string;
+  biceps: string;
   subescapular: string;
+  supraespinal: string;
+  cuadricipital: string;
+  peroneal: string;
   notas: string;
 };
 
@@ -53,8 +58,11 @@ function getEmptyForm(): FormState {
     pectoral: "",
     abdominal: "",
     muslo: "",
-    axilarMedia: "",
+    biceps: "",
     subescapular: "",
+    supraespinal: "",
+    cuadricipital: "",
+    peroneal: "",
     notas: "",
   };
 }
@@ -67,8 +75,11 @@ function isSkinfoldFormDirty(form: FormState) {
     form.pectoral.trim() !== "" ||
     form.abdominal.trim() !== "" ||
     form.muslo.trim() !== "" ||
-    form.axilarMedia.trim() !== "" ||
+    form.biceps.trim() !== "" ||
     form.subescapular.trim() !== "" ||
+    form.supraespinal.trim() !== "" ||
+    form.cuadricipital.trim() !== "" ||
+    form.peroneal.trim() !== "" ||
     form.notas.trim() !== ""
   );
 }
@@ -81,7 +92,7 @@ function isValidNumber(value: number) {
   return Number.isFinite(value) && value >= 0;
 }
 
-function parsePlieguesJP3(sexo: Sexo, form: FormState): PlieguesJP7 {
+function parsePlieguesJP3(sexo: Sexo, form: FormState): PlieguesJP3 {
   if (sexo === "mujer") {
     return {
       tricipital: parseNumber(form.tricipital),
@@ -98,17 +109,17 @@ function parsePlieguesJP3(sexo: Sexo, form: FormState): PlieguesJP7 {
 
 function parsePlieguesJP7(form: FormState): PlieguesJP7 {
   return {
-    pectoral: parseNumber(form.pectoral),
-    axilarMedia: parseNumber(form.axilarMedia),
+    biceps: parseNumber(form.biceps),
     tricipital: parseNumber(form.tricipital),
     subescapular: parseNumber(form.subescapular),
+    supraespinal: parseNumber(form.supraespinal),
     abdominal: parseNumber(form.abdominal),
-    suprailiaco: parseNumber(form.suprailiaco),
-    muslo: parseNumber(form.muslo),
+    cuadricipital: parseNumber(form.cuadricipital),
+    peroneal: parseNumber(form.peroneal),
   };
 }
 
-function validateJP3(sexo: Sexo, pliegues: PlieguesJP7) {
+function validateJP3(sexo: Sexo, pliegues: PlieguesJP3) {
   const fields =
     sexo === "mujer"
       ? [pliegues.tricipital, pliegues.suprailiaco, pliegues.muslo]
@@ -118,13 +129,13 @@ function validateJP3(sexo: Sexo, pliegues: PlieguesJP7) {
 
 function validateJP7(pliegues: PlieguesJP7) {
   return [
-    pliegues.pectoral,
-    pliegues.axilarMedia,
+    pliegues.biceps,
     pliegues.tricipital,
     pliegues.subescapular,
+    pliegues.supraespinal,
     pliegues.abdominal,
-    pliegues.suprailiaco,
-    pliegues.muslo,
+    pliegues.cuadricipital,
+    pliegues.peroneal,
   ].every((value) => isValidNumber(value ?? NaN));
 }
 
@@ -252,13 +263,21 @@ function SkinfoldPlieguesForm({
 
       {metodo === "jp7" ? (
         <div className="skinfold-form__grid">
-          <Input label="Pectoral (mm)" name="pectoral" type="number" inputMode="decimal" min={0} step={0.1} required value={form.pectoral} onChange={handleChange} disabled={isLoading} />
-          <Input label="Axilar media (mm)" name="axilarMedia" type="number" inputMode="decimal" min={0} step={0.1} required value={form.axilarMedia} onChange={handleChange} disabled={isLoading} />
-          <Input label="Tríceps (mm)" name="tricipital" type="number" inputMode="decimal" min={0} step={0.1} required value={form.tricipital} onChange={handleChange} disabled={isLoading} />
-          <Input label="Subescapular (mm)" name="subescapular" type="number" inputMode="decimal" min={0} step={0.1} required value={form.subescapular} onChange={handleChange} disabled={isLoading} />
-          <Input label="Abdomen (mm)" name="abdominal" type="number" inputMode="decimal" min={0} step={0.1} required value={form.abdominal} onChange={handleChange} disabled={isLoading} />
-          <Input label="Suprailíaco (mm)" name="suprailiaco" type="number" inputMode="decimal" min={0} step={0.1} required value={form.suprailiaco} onChange={handleChange} disabled={isLoading} />
-          <Input label="Muslo (mm)" name="muslo" type="number" inputMode="decimal" min={0} step={0.1} required value={form.muslo} onChange={handleChange} disabled={isLoading} />
+          {JP7_PLIEGUE_SITES.map((site) => (
+            <Input
+              key={site.key}
+              label={`${site.label} (mm)`}
+              name={site.key}
+              type="number"
+              inputMode="decimal"
+              min={0}
+              step={0.1}
+              required
+              value={form[site.key]}
+              onChange={handleChange}
+              disabled={isLoading}
+            />
+          ))}
         </div>
       ) : (
         <div className="skinfold-form__grid">

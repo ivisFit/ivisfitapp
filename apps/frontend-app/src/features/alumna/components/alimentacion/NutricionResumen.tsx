@@ -8,6 +8,7 @@ import {
   OBJETIVO_OPTIONS,
   OCUPACION_OPTIONS,
   PREFERENCIA_OPTIONS,
+  RESTRICCION_NINGUNA_VALUE,
   RESTRICCION_OPTIONS,
   TIEMPO_COCINA_OPTIONS,
   formatList,
@@ -67,13 +68,19 @@ export function NutricionResumen({ form, onEditSection }: NutricionResumenProps)
     )
     .join(", ");
 
-  const restricciones = form.restricciones
+  const restriccionesLabels = form.restricciones
+    .filter((value) => value !== RESTRICCION_NINGUNA_VALUE)
     .map(
       (value) =>
         RESTRICCION_OPTIONS.find((option) => option.value === value)?.label ??
         value,
-    )
-    .join(", ");
+    );
+  const restricciones =
+    restriccionesLabels.length > 0
+      ? restriccionesLabels.join(", ")
+      : form.restricciones.includes(RESTRICCION_NINGUNA_VALUE)
+        ? "Ninguna"
+        : "";
 
   const horarios = form.horariosDisponibles
     .map(

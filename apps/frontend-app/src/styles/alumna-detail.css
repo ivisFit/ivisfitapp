@@ -273,10 +273,10 @@
   font-weight: 600;
 }
 
-.alumna-sheet__portrait img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.alumna-sheet__portrait.user-avatar {
+  width: clamp(4rem, 10vw, 5.25rem);
+  height: auto;
+  aspect-ratio: 1;
 }
 
 .alumna-sheet__identity {
@@ -804,6 +804,51 @@
     display: block;
   }
 
+  .alumna-detail__header-region {
+    transition: opacity 0.18s ease;
+  }
+
+  .alumna-detail__header-region--compact {
+    margin-bottom: 0.35rem;
+  }
+
+  .alumna-detail__header-compact {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    min-width: 0;
+    padding: 0.45rem 0.75rem;
+    margin-bottom: 0.5rem;
+    border-radius: 0.85rem;
+    background: rgb(255 255 255 / 4%);
+    border: 1px solid rgb(253 201 21 / 18%);
+  }
+
+  .alumna-detail__header-compact-name {
+    margin: 0;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: var(--font-display), Georgia, serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: #fff;
+  }
+
+  .alumna-detail__avatar--compact {
+    width: 2rem;
+    height: 2rem;
+    font-size: 0.7rem;
+  }
+
+  .alumna-detail__avatar--compact.user-avatar {
+    width: 2rem;
+    height: 2rem;
+  }
+
   .alumna-detail__header {
     display: flex;
     align-items: flex-start;
@@ -867,6 +912,11 @@
     background: linear-gradient(145deg, #3d3d3d 0%, #2a2a2a 100%);
     border: 1px solid rgb(255 255 255 / 12%);
     border-radius: 50%;
+  }
+
+  .alumna-detail__avatar.user-avatar {
+    width: 4rem;
+    height: 4rem;
   }
 
   .alumna-detail-desktop .alumna-detail-actions {

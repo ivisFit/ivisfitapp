@@ -17,6 +17,15 @@ export function AuthVideoBackground({ className }: AuthVideoBackgroundProps) {
     const video = videoRef.current;
     if (!video) return;
 
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    if (reduceMotion) {
+      video.pause();
+      video.removeAttribute("src");
+      return;
+    }
+
     let cancelled = false;
     let retries = 0;
     const MAX_RETRIES = 3;
@@ -64,7 +73,7 @@ export function AuthVideoBackground({ className }: AuthVideoBackgroundProps) {
       playsInline
       autoPlay
       loop
-      preload="auto"
+      preload="metadata"
       aria-hidden
     />
   );

@@ -13,6 +13,11 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 export const planNutricionalRouter = Router();
 
 planNutricionalRouter.get(
+  "/workspace",
+  requireRole("profe"),
+  asyncHandler(planNutricionalController.getWorkspace),
+);
+planNutricionalRouter.get(
   "/gestion",
   requireRole("profe"),
   asyncHandler(planNutricionalController.listGestion),
@@ -66,6 +71,11 @@ planNutricionalRouter.patch(
   requireRole("profe"),
   validateBody(updatePlanNutricionalSchema),
   asyncHandler(planNutricionalController.update),
+);
+planNutricionalRouter.post(
+  "/:id/nueva-version",
+  requireRole("profe"),
+  asyncHandler(planNutricionalController.createNewVersion),
 );
 planNutricionalRouter.post(
   "/:id/publicar",

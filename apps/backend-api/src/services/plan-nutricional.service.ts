@@ -13,9 +13,13 @@ import {
 } from "@ivisfit/database";
 import { sendPlanNutricionalEmail } from "@ivisfit/mail";
 import { getAppName, getAppUrl, resolveAlumnaEmail } from "../lib/email.js";
+import { findAlimentoMatch } from "../lib/alimento-catalog-match.js";
 import { AppError, assertFound } from "../utils/errors.js";
 import { medicionesService } from "./mediciones.service.js";
-import { nutritionGeminiService } from "./nutrition-gemini.service.js";
+import {
+  expandPlanDraftToDays,
+  nutritionGeminiService,
+} from "./nutrition-gemini.service.js";
 
 function roundMacro(value: number): number {
   return Math.round(value * 10) / 10;
@@ -91,6 +95,56 @@ async function enrichDiasConMacros(
   }));
 }
 
+async function matchIngredientesConCatalogo(
+  dias: DiaPlanNutricional[],
+): Promise<DiaPlanNutricional[]> {
+  const alimentos = await Alimento.find({ activo: true }).select("nombre").lean();
+  if (alimentos.length === 0) return dias;
+
+  const catalog = alimentos as unknown as { _id: unknown; nombre: string }[];
+
+  return dias.map((dia) => ({
+    ...dia,
+    comidas: dia.comidas.map((comida) => ({
+      ...comida,
+      ingredientes: comida.ingredientes.map((ingrediente) => {
+        if (ingrediente.alimentoId || !ingrediente.nombre.trim()) {
+          return ingrediente;
+        }
+        const match = findAlimentoMatch(ingrediente.nombre, catalog);
+        if (!match) return ingrediente;
+        return { ...ingrediente, alimentoId: String(match._id) };
+      }),
+    })),
+  }));
+}
+
+function clonePlanDias(dias: DiaPlanNutricional[]): DiaPlanNutricional[] {
+  return dias.map((dia) => ({
+    nombre: dia.nombre,
+    comidas: dia.comidas.map((comida) => ({
+      ...comida,
+      ingredientes: comida.ingredientes.map((ingrediente) => ({ ...ingrediente })),
+    })),
+  }));
+}
+
+function tituloNuevaVersion(titulo: string): string {
+  const trimmed = titulo.trim();
+  const match = trimmed.match(/^(.*)\s+\(v(\d+)\)$/i);
+  if (match) {
+    const base = match[1]?.trim() ?? trimmed;
+    const version = Number(match[2]) || 1;
+    return `${base} (v${version + 1})`;
+  }
+  return `${trimmed} (v2)`;
+}
+
+export type PlanNutricionalProfeWorkspace = {
+  editing: Awaited<ReturnType<typeof PlanNutricional.findOne>>;
+  publicado: Awaited<ReturnType<typeof PlanNutricional.findOne>>;
+};
+
 export type GestionAlimentacionItem = {
   alumnaId: string;
   alumnaNombre: string;
@@ -157,14 +211,77 @@ export const planNutricionalService = {
   },
 
   async getByAlumnaId(alumnaId: string, options?: { includeDraft?: boolean }) {
-    const filter: Record<string, unknown> = { alumnaId };
-    if (!options?.includeDraft) {
-      filter.estado = "publicado";
-    } else {
-      filter.estado = { $in: ["borrador", "publicado"] };
+    if (options?.includeDraft) {
+      const borrador = await PlanNutricional.findOne({
+        alumnaId,
+        estado: "borrador",
+      }).sort({ updatedAt: -1 });
+      if (borrador) return borrador;
+
+      return PlanNutricional.findOne({ alumnaId, estado: "publicado" }).sort({
+        publicadoAt: -1,
+      });
     }
 
-    return PlanNutricional.findOne(filter).sort({ updatedAt: -1 });
+    return PlanNutricional.findOne({ alumnaId, estado: "publicado" }).sort({
+      publicadoAt: -1,
+    });
+  },
+
+  async getProfeWorkspace(alumnaId: string) {
+    const [borrador, publicado] = await Promise.all([
+      PlanNutricional.findOne({ alumnaId, estado: "borrador" }).sort({
+        updatedAt: -1,
+      }),
+      PlanNutricional.findOne({ alumnaId, estado: "publicado" }).sort({
+        publicadoAt: -1,
+      }),
+    ]);
+
+    return {
+      borrador,
+      publicado,
+      editing: borrador ?? publicado,
+    };
+  },
+
+  async createNewVersion(id: string) {
+    const source = await PlanNutricional.findById(id);
+    assertFound(source, "Plan nutricional no encontrado");
+
+    if (source.estado !== "publicado") {
+      throw new AppError(
+        400,
+        "Solo podés crear una nueva versión desde un plan publicado.",
+      );
+    }
+
+    const existingDraft = await PlanNutricional.findOne({
+      alumnaId: source.alumnaId,
+      estado: "borrador",
+    });
+    if (existingDraft) {
+      throw new AppError(
+        409,
+        "Ya hay un borrador pendiente. Continuá editándolo o descartalo antes de crear otra versión.",
+      );
+    }
+
+    const diasMatched = await matchIngredientesConCatalogo(clonePlanDias(source.dias));
+    const dias = await enrichDiasConMacros(diasMatched);
+
+    return PlanNutricional.create({
+      alumnaId: source.alumnaId,
+      evaluacionId: source.evaluacionId,
+      titulo: tituloNuevaVersion(source.titulo),
+      observacionesProfe: source.observacionesProfe,
+      macrosObjetivo: source.macrosObjetivo,
+      dias,
+      generadoPorIa: source.generadoPorIa,
+      estado: "borrador",
+      clonadoDesdeId: source._id,
+      notificacionEnviada: Boolean(source.notificacionEnviada),
+    });
   },
 
   async getById(id: string) {
@@ -212,7 +329,7 @@ export const planNutricionalService = {
     if (plan.estado === "publicado") {
       throw new AppError(
         400,
-        "No se puede editar un plan publicado. Archivalo y creá uno nuevo.",
+        "No se puede editar un plan publicado. Creá una nueva versión para modificarlo.",
       );
     }
 
@@ -291,7 +408,11 @@ export const planNutricionalService = {
     await plan.deleteOne();
   },
 
-  async generateDraft(alumnaId: string, planId?: string) {
+  async generateDraft(
+    alumnaId: string,
+    planId?: string,
+    diasPlantilla?: { nombre: string }[],
+  ) {
     const evaluacion = await EvaluacionNutricional.findOne({
       alumnaId,
       completada: true,
@@ -302,19 +423,36 @@ export const planNutricionalService = {
       evaluacion.toObject(),
     );
 
+    const planFromDb = planId ? await PlanNutricional.findById(planId) : null;
     if (planId) {
-      const plan = await PlanNutricional.findById(planId);
-      assertFound(plan, "Plan nutricional no encontrado");
-      if (String(plan.alumnaId) !== alumnaId) {
+      assertFound(planFromDb, "Plan nutricional no encontrado");
+      if (String(planFromDb.alumnaId) !== alumnaId) {
         throw new AppError(403, "El plan no pertenece a esta alumna");
       }
-      if (plan.estado === "publicado") {
+      if (planFromDb.estado === "publicado") {
         throw new AppError(400, "No se puede regenerar un plan publicado");
       }
+    }
 
-      Object.assign(plan, draft, { generadoPorIa: true });
-      await plan.save();
-      return plan;
+    const skeletonFromPlan = planFromDb?.dias?.map((dia: DiaPlanNutricional) => ({
+      nombre: dia.nombre,
+    }));
+    const skeleton =
+      diasPlantilla?.length
+        ? diasPlantilla
+        : skeletonFromPlan?.length
+          ? skeletonFromPlan
+          : [{ nombre: draft.dias[0]?.nombre ?? "Día tipo" }];
+
+    const mergedDraft = expandPlanDraftToDays(draft, skeleton);
+    const diasMatched = await matchIngredientesConCatalogo(mergedDraft.dias);
+    const diasEnriched = await enrichDiasConMacros(diasMatched);
+    const finalizedDraft = { ...mergedDraft, dias: diasEnriched };
+
+    if (planFromDb) {
+      Object.assign(planFromDb, finalizedDraft, { generadoPorIa: true });
+      await planFromDb.save();
+      return planFromDb;
     }
 
     const existingDraft = await PlanNutricional.findOne({
@@ -322,7 +460,7 @@ export const planNutricionalService = {
       estado: "borrador",
     });
     if (existingDraft) {
-      Object.assign(existingDraft, draft, { generadoPorIa: true });
+      Object.assign(existingDraft, finalizedDraft, { generadoPorIa: true });
       await existingDraft.save();
       return existingDraft;
     }
@@ -330,7 +468,7 @@ export const planNutricionalService = {
     return PlanNutricional.create({
       alumnaId,
       evaluacionId: evaluacion._id,
-      ...draft,
+      ...finalizedDraft,
       estado: "borrador",
     });
   },

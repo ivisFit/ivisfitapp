@@ -1,7 +1,6 @@
 import {
   CheckinAlimentacion,
   GamificacionEvento,
-  LogPeso,
   Medicion,
   RutinaProgreso,
   Usuario,
@@ -9,6 +8,7 @@ import {
 } from "@ivisfit/database";
 import { Types } from "mongoose";
 import { AppError, assertFound } from "../utils/errors.js";
+import { logsPesosService } from "./logs-pesos.service.js";
 
 export type HistorialCategoria =
   | "admision"
@@ -191,22 +191,26 @@ async function buildRutinaEvents(alumnaId: string): Promise<AlumnaHistorialEvent
 }
 
 async function buildPesoEvents(alumnaId: string): Promise<AlumnaHistorialEvent[]> {
-  const logs = await LogPeso.find({ alumnaId })
-    .sort({ fecha: -1 })
-    .limit(100)
-    .populate("ejercicioId", "nombre")
-    .select("ejercicioId semana dia pesosPorSerie fecha createdAt");
+  const logs = await logsPesosService.list({ alumnaId });
 
-  return logs.map((log) => {
+  return logs.slice(0, 100).map((log) => {
     const ejercicio = resolveEjercicioNombre(log.ejercicioId);
     const series = log.pesosPorSerie?.join(" / ") ?? "";
+    const doc = log as typeof log & {
+      updatedAt?: Date;
+      createdAt?: Date;
+    };
+
     return {
       id: `peso-${log._id.toString()}`,
       categoria: "peso" as const,
       tipo: "registro_peso",
       titulo: `Registró peso en ${ejercicio}`,
       detalle: `Semana ${log.semana}, ${log.dia}${series ? ` · ${series} kg` : ""}`,
-      ocurrioEn: toIso(log.fecha) ?? toIso(log.createdAt),
+      ocurrioEn:
+        toIso(log.fecha) ??
+        toIso(doc.updatedAt) ??
+        toIso(doc.createdAt),
     };
   });
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, type MouseEvent } from "react";
 import { Button, Input, InfoTooltip } from "@/components";
-import { CardSkeleton } from "@/components/skeletons/AppSkeleton";
+import { FormSkeleton, ListSkeleton } from "@/components/skeletons/AppSkeleton";
 import { apiFetch } from "@/lib/api";
 import type {
   ComidaPlan,
@@ -130,6 +130,8 @@ type PlanNutricionalBuilderProps = {
   alumnaId: string;
   alumnaNombre: string;
   plan: PlanNutricionalApiDoc | null;
+  planBorrador?: PlanNutricionalApiDoc | null;
+  planPublicado?: PlanNutricionalApiDoc | null;
   loading?: boolean;
   macrosSugeridos?: MacrosObjetivo | null;
   onSaved: () => void;
@@ -154,10 +156,34 @@ function closeMenu(event: MouseEvent<HTMLButtonElement>) {
   event.currentTarget.closest("details")?.removeAttribute("open");
 }
 
+function planDiasTienenContenido(diasPlan: DiaPlanNutricional[]) {
+  return diasPlan.some((dia) =>
+    dia.comidas.some(
+      (comida) =>
+        Boolean(comida.preparacion?.trim()) ||
+        Boolean(comida.notas?.trim()) ||
+        comida.ingredientes.some(
+          (ing) =>
+            ing.nombre.trim() !== "" ||
+            ing.kcal != null ||
+            Boolean(ing.alimentoId),
+        ),
+    ),
+  );
+}
+
+function buildDiasPlantilla(diasPlan: DiaPlanNutricional[]) {
+  return diasPlan.map((dia, index) => ({
+    nombre: dia.nombre.trim() || `Día ${index + 1}`,
+  }));
+}
+
 export function PlanNutricionalBuilder({
   alumnaId,
   alumnaNombre,
   plan,
+  planBorrador = null,
+  planPublicado = null,
   loading = false,
   macrosSugeridos,
   onSaved,
@@ -174,12 +200,16 @@ export function PlanNutricionalBuilder({
   const [publishing, setPublishing] = useState(false);
   const [archiving, setArchiving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [creatingVersion, setCreatingVersion] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [savedSnapshot, setSavedSnapshot] = useState<string | null>(null);
 
   const isPublicado = plan?.estado === "publicado";
-  const isBusy = saving || generating || publishing || archiving || deleting;
+  const isBusy =
+    saving || generating || publishing || archiving || deleting || creatingVersion;
+  const publishedPlanId = planPublicado?._id ?? planPublicado?.id;
+  const pendingDraftWhilePublished = Boolean(planBorrador && planPublicado);
   const planId = plan?._id ?? plan?.id;
   const planKey = `${planId ?? "none"}:${plan?.estado ?? "none"}:${plan?.updatedAt ?? ""}`;
   const estadoKey = plan?.estado ?? "none";
@@ -245,6 +275,14 @@ export function PlanNutricionalBuilder({
   }
 
   async function handleGenerateDraft() {
+    const debeConfirmar = dias.length > 1 || planDiasTienenContenido(dias);
+    if (debeConfirmar) {
+      const confirmed = window.confirm(
+        `La IA va a completar las comidas en tus ${dias.length} día(s), manteniendo los nombres. Se reemplazará el contenido actual de cada comida. ¿Continuar?`,
+      );
+      if (!confirmed) return;
+    }
+
     setGenerating(true);
     setError(null);
     setMessage(null);
@@ -257,13 +295,25 @@ export function PlanNutricionalBuilder({
           body: JSON.stringify({
             alumnaId,
             planId,
+            diasPlantilla: buildDiasPlantilla(dias),
           }),
         },
       );
 
       const data = await pollDraftResult(jobId);
       applyGeneratedPlan(data);
-      setMessage("Borrador generado. Revisá y editá antes de publicar.");
+      const sinCatalogo = data.dias?.some((dia) =>
+        dia.comidas.some((comida) =>
+          comida.ingredientes.some(
+            (ing) => ing.nombre.trim() && !ing.alimentoId,
+          ),
+        ),
+      );
+      setMessage(
+        sinCatalogo
+          ? "Borrador generado. Revisá los ingredientes marcados sin catálogo antes de publicar."
+          : "Borrador generado. Revisá y editá antes de publicar.",
+      );
       onSaved();
     } catch (err) {
       setError(
@@ -400,12 +450,41 @@ export function PlanNutricionalBuilder({
 
     try {
       await apiFetch(`/api/plan-nutricional/${planId}`, { method: "DELETE" });
-      setMessage("Borrador eliminado.");
+      setMessage(
+        planPublicado
+          ? "Borrador descartado. Seguís viendo el plan publicado."
+          : "Borrador eliminado.",
+      );
       onSaved();
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo eliminar el borrador");
     } finally {
       setDeleting(false);
+    }
+  }
+
+  async function handleCreateNewVersion() {
+    const sourceId = publishedPlanId;
+    if (!sourceId) return;
+
+    setCreatingVersion(true);
+    setError(null);
+    setMessage(null);
+
+    try {
+      await apiFetch(`/api/plan-nutricional/${sourceId}/nueva-version`, {
+        method: "POST",
+      });
+      setMessage(
+        "Nueva versión creada en borrador. La alumna sigue viendo el plan publicado hasta que republicás.",
+      );
+      onSaved();
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "No se pudo crear la nueva versión",
+      );
+    } finally {
+      setCreatingVersion(false);
     }
   }
 
@@ -614,7 +693,12 @@ export function PlanNutricionalBuilder({
         aria-busy="true"
         aria-label="Cargando plan nutricional"
       >
-        <CardSkeleton lines={4} />
+        <div className="sk-card__head" aria-hidden>
+          <span className="sk sk--sm sk--gold sk--w-40" />
+          <span className="sk sk--xs sk--w-56" />
+        </div>
+        <FormSkeleton fields={3} showButton={false} />
+        <ListSkeleton items={3} surface={false} />
       </div>
     );
   }
@@ -654,6 +738,20 @@ export function PlanNutricionalBuilder({
 
   return (
     <div className="plan-nutricional-builder">
+      {pendingDraftWhilePublished ? (
+        <div className="plan-nutricional-builder__version-banner" role="status">
+          <p>
+            Tenés una versión en borrador basada en el plan publicado. La alumna
+            sigue viendo el plan publicado hasta que republicás.
+          </p>
+          <div className="plan-nutricional-builder__version-banner-actions">
+            <Button type="button" variant="ghost" disabled={isBusy} onClick={() => void handleDelete()}>
+              {deleting ? "Descartando..." : "Descartar borrador"}
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
       <section className="plan-nutricional-builder__toolbar">
         <div className="plan-nutricional-builder__toolbar-heading">
           <span
@@ -950,11 +1048,21 @@ export function PlanNutricionalBuilder({
           )}
           {isPublicado ? (
             <p className="plan-nutricional-builder__save-bar-hint">
-              Archivá el plan para volver a editarlo.
+              Para editar, creá una nueva versión. El plan publicado sigue visible
+              para la alumna hasta republicar.
             </p>
           ) : null}
         </div>
         <div className="plan-nutricional-builder__save-bar-actions">
+          {isPublicado ? (
+            <Button
+              type="button"
+              onClick={() => void handleCreateNewVersion()}
+              disabled={isBusy || Boolean(planBorrador)}
+            >
+              {creatingVersion ? "Creando..." : "Crear nueva versión"}
+            </Button>
+          ) : null}
           <Button
             type="button"
             variant="ghost"
@@ -976,7 +1084,13 @@ export function PlanNutricionalBuilder({
             onClick={() => void handlePublish()}
             disabled={isBusy || isPublicado}
           >
-            {publishing ? "Publicando..." : isPublicado ? "Publicado" : "Publicar plan"}
+            {publishing
+              ? "Publicando..."
+              : isPublicado
+                ? "Publicado"
+                : planPublicado
+                  ? "Republicar plan"
+                  : "Publicar plan"}
           </Button>
           {planId ? (
             <details className="plan-nutricional-builder__dia-menu">

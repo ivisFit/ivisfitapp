@@ -40,7 +40,7 @@ export function NutricionWizardNav({
         onClick={onNext}
         disabled={submitting || nextDisabled}
       >
-        {submitting ? "Generando..." : isResumen ? "Generar mi plan" : "Siguiente"}
+        {submitting ? "Enviando..." : isResumen ? "Enviar evaluación" : "Siguiente"}
       </Button>
     </div>
   );

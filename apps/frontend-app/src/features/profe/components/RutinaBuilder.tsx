@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { Button, Input, Select } from "@/components";
-import { InlineSkeleton, ListSkeleton } from "@/components/skeletons/AppSkeleton";
+import { CardSkeleton, ListSkeleton, SkeletonStack } from "@/components/skeletons/AppSkeleton";
 import { useBancoEjercicios } from "@/features/profe/hooks/useBancoEjercicios";
 import { useAlumnaRutinaEditor } from "@/features/profe/hooks/useAlumnaRutinaEditor";
 import {
@@ -1248,10 +1248,10 @@ export function RutinaBuilder({
       ) : null}
 
       {loadingAlumnaRutina || (isTemplateMode && loadingBlueprint) ? (
-        <div aria-busy="true" aria-label="Cargando datos de la rutina">
-          <InlineSkeleton />
-          <InlineSkeleton />
-        </div>
+        <SkeletonStack tight aria-busy={true} aria-label="Cargando datos de la rutina">
+          <CardSkeleton lines={3} elevated />
+          <CardSkeleton lines={2} elevated />
+        </SkeletonStack>
       ) : null}
 
       {showAlumnaEmpty ? (

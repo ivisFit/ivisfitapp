@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { Button, PasswordInput } from "@/components";
-import { FormSkeleton, SkeletonLine } from "@/components/skeletons/AppSkeleton";
+import { SettingsSkeleton } from "@/components/skeletons/AppSkeleton";
 import { useAuth } from "@/context/AuthContext";
 import { PwaInstallSettingsCard } from "@/components/pwa/PwaInstallButton";
 import { ProfilePhotoSettings } from "@/features/auth/components/ProfilePhotoSettings";
@@ -130,14 +130,7 @@ export function AjustesPage() {
   }
 
   if (isPending) {
-    return (
-      <div className="page" aria-busy="true" aria-label="Cargando ajustes">
-        <SkeletonLine size="2xl" width="w-32" gold />
-        <div className="sk sk--card-elevated">
-          <FormSkeleton fields={3} />
-        </div>
-      </div>
-    );
+    return <SettingsSkeleton />;
   }
 
   return (

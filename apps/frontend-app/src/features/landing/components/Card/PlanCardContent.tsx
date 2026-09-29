@@ -18,6 +18,7 @@ import {
   CardSurface,
   CardTitle,
 } from "./cardStyles";
+import { publicBackgroundStyle } from "@/lib/public-image";
 
 export type PlanCardContentProps = {
   variant: "desktop" | "mobile";
@@ -47,7 +48,10 @@ export function PlanCardContent({
   onCtaClick,
 }: PlanCardContentProps) {
   return (
-    <CardSurface $variant={variant} style={{ backgroundImage: `url(${imagen})` }}>
+    <CardSurface
+      $variant={variant}
+      style={{ backgroundImage: publicBackgroundStyle(imagen) }}
+    >
       <CardBadge>{badge}</CardBadge>
       <CardInner>
         <CardHeader>

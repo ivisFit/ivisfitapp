@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import "@/styles/preview-cms.css";
-import { CardSkeleton, SkeletonLine } from "@/components/skeletons/AppSkeleton";
+import { CardSkeleton, PageHeaderSkeleton, SkeletonStack } from "@/components/skeletons/AppSkeleton";
 import CmsEditor from "@/lib/preview-cms/components/CmsEditor";
 import { buildPreviewRoutesFromSlugs } from "@/config/cms.config.shared";
 import { useLandingPlanesGestion } from "@/features/profe/hooks/useLandingPlanesGestion";
@@ -39,20 +39,14 @@ export function PlanesLandingAdmin({ embedded = false }: { embedded?: boolean })
 
       <section className="planes-landing-admin__editor">
         {loading ? (
-          <div aria-busy="true" aria-label="Cargando planes">
-            <SkeletonLine size="lg" width="w-60" />
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(16rem, 1fr))",
-                gap: "1rem",
-              }}
-            >
-              <CardSkeleton lines={4} />
-              <CardSkeleton lines={4} />
-              <CardSkeleton lines={4} />
+          <SkeletonStack aria-busy={true} aria-label="Cargando planes">
+            <PageHeaderSkeleton titleWidth="w-60" subtitle={false} />
+            <div className="sk-grid sk-grid--auto">
+              <CardSkeleton lines={4} elevated />
+              <CardSkeleton lines={4} elevated />
+              <CardSkeleton lines={4} elevated />
             </div>
-          </div>
+          </SkeletonStack>
         ) : (
           <CmsEditor previewRoutes={previewRoutes} plans={previewPlans} reloadKey={editorKey} />
         )}

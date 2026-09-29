@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Button } from "@/components/Button";
-import { ChartSkeleton, FormSkeleton, SkeletonLine, TableSkeleton } from "@/components/skeletons/AppSkeleton";
+import { ChartSkeleton, FormSkeleton, PageHeaderSkeleton, SkeletonStack, TableSkeleton } from "@/components/skeletons/AppSkeleton";
 import { CircunferenciaForm } from "@/components/mediciones/CircunferenciaForm";
 import { PlieguesHistoryTable } from "@/features/profe/components/pliegues/PlieguesHistoryTable";
 import { useMeProfile } from "@/features/alumna/hooks/useMeProfile";
@@ -39,10 +39,16 @@ export function CircunferenciasPage() {
 
   if (profileLoading) {
     return (
-      <div className="circunferencias-page page" aria-busy="true" aria-label="Cargando">
-        <SkeletonLine size="2xl" width="w-40" gold />
-        <FormSkeleton fields={3} />
-      </div>
+      <SkeletonStack
+        className="circunferencias-page page"
+        aria-busy={true}
+        aria-label="Cargando"
+      >
+        <PageHeaderSkeleton titleWidth="w-48" subtitleWidth="w-60" eyebrow />
+        <section className="feature-card">
+          <FormSkeleton fields={3} />
+        </section>
+      </SkeletonStack>
     );
   }
 

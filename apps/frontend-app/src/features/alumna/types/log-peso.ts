@@ -31,15 +31,26 @@ export type LogPesoRecordWithNombre = LogPesoRecord & {
   ejercicioNombre?: string;
 };
 
+export function normalizeRefId(
+  ref: string | { _id?: unknown; id?: unknown } | undefined | null,
+): string {
+  if (!ref) return "";
+  if (typeof ref === "string") return ref;
+
+  const raw = ref._id ?? ref.id;
+  if (raw == null) return "";
+  if (typeof raw === "string") return raw;
+  if (typeof raw === "object" && "toString" in raw) {
+    return (raw as { toString: () => string }).toString();
+  }
+  return String(raw);
+}
+
 export function mapLogPesoRecord(doc: LogPesoApiDoc): LogPesoRecord {
-  const ejercicioRef = doc.ejercicioId;
-  const ejercicioId =
-    typeof ejercicioRef === "string"
-      ? ejercicioRef
-      : (ejercicioRef?._id ?? ejercicioRef?.id ?? "");
+  const ejercicioId = normalizeRefId(doc.ejercicioId);
 
   return {
-    id: doc._id ?? doc.id ?? "",
+    id: normalizeRefId(doc._id ?? doc.id),
     ejercicioId,
     semana: doc.semana,
     dia: doc.dia,

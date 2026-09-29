@@ -9,6 +9,10 @@ const plieguesSchema = z.object({
   muslo: z.number().nonnegative().optional(),
   axilarMedia: z.number().nonnegative().optional(),
   subescapular: z.number().nonnegative().optional(),
+  biceps: z.number().nonnegative().optional(),
+  supraespinal: z.number().nonnegative().optional(),
+  cuadricipital: z.number().nonnegative().optional(),
+  peroneal: z.number().nonnegative().optional(),
 });
 
 const circunferenciasSchema = z.object({

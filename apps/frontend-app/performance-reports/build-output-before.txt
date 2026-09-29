@@ -1,0 +1,12 @@
+Baseline Next.js build (pre-optimization) — shared First Load JS: 119 kB
+
+Route highlights:
+- / (landing): 232 kB First Load JS
+- /login: 162 kB
+- /rutina: 164 kB
+- /panel: 147 kB (dynamic)
+- /alumnas: 165 kB
+- /circunferencias: 343 kB (charts)
+- /alumnas/[id]: 378 kB
+
+SW precache (before): ~250+ entries including /videos/*, /auth/fondovideo.mp4, /imgs/* marketing assets.

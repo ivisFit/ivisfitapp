@@ -54,7 +54,7 @@ export function RoleGuard({ allowedRoles, children }: RoleGuardProps) {
 
     return (
       <div className="app-route-skeleton" suppressHydrationWarning>
-        <RouteSkeleton role={skeletonRole} />
+        <RouteSkeleton role={skeletonRole} pathname={pathname ?? ""} />
       </div>
     );
   }

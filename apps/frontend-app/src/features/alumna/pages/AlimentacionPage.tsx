@@ -3,11 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { Salad } from "lucide-react";
-import {
-  CardSkeleton,
-  InlineSkeleton,
-  SkeletonLine,
-} from "@/components/skeletons/AppSkeleton";
+import { AlumnaAlimentacionSkeleton } from "@/components/skeletons/AppSkeleton";
 import { PlanNutricionalDashboard } from "@/features/alumna/components/alimentacion/PlanNutricionalDashboard";
 import { WaitingStateActions } from "@/features/alumna/components/WaitingStateActions";
 import { useEvaluacionBridgeTransition } from "@/features/alumna/components/evaluacion-bridge/EvaluacionBridgeProvider";
@@ -85,19 +81,7 @@ export function AlimentacionPage() {
   const error = evaluacionError ?? planError;
 
   if (loading) {
-    return (
-      <div
-        className="alimentacion-page page"
-        aria-busy="true"
-        aria-label="Cargando alimentación"
-      >
-        <SkeletonLine size="2xl" width="w-40" gold />
-        <SkeletonLine size="sm" width="w-60" />
-        <CardSkeleton lines={3} elevated />
-        <InlineSkeleton />
-        <InlineSkeleton />
-      </div>
-    );
+    return <AlumnaAlimentacionSkeleton />;
   }
 
   if (error) {

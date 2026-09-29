@@ -11,14 +11,20 @@ export type PlieguesJP3 = {
 };
 
 export type PlieguesJP7 = {
-  pectoral?: number;
-  axilarMedia?: number;
+  biceps?: number;
   tricipital?: number;
   subescapular?: number;
+  supraespinal?: number;
   abdominal?: number;
-  suprailiaco?: number;
-  muslo?: number;
+  cuadricipital?: number;
+  peroneal?: number;
 };
+
+/** Valores guardados en Mongo (JP3, JP7 y claves legacy). */
+export type PlieguesMedicion = PlieguesJP3 &
+  PlieguesJP7 & {
+    axilarMedia?: number;
+  };
 
 export type Circunferencias = {
   cuelloCm?: number;
@@ -29,7 +35,7 @@ export type Circunferencias = {
 export type CreateMedicionPayload = {
   alumnaId?: string;
   metodoCalculo: MetodoCalculo;
-  pliegues?: PlieguesJP7;
+  pliegues?: PlieguesMedicion;
   circunferencias?: Circunferencias;
   fecha?: string;
   notas?: string;
@@ -46,7 +52,7 @@ export type MedicionApiDoc = {
   alumnaId: string;
   metodoCalculo?: MetodoCalculo | string;
   fecha: string;
-  pliegues?: PlieguesJP7;
+  pliegues?: PlieguesMedicion;
   circunferencias?: Circunferencias;
   metricas: MedicionMetricas;
   notas?: string;
@@ -60,7 +66,7 @@ export type Medicion = {
   alumnaId: string;
   metodoCalculo: MetodoCalculo;
   fecha: Date;
-  pliegues?: PlieguesJP7;
+  pliegues?: PlieguesMedicion;
   circunferencias?: Circunferencias;
   metricas: MedicionMetricas;
   notas?: string;

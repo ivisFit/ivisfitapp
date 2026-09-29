@@ -23,7 +23,16 @@ export function AlimentoAutocomplete({
   name,
 }: AlimentoAutocompleteProps) {
   const [open, setOpen] = useState(false);
-  const { resultados } = useAlimentosBusqueda(open ? value : "");
+  const { resultados, loading, catalogEmpty, noMatches, catalogLoaded } =
+    useAlimentosBusqueda(value, { enabled: open });
+
+  const showPanel =
+    open &&
+    (loading ||
+      resultados.length > 0 ||
+      catalogEmpty ||
+      noMatches ||
+      (catalogLoaded && !value.trim()));
 
   return (
     <div className="alimento-autocomplete">
@@ -42,29 +51,52 @@ export function AlimentoAutocomplete({
           setTimeout(() => setOpen(false), 150);
         }}
       />
-      {open && resultados.length > 0 ? (
-        <ul className="alimento-autocomplete__results">
-          {resultados.map((alimento) => (
-            <li key={alimento.id}>
-              <button
-                type="button"
-                className="alimento-autocomplete__result"
-                onMouseDown={(event) => event.preventDefault()}
-                onClick={() => {
-                  onSelect(alimento);
-                  setOpen(false);
-                }}
-              >
-                <span>{alimento.nombre}</span>
-                <span>
-                  {alimento.macrosPorPorcion.kcal} kcal /{" "}
-                  {alimento.porcionReferencia.cantidad}
-                  {alimento.porcionReferencia.unidad}
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
+      <p className="alimento-autocomplete__hint">
+        Escribí para filtrar o elegí de la lista.
+      </p>
+      {showPanel ? (
+        <div className="alimento-autocomplete__panel" role="listbox">
+          {loading && resultados.length === 0 ? (
+            <p className="alimento-autocomplete__loading" role="status">
+              Cargando alimentos…
+            </p>
+          ) : null}
+          {catalogEmpty ? (
+            <p className="alimento-autocomplete__empty" role="status">
+              No hay alimentos en el catálogo. Creálos en Catálogo → Alimentos.
+            </p>
+          ) : null}
+          {noMatches ? (
+            <p className="alimento-autocomplete__empty" role="status">
+              Sin coincidencias. Podés usar un nombre libre o revisar el catálogo.
+            </p>
+          ) : null}
+          {resultados.length > 0 ? (
+            <ul className="alimento-autocomplete__results">
+              {resultados.map((alimento) => (
+                <li key={alimento.id}>
+                  <button
+                    type="button"
+                    className="alimento-autocomplete__result"
+                    role="option"
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => {
+                      onSelect(alimento);
+                      setOpen(false);
+                    }}
+                  >
+                    <span>{alimento.nombre}</span>
+                    <span>
+                      {alimento.macrosPorPorcion.kcal} kcal /{" "}
+                      {alimento.porcionReferencia.cantidad}
+                      {alimento.porcionReferencia.unidad}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
       ) : null}
     </div>
   );

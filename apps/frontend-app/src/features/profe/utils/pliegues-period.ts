@@ -1,4 +1,9 @@
 import {
+  JP7_FIELDS,
+  JP7_PLIEGUE_SITES,
+  normalizePlieguesJP7,
+} from "@/lib/jp7-pliegues";
+import {
   resolveMetodoCalculo,
   type Medicion,
   type MetodoCalculo,
@@ -36,7 +41,7 @@ export const METODO_CALCULO_OPTIONS: Array<{
     id: "jp7",
     label: "7 pliegues",
     description:
-      "Jackson-Pollock de 7 sitios. Mayor precisión al evaluar más zonas del tejido adiposo.",
+      "Bíceps, tríceps, subescapular, supraespinal, abdominal, cuadricipital y peroneal. El % de grasa se calcula con la suma de los siete pliegues (mm).",
   },
   {
     id: "us-navy",
@@ -54,15 +59,7 @@ const PERIOD_DAYS: Record<Exclude<PlieguesPeriod, "all">, number> = {
   "365d": 365,
 };
 
-const JP7_FIELDS = [
-  "pectoral",
-  "axilarMedia",
-  "tricipital",
-  "subescapular",
-  "abdominal",
-  "suprailiaco",
-  "muslo",
-] as const;
+export { JP7_PLIEGUE_SITES };
 
 export function getPeriodStartDate(
   period: PlieguesPeriod,
@@ -129,7 +126,11 @@ export function sumPliegues(
 }
 
 export function sumPlieguesJP7(pliegues: NonNullable<Medicion["pliegues"]>) {
-  return JP7_FIELDS.reduce((sum, field) => sum + (pliegues[field] ?? 0), 0);
+  const normalized = normalizePlieguesJP7(pliegues);
+  return JP7_FIELDS.reduce(
+    (sum, field) => sum + (normalized[field] ?? 0),
+    0,
+  );
 }
 
 export function sumMedicionValues(

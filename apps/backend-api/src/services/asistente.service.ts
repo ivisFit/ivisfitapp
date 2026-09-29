@@ -8,6 +8,7 @@ import {
   Rutina,
   RutinaProgreso,
   Usuario,
+  Alimento,
   type AsistenteCheckinMotivo,
   type AsistenteCheckinRating,
 } from "@ivisfit/database";
@@ -22,6 +23,19 @@ import {
   buildWhatsAppComunidadHref,
   buildWhatsAppIvisHref,
 } from "../lib/whatsapp.js";
+import {
+  type CatalogAlimentoMacros,
+} from "../lib/alimento-catalog-match.js";
+import {
+  alimentoApareceEnPlan,
+  buildAlternativasSustitucion,
+  formatSustitucionReply,
+  mensajeCatalogoVacio,
+  responseIncludesAlternativas,
+  toSugerenciasCatalogo,
+} from "../lib/sustitucion-alimento.js";
+import { isGeminiConfigured } from "./gemini-client.js";
+import { nutritionGeminiService } from "./nutrition-gemini.service.js";
 
 const MAX_MENSAJES_GUARDADOS = 40;
 const TIME_ZONE = "America/Montevideo";
@@ -344,7 +358,15 @@ export const asistenteService = {
     alumnaId: string,
     mensaje: string,
     categoria?: string,
+    options?: {
+      intent?: "sustitucion";
+      sustitucion?: { alimento: string; gramos: number };
+    },
   ) {
+    if (options?.intent === "sustitucion") {
+      return this.sustitucionAlimento(alumnaId, options.sustitucion!);
+    }
+
     const escalated = detectEscalation(mensaje);
 
     const today = getTodayDateKey();
@@ -378,6 +400,110 @@ export const asistenteService = {
       : undefined;
 
     return { reply, escalated, whatsappHref, fechaHoy: today };
+  },
+
+  async sustitucionAlimento(
+    alumnaId: string,
+    payload: { alimento: string; gramos: number },
+  ) {
+    const alimento = payload.alimento.trim();
+    const gramos = payload.gramos;
+
+    if (!alimento) {
+      return {
+        reply: "Contame qué alimento querés sustituir.",
+        escalated: false,
+        whatsappHref: undefined as string | undefined,
+        fechaHoy: getTodayDateKey(),
+        needsSustitucionField: "alimento" as const,
+      };
+    }
+
+    if (!Number.isFinite(gramos) || gramos <= 0) {
+      return {
+        reply: "¿Cuántos gramos comiste o querés reemplazar? (ej. 150)",
+        escalated: false,
+        whatsappHref: undefined as string | undefined,
+        fechaHoy: getTodayDateKey(),
+        needsSustitucionField: "gramos" as const,
+      };
+    }
+
+    const textoEscalacion = `${alimento} ${gramos}g`;
+    if (detectEscalation(textoEscalacion)) {
+      const context = await buildContext(alumnaId);
+      const whatsappHref = buildWhatsAppIvisHref(
+        context.nombre,
+        "me gustaría contarte algo importante",
+      );
+      await appendConversation(alumnaId, `Sustitución: ${gramos} g ${alimento}`, ESCALATION_REPLY, true);
+      return {
+        reply: ESCALATION_REPLY,
+        escalated: true,
+        whatsappHref,
+        fechaHoy: getTodayDateKey(),
+      };
+    }
+
+    const today = getTodayDateKey();
+    const [evaluacion, plan, alumna, catalogoRaw] = await Promise.all([
+      EvaluacionNutricional.findOne({ alumnaId, completada: true }),
+      PlanNutricional.findOne({ alumnaId, estado: "publicado" }).sort({
+        publicadoAt: -1,
+      }),
+      Usuario.findById(alumnaId).select("nombre"),
+      Alimento.find({ activo: true })
+        .select("nombre categoria porcionReferencia macrosPorPorcion")
+        .lean(),
+    ]);
+
+    const catalogo = catalogoRaw as unknown as CatalogAlimentoMacros[];
+    const planContext = plan
+      ? {
+          titulo: plan.titulo,
+          macrosObjetivo: plan.macrosObjetivo,
+          dias: plan.dias,
+          observacionesProfe: plan.observacionesProfe ?? undefined,
+        }
+      : undefined;
+
+    const alternativas = buildAlternativasSustitucion({
+      alimento,
+      gramos,
+      catalogo,
+      evaluacion: evaluacion?.toObject(),
+      plan: plan ?? undefined,
+    });
+
+    if (catalogo.length === 0) {
+      const reply = mensajeCatalogoVacio();
+      await appendConversation(alumnaId, `Sustitución: ${gramos} g de ${alimento}`, reply, false);
+      return { reply, escalated: false, whatsappHref: undefined, fechaHoy: today };
+    }
+
+    const enPlan = alimentoApareceEnPlan(alimento, plan ?? undefined);
+    let reply = formatSustitucionReply(alimento, gramos, alternativas, { enPlan });
+
+    if (isGeminiConfigured() && alternativas.length >= 1) {
+      const sugerenciasCatalogo = toSugerenciasCatalogo(alternativas);
+      const polished = await nutritionGeminiService.sustitucionAlimento({
+        alimento,
+        gramos,
+        evaluacion: evaluacion?.toObject(),
+        plan: planContext,
+        alumnaNombre: alumna?.nombre,
+        sugerenciasCatalogo,
+        preserveAlternatives: true,
+      });
+      if (responseIncludesAlternativas(polished, alternativas)) {
+        reply = polished;
+      }
+    }
+
+    const userLabel = `Sustitución: ${gramos} g de ${alimento}`;
+    await appendConversation(alumnaId, userLabel, reply, false);
+
+    return { reply, escalated: false, whatsappHref: undefined, fechaHoy: today };
   },
 
   async checkin(

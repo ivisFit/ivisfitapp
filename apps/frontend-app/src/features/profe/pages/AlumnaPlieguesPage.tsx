@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/Button";
-import { CardSkeleton, ChartSkeleton, SkeletonLine } from "@/components/skeletons/AppSkeleton";
+import { CardSkeleton, ChartSkeleton, PageHeaderSkeleton, SkeletonStack } from "@/components/skeletons/AppSkeleton";
 import { CircunferenciasAlumnaToggleCard } from "@/features/profe/components/pliegues/CircunferenciasAlumnaToggleCard";
 import { MetodoCalculoSelector } from "@/features/profe/components/pliegues/MetodoCalculoSelector";
 import { SkinfoldForm } from "@/features/profe/components/SkinfoldForm";
@@ -113,11 +113,11 @@ export function PlieguesContent({
 
   if (loading) {
     return (
-      <div aria-busy="true" aria-label="Cargando pliegues">
-        <SkeletonLine size="lg" width="w-48" gold />
-        <CardSkeleton lines={2} />
-        <CardSkeleton lines={3} />
-      </div>
+      <SkeletonStack aria-busy={true} aria-label="Cargando pliegues">
+        <PageHeaderSkeleton titleWidth="w-48" subtitle={false} />
+        <CardSkeleton lines={2} elevated />
+        <CardSkeleton lines={3} elevated />
+      </SkeletonStack>
     );
   }
 
@@ -216,7 +216,7 @@ function AlumnaPlieguesView({
 
   const renderContent = () => {
     if (alumnaLoading) {
-      return <SkeletonLine size="lg" width="w-48" gold />;
+      return <PageHeaderSkeleton titleWidth="w-48" subtitle={false} />;
     }
     if (alumnaError) {
       return <p className="auth-error">{alumnaError}</p>;

@@ -21,7 +21,7 @@ const BRIDGE_COPY: Record<
   },
   toAlimentacion: {
     title: "¡Todo listo!",
-    subtitle: "Preparando tu espacio de alimentación...",
+    subtitle: "Ivis va a revisar tu evaluación y preparar tu plan...",
   },
 };
 

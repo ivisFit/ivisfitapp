@@ -8,7 +8,7 @@ export const createReunionSchema = z.object({
   hora: horaSchema,
   titulo: z.string().min(1).max(120).default("Reunión"),
   descripcion: z.string().trim().max(500).optional(),
-  meetLink: z.string().url(),
+  meetLink: z.string().trim().min(1).max(500),
 });
 
 export const updateReunionSchema = createReunionSchema

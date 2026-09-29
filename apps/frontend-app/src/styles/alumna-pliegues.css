@@ -524,3 +524,8 @@
     text-transform: uppercase;
   }
 }
+
+.biblioteca-page__search-wrap {
+  margin: 1rem 0 1.5rem;
+  padding: 0 0.15rem;
+}

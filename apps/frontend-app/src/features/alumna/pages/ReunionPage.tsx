@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { CalendarClock, Video } from "lucide-react";
 import { useProximaReunion } from "@/features/alumna/hooks/useProximaReunion";
-import { formatReunionDate } from "@/features/profe/types/reunion";
+import { formatReunionDate, parseReunionLinkHref } from "@/features/profe/types/reunion";
 import { CardSkeleton } from "@/components/skeletons/AppSkeleton";
 import { alumnaRoutes } from "@/routes/paths";
 
@@ -60,6 +60,8 @@ export function ReunionPage() {
     );
   }
 
+  const reunionLinkHref = parseReunionLinkHref(reunion.meetLink);
+
   return (
     <div className="page reunion-page">
       <header className={`reunion-page__header ${esHoy ? "reunion-page__header--today" : ""}`}>
@@ -82,15 +84,21 @@ export function ReunionPage() {
       ) : null}
 
       <section className="reunion-page__card reunion-page__card--cta">
-        <a
-          className="btn btn--primary reunion-page__meet-btn"
-          href={reunion.meetLink}
-          target="_blank"
-          rel="noreferrer"
-        >
-          <Video size={18} aria-hidden />
-          Entrar a la reunión
-        </a>
+        {reunionLinkHref ? (
+          <a
+            className="btn btn--primary reunion-page__meet-btn"
+            href={reunionLinkHref}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <Video size={18} aria-hidden />
+            Entrar a la reunión
+          </a>
+        ) : (
+          <p className="reunion-page__link-text">
+            <strong>Link de reunión:</strong> {reunion.meetLink}
+          </p>
+        )}
         <Link className="btn btn--ghost" href={alumnaRoutes.rutina}>
           Volver
         </Link>

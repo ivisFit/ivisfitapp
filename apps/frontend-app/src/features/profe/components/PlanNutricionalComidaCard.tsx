@@ -8,6 +8,7 @@ import type {
 } from "@/features/alumna/types/plan-nutricional";
 import { type Alimento } from "@/features/profe/types/alimento";
 import { AlimentoAutocomplete } from "./AlimentoAutocomplete";
+import { AlimentoCatalogPicker } from "./AlimentoCatalogPicker";
 
 function sumComidaKcal(comida: ComidaPlan): number {
   return comida.ingredientes.reduce(
@@ -82,28 +83,47 @@ export function PlanNutricionalComidaCard({
       </div>
 
       <div className="plan-nutricional-ingredientes">
-        {comida.ingredientes.map((ingrediente, ingredienteIndex) => (
+        {comida.ingredientes.map((ingrediente, ingredienteIndex) => {
+          const sinCatalogo =
+            Boolean(ingrediente.nombre.trim()) && !ingrediente.alimentoId;
+
+          return (
           <div
             key={`${fieldPrefix}-ing-${ingredienteIndex}`}
-            className="plan-nutricional-ingredientes__row"
+            className={
+              sinCatalogo
+                ? "plan-nutricional-ingredientes__row plan-nutricional-ingredientes__row--sin-catalogo"
+                : "plan-nutricional-ingredientes__row"
+            }
           >
-            <AlimentoAutocomplete
-              label="Alimento"
-              name={`${fieldPrefix}-ing-${ingredienteIndex}-nombre`}
-              value={ingrediente.nombre}
-              onChangeText={(value) =>
-                onUpdateIngrediente(ingredienteIndex, {
-                  nombre: value,
-                  alimentoId: undefined,
-                  kcal: undefined,
-                  proteinaG: undefined,
-                  carbohidratosG: undefined,
-                  grasasG: undefined,
-                })
-              }
-              onSelect={(alimento) => onSelectAlimento(ingredienteIndex, alimento)}
-              disabled={disabled}
-            />
+            <div className="plan-nutricional-ingredientes__alimento">
+              <AlimentoAutocomplete
+                label="Alimento"
+                name={`${fieldPrefix}-ing-${ingredienteIndex}-nombre`}
+                value={ingrediente.nombre}
+                onChangeText={(value) =>
+                  onUpdateIngrediente(ingredienteIndex, {
+                    nombre: value,
+                    alimentoId: undefined,
+                    kcal: undefined,
+                    proteinaG: undefined,
+                    carbohidratosG: undefined,
+                    grasasG: undefined,
+                  })
+                }
+                onSelect={(alimento) => onSelectAlimento(ingredienteIndex, alimento)}
+                disabled={disabled}
+              />
+              <AlimentoCatalogPicker
+                disabled={disabled}
+                onSelect={(alimento) => onSelectAlimento(ingredienteIndex, alimento)}
+              />
+              {sinCatalogo ? (
+                <p className="plan-nutricional-ingredientes__catalogo-hint" role="status">
+                  Sin match en catálogo. Elegí uno de la lista o dejá el nombre libre.
+                </p>
+              ) : null}
+            </div>
             <Input
               label="Cantidad"
               name={`${fieldPrefix}-ing-${ingredienteIndex}-cantidad`}
@@ -148,7 +168,8 @@ export function PlanNutricionalComidaCard({
               Quitar
             </Button>
           </div>
-        ))}
+          );
+        })}
         <Button
           type="button"
           variant="ghost"

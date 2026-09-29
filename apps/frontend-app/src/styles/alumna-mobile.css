@@ -6,6 +6,7 @@
   .app-content:has(.alumna-seguimiento-view),
   .app-content:has(.alumna-alimentacion-view),
   .app-content:has(.progreso-page),
+  .app-content:has(.perfil-page),
   .app-content:has(.circunferencias-page),
   .app-content:has(.alimentacion-page) {
     padding-left: 0.75rem;
@@ -16,6 +17,7 @@
   .app-content:has(.alumna-seguimiento-view) .feature-card,
   .app-content:has(.alumna-alimentacion-view) .feature-card,
   .app-content:has(.progreso-page) .feature-card,
+  .app-content:has(.perfil-page) .feature-card,
   .app-content:has(.circunferencias-page) .feature-card,
   .app-content:has(.alimentacion-page) .feature-card {
     padding: 0.75rem;
@@ -145,8 +147,9 @@
     gap: 0.25rem 0.5rem;
   }
 
-  /* Progreso */
-  .progreso-page.page {
+  /* Progreso / Mi perfil */
+  .progreso-page.page,
+  .perfil-page.page {
     gap: 0.65rem;
   }
 

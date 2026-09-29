@@ -211,6 +211,126 @@ const ALIMENTOS_BASE: CreateAlimentoInput[] = [
   { nombre: "Harina común", categoria: "otro", porcionReferencia: { cantidad: 30, unidad: "g" }, macrosPorPorcion: { kcal: 109, proteinaG: 3, carbohidratosG: 23, grasasG: 0.3 }, activo: true },
   { nombre: "Harina integral", categoria: "otro", porcionReferencia: { cantidad: 30, unidad: "g" }, macrosPorPorcion: { kcal: 102, proteinaG: 4, carbohidratosG: 20, grasasG: 0.7 }, activo: true },
   { nombre: "Polvo para hornear", categoria: "otro", porcionReferencia: { cantidad: 5, unidad: "g" }, macrosPorPorcion: { kcal: 5, proteinaG: 0, carbohidratosG: 1.2, grasasG: 0 }, activo: true },
+
+  // —— Ampliación AR / uso frecuente ——
+  { nombre: "Suprema de pollo", categoria: "proteina", ...g100(165, 31, 0, 3.6), notas: "Cocida sin piel" },
+  { nombre: "Matambre vacuno magro", categoria: "proteina", ...g100(175, 27, 0, 7) },
+  { nombre: "Lomo vacuno", categoria: "proteina", ...g100(190, 28, 0, 8) },
+  { nombre: "Hígado vacuno", categoria: "proteina", ...g100(135, 20, 3.9, 3.6), notas: "Cocido" },
+  { nombre: "Bondiola magra", categoria: "proteina", ...g100(198, 27, 0, 9.5) },
+  { nombre: "Lenguado", categoria: "proteina", ...g100(91, 18.5, 0, 1.2) },
+  { nombre: "Abadejo", categoria: "proteina", ...g100(82, 18, 0, 0.7) },
+  { nombre: "Anchoas en aceite", categoria: "proteina", porcionReferencia: { cantidad: 20, unidad: "g" }, macrosPorPorcion: { kcal: 42, proteinaG: 5.8, carbohidratosG: 0, grasasG: 2.2 }, notas: "Escurridas", activo: true },
+  { nombre: "Surimi", categoria: "proteina", ...g100(99, 15, 7, 0.9) },
+  { nombre: "Milanesa de soja", categoria: "proteina", porcionReferencia: { cantidad: 1, unidad: "unidad" }, macrosPorPorcion: { kcal: 120, proteinaG: 12, carbohidratosG: 8, grasasG: 4.5 }, activo: true },
+  { nombre: "Mortadela light", categoria: "proteina", ...g100(105, 16, 2, 3.5) },
+  { nombre: "Jamón crudo", categoria: "proteina", porcionReferencia: { cantidad: 30, unidad: "g" }, macrosPorPorcion: { kcal: 75, proteinaG: 9, carbohidratosG: 0.5, grasasG: 4 }, activo: true },
+  { nombre: "Queso untable light", categoria: "proteina", porcionReferencia: { cantidad: 30, unidad: "g" }, macrosPorPorcion: { kcal: 55, proteinaG: 6, carbohidratosG: 2, grasasG: 2.5 }, activo: true },
+  { nombre: "Peceto vacuno", categoria: "proteina", ...g100(175, 29, 0, 6) },
+
+  { nombre: "Medialuna", categoria: "carbohidrato", porcionReferencia: { cantidad: 1, unidad: "unidad" }, macrosPorPorcion: { kcal: 180, proteinaG: 4, carbohidratosG: 24, grasasG: 8 }, activo: true },
+  { nombre: "Galletitas de agua", categoria: "carbohidrato", porcionReferencia: { cantidad: 30, unidad: "g" }, macrosPorPorcion: { kcal: 130, proteinaG: 3, carbohidratosG: 22, grasasG: 3.5 }, activo: true },
+  { nombre: "Crackers integrales", categoria: "carbohidrato", porcionReferencia: { cantidad: 30, unidad: "g" }, macrosPorPorcion: { kcal: 125, proteinaG: 3.5, carbohidratosG: 20, grasasG: 3.8 }, activo: true },
+  { nombre: "Pan de molde integral", categoria: "carbohidrato", porcionReferencia: { cantidad: 30, unidad: "g" }, macrosPorPorcion: { kcal: 72, proteinaG: 3.5, carbohidratosG: 12, grasasG: 1.2 }, notas: "1 rebanada", activo: true },
+  { nombre: "Pan pita integral", categoria: "carbohidrato", porcionReferencia: { cantidad: 1, unidad: "unidad" }, macrosPorPorcion: { kcal: 165, proteinaG: 5.5, carbohidratosG: 33, grasasG: 1.5 }, activo: true },
+  { nombre: "Arroz basmati cocido", categoria: "carbohidrato", ...g100(121, 2.6, 27, 0.4) },
+  { nombre: "Bulgur cocido", categoria: "carbohidrato", ...g100(83, 3.1, 18.6, 0.2) },
+  { nombre: "Cebada perlada cocida", categoria: "carbohidrato", ...g100(123, 2.3, 28, 0.4) },
+  { nombre: "Sémola cocida", categoria: "carbohidrato", ...g100(136, 4.8, 28, 0.5) },
+  { nombre: "Fideos de arroz cocidos", categoria: "carbohidrato", ...g100(109, 2, 25, 0.2) },
+  { nombre: "Pan rallado", categoria: "carbohidrato", porcionReferencia: { cantidad: 30, unidad: "g" }, macrosPorPorcion: { kcal: 118, proteinaG: 4, carbohidratosG: 22, grasasG: 1.5 }, activo: true },
+  { nombre: "Harina de maíz", categoria: "carbohidrato", porcionReferencia: { cantidad: 30, unidad: "g" }, macrosPorPorcion: { kcal: 110, proteinaG: 2.5, carbohidratosG: 23, grasasG: 1.2 }, activo: true },
+  { nombre: "Tostadas de arroz", categoria: "carbohidrato", porcionReferencia: { cantidad: 2, unidad: "unidad" }, macrosPorPorcion: { kcal: 70, proteinaG: 1.4, carbohidratosG: 15, grasasG: 0.5 }, activo: true },
+  { nombre: "Pan de hamburguesa integral", categoria: "carbohidrato", porcionReferencia: { cantidad: 1, unidad: "unidad" }, macrosPorPorcion: { kcal: 140, proteinaG: 6, carbohidratosG: 24, grasasG: 2.5 }, activo: true },
+
+  { nombre: "Lupín cocido", categoria: "legumbre", ...g100(116, 15, 10, 2.5) },
+  { nombre: "Porotos de alubia cocidos", categoria: "legumbre", ...g100(127, 8.7, 23, 0.5) },
+  { nombre: "Lentejas rojas cocidas", categoria: "legumbre", ...g100(116, 9, 20, 0.4) },
+  { nombre: "Falafel", categoria: "legumbre", porcionReferencia: { cantidad: 50, unidad: "g" }, macrosPorPorcion: { kcal: 150, proteinaG: 6, carbohidratosG: 16, grasasG: 7 }, notas: "Horneado", activo: true },
+  { nombre: "Porotos mung cocidos", categoria: "legumbre", ...g100(105, 7, 19, 0.4) },
+  { nombre: "Lentejas en lata escurridas", categoria: "legumbre", ...g100(116, 9, 20, 0.4), notas: "Escurridas" },
+  { nombre: "Garbanzos en lata escurridos", categoria: "legumbre", ...g100(164, 8.9, 27, 2.6), notas: "Escurridos" },
+  { nombre: "Pasta de porotos negros", categoria: "legumbre", porcionReferencia: { cantidad: 50, unidad: "g" }, macrosPorPorcion: { kcal: 110, proteinaG: 7, carbohidratosG: 18, grasasG: 0.8 }, activo: true },
+
+  { nombre: "Manteca", categoria: "grasa", porcionReferencia: { cantidad: 10, unidad: "g" }, macrosPorPorcion: { kcal: 72, proteinaG: 0.1, carbohidratosG: 0, grasasG: 8.1 }, activo: true },
+  { nombre: "Tahini", categoria: "grasa", porcionReferencia: { cantidad: 15, unidad: "g" }, macrosPorPorcion: { kcal: 89, proteinaG: 2.7, carbohidratosG: 3.2, grasasG: 8 }, activo: true },
+  { nombre: "Crema de avellanas", categoria: "grasa", porcionReferencia: { cantidad: 15, unidad: "g" }, macrosPorPorcion: { kcal: 95, proteinaG: 1.5, carbohidratosG: 4, grasasG: 8.5 }, activo: true },
+  { nombre: "Pecanas", categoria: "grasa", porcionReferencia: { cantidad: 30, unidad: "g" }, macrosPorPorcion: { kcal: 207, proteinaG: 2.7, carbohidratosG: 4, grasasG: 21.5 }, activo: true },
+  { nombre: "Avellanas", categoria: "grasa", porcionReferencia: { cantidad: 30, unidad: "g" }, macrosPorPorcion: { kcal: 188, proteinaG: 4.5, carbohidratosG: 5, grasasG: 18 }, activo: true },
+  { nombre: "Ghee", categoria: "grasa", porcionReferencia: { cantidad: 10, unidad: "g" }, macrosPorPorcion: { kcal: 90, proteinaG: 0, carbohidratosG: 0, grasasG: 10 }, activo: true },
+  { nombre: "Queso azul", categoria: "grasa", porcionReferencia: { cantidad: 30, unidad: "g" }, macrosPorPorcion: { kcal: 100, proteinaG: 6, carbohidratosG: 0.5, grasasG: 8.5 }, activo: true },
+  { nombre: "Crema de castañas", categoria: "grasa", porcionReferencia: { cantidad: 15, unidad: "g" }, macrosPorPorcion: { kcal: 92, proteinaG: 1.8, carbohidratosG: 4.5, grasasG: 7.5 }, activo: true },
+  { nombre: "Mix de frutos secos", categoria: "grasa", porcionReferencia: { cantidad: 30, unidad: "g" }, macrosPorPorcion: { kcal: 175, proteinaG: 5, carbohidratosG: 6, grasasG: 15 }, activo: true },
+  { nombre: "Semillas de sésamo", categoria: "grasa", porcionReferencia: { cantidad: 15, unidad: "g" }, macrosPorPorcion: { kcal: 87, proteinaG: 2.7, carbohidratosG: 3.5, grasasG: 7.5 }, activo: true },
+
+  { nombre: "Puerro", categoria: "verdura", ...g100(61, 1.5, 14, 0.3) },
+  { nombre: "Kale", categoria: "verdura", ...g100(49, 4.3, 8.8, 0.9) },
+  { nombre: "Coles de Bruselas", categoria: "verdura", ...g100(43, 3.4, 9, 0.3), notas: "Cocidas" },
+  { nombre: "Repollo morado", categoria: "verdura", ...g100(31, 1.4, 7, 0.2) },
+  { nombre: "Rabanito", categoria: "verdura", ...g100(16, 0.7, 3.4, 0.1) },
+  { nombre: "Endivia", categoria: "verdura", ...g100(17, 1.3, 3.4, 0.2) },
+  { nombre: "Berenjena asada", categoria: "verdura", ...g100(35, 1, 8.5, 0.2) },
+  { nombre: "Choclo desgranado", categoria: "verdura", ...g100(96, 3.4, 21, 1.5) },
+  { nombre: "Palmitos en conserva", categoria: "verdura", porcionReferencia: { cantidad: 50, unidad: "g" }, macrosPorPorcion: { kcal: 20, proteinaG: 1.5, carbohidratosG: 3.5, grasasG: 0.3 }, notas: "Escurridos", activo: true },
+  { nombre: "Alcaucil", categoria: "verdura", ...g100(47, 3.3, 10.5, 0.2), notas: "Cocido" },
+  { nombre: "Pak choi", categoria: "verdura", ...g100(13, 1.5, 2.2, 0.2) },
+  { nombre: "Rúcula baby", categoria: "verdura", ...g100(25, 2.6, 3.7, 0.7) },
+
+  { nombre: "Papaya", categoria: "fruta", ...g100(43, 0.5, 11, 0.3) },
+  { nombre: "Granada", categoria: "fruta", porcionReferencia: { cantidad: 1, unidad: "unidad" }, macrosPorPorcion: { kcal: 105, proteinaG: 1.5, carbohidratosG: 26, grasasG: 0.5 }, activo: true },
+  { nombre: "Higo", categoria: "fruta", porcionReferencia: { cantidad: 1, unidad: "unidad" }, macrosPorPorcion: { kcal: 37, proteinaG: 0.4, carbohidratosG: 9.5, grasasG: 0.2 }, activo: true },
+  { nombre: "Dátiles", categoria: "fruta", porcionReferencia: { cantidad: 30, unidad: "g" }, macrosPorPorcion: { kcal: 84, proteinaG: 0.6, carbohidratosG: 22, grasasG: 0.1 }, activo: true },
+  { nombre: "Pasas de uva", categoria: "fruta", porcionReferencia: { cantidad: 30, unidad: "g" }, macrosPorPorcion: { kcal: 90, proteinaG: 0.9, carbohidratosG: 24, grasasG: 0.1 }, activo: true },
+  { nombre: "Ciruela seca", categoria: "fruta", porcionReferencia: { cantidad: 30, unidad: "g" }, macrosPorPorcion: { kcal: 72, proteinaG: 0.7, carbohidratosG: 19, grasasG: 0.2 }, activo: true },
+  { nombre: "Coco fresco", categoria: "fruta", porcionReferencia: { cantidad: 50, unidad: "g" }, macrosPorPorcion: { kcal: 175, proteinaG: 1.5, carbohidratosG: 7.5, grasasG: 16.5 }, activo: true },
+  { nombre: "Maracuyá", categoria: "fruta", porcionReferencia: { cantidad: 1, unidad: "unidad" }, macrosPorPorcion: { kcal: 17, proteinaG: 0.4, carbohidratosG: 4, grasasG: 0.2 }, activo: true },
+  { nombre: "Cereza", categoria: "fruta", ...g100(50, 1, 12, 0.3) },
+  { nombre: "Damascos secos", categoria: "fruta", porcionReferencia: { cantidad: 30, unidad: "g" }, macrosPorPorcion: { kcal: 72, proteinaG: 1, carbohidratosG: 18, grasasG: 0.2 }, activo: true },
+  { nombre: "Fruta del bosque congelada", categoria: "fruta", porcionReferencia: { cantidad: 100, unidad: "g" }, macrosPorPorcion: { kcal: 45, proteinaG: 0.8, carbohidratosG: 10, grasasG: 0.3 }, activo: true },
+
+  { nombre: "Dulce de leche light", categoria: "lacteo", porcionReferencia: { cantidad: 20, unidad: "g" }, macrosPorPorcion: { kcal: 50, proteinaG: 1.5, carbohidratosG: 9, grasasG: 1 }, activo: true },
+  { nombre: "Manteca (láctea)", categoria: "lacteo", porcionReferencia: { cantidad: 10, unidad: "g" }, macrosPorPorcion: { kcal: 72, proteinaG: 0.1, carbohidratosG: 0, grasasG: 8.1 }, activo: true },
+  { nombre: "Leche en polvo descremada", categoria: "lacteo", porcionReferencia: { cantidad: 25, unidad: "g" }, macrosPorPorcion: { kcal: 90, proteinaG: 8.5, carbohidratosG: 12, grasasG: 0.2 }, activo: true },
+  { nombre: "Yogur bebible descremado", categoria: "lacteo", porcionReferencia: { cantidad: 200, unidad: "ml" }, macrosPorPorcion: { kcal: 100, proteinaG: 6, carbohidratosG: 16, grasasG: 1.5 }, activo: true },
+  { nombre: "Queso sardo", categoria: "lacteo", porcionReferencia: { cantidad: 30, unidad: "g" }, macrosPorPorcion: { kcal: 110, proteinaG: 7, carbohidratosG: 0.5, grasasG: 9 }, activo: true },
+  { nombre: "Queso reggianito", categoria: "lacteo", porcionReferencia: { cantidad: 30, unidad: "g" }, macrosPorPorcion: { kcal: 115, proteinaG: 8, carbohidratosG: 0.5, grasasG: 9.5 }, activo: true },
+  { nombre: "Queso cremoso light", categoria: "lacteo", porcionReferencia: { cantidad: 30, unidad: "g" }, macrosPorPorcion: { kcal: 65, proteinaG: 5, carbohidratosG: 2, grasasG: 4 }, activo: true },
+  { nombre: "Leche condensada light", categoria: "lacteo", porcionReferencia: { cantidad: 30, unidad: "g" }, macrosPorPorcion: { kcal: 90, proteinaG: 2.5, carbohidratosG: 16, grasasG: 1.5 }, activo: true },
+  { nombre: "Postre de leche light", categoria: "lacteo", porcionReferencia: { cantidad: 100, unidad: "g" }, macrosPorPorcion: { kcal: 80, proteinaG: 3, carbohidratosG: 14, grasasG: 1.5 }, activo: true },
+  { nombre: "Leche fermentada", categoria: "lacteo", porcionReferencia: { cantidad: 200, unidad: "ml" }, macrosPorPorcion: { kcal: 120, proteinaG: 6, carbohidratosG: 18, grasasG: 3 }, activo: true },
+
+  { nombre: "Pimentón", categoria: "condimento", porcionReferencia: { cantidad: 1, unidad: "g" }, macrosPorPorcion: { kcal: 2.8, proteinaG: 0.1, carbohidratosG: 0.5, grasasG: 0.1 }, activo: true },
+  { nombre: "Curry en polvo", categoria: "condimento", porcionReferencia: { cantidad: 2, unidad: "g" }, macrosPorPorcion: { kcal: 6, proteinaG: 0.2, carbohidratosG: 1.2, grasasG: 0.2 }, activo: true },
+  { nombre: "Jengibre fresco", categoria: "condimento", porcionReferencia: { cantidad: 5, unidad: "g" }, macrosPorPorcion: { kcal: 4, proteinaG: 0.1, carbohidratosG: 0.9, grasasG: 0 }, activo: true },
+  { nombre: "Provenzal seco", categoria: "condimento", porcionReferencia: { cantidad: 2, unidad: "g" }, macrosPorPorcion: { kcal: 5, proteinaG: 0.2, carbohidratosG: 1, grasasG: 0.1 }, activo: true },
+  { nombre: "Ají molido", categoria: "condimento", porcionReferencia: { cantidad: 1, unidad: "g" }, macrosPorPorcion: { kcal: 2.8, proteinaG: 0.1, carbohidratosG: 0.5, grasasG: 0.1 }, activo: true },
+  { nombre: "Salsa de tomate natural", categoria: "condimento", porcionReferencia: { cantidad: 50, unidad: "g" }, macrosPorPorcion: { kcal: 25, proteinaG: 1.2, carbohidratosG: 5, grasasG: 0.2 }, activo: true },
+  { nombre: "Mostaza dulce light", categoria: "condimento", porcionReferencia: { cantidad: 15, unidad: "g" }, macrosPorPorcion: { kcal: 25, proteinaG: 0.5, carbohidratosG: 5, grasasG: 0.3 }, activo: true },
+  { nombre: "Laurel seco", categoria: "condimento", porcionReferencia: { cantidad: 1, unidad: "g" }, macrosPorPorcion: { kcal: 3, proteinaG: 0.1, carbohidratosG: 0.7, grasasG: 0.1 }, activo: true },
+  { nombre: "Comino molido", categoria: "condimento", porcionReferencia: { cantidad: 1, unidad: "g" }, macrosPorPorcion: { kcal: 3.8, proteinaG: 0.2, carbohidratosG: 0.4, grasasG: 0.2 }, activo: true },
+  { nombre: "Pasta de ajo", categoria: "condimento", porcionReferencia: { cantidad: 5, unidad: "g" }, macrosPorPorcion: { kcal: 8, proteinaG: 0.2, carbohidratosG: 1.5, grasasG: 0.1 }, activo: true },
+
+  { nombre: "Agua con gas", categoria: "bebida", porcionReferencia: { cantidad: 250, unidad: "ml" }, macrosPorPorcion: { kcal: 0, proteinaG: 0, carbohidratosG: 0, grasasG: 0 }, activo: true },
+  { nombre: "Yerba mate (infusión)", categoria: "bebida", porcionReferencia: { cantidad: 200, unidad: "ml" }, macrosPorPorcion: { kcal: 4, proteinaG: 0.2, carbohidratosG: 0.8, grasasG: 0 }, activo: true },
+  { nombre: "Café con leche descremada", categoria: "bebida", porcionReferencia: { cantidad: 200, unidad: "ml" }, macrosPorPorcion: { kcal: 45, proteinaG: 3, carbohidratosG: 5, grasasG: 1.5 }, activo: true },
+  { nombre: "Chocolate light en polvo", categoria: "bebida", porcionReferencia: { cantidad: 15, unidad: "g" }, macrosPorPorcion: { kcal: 55, proteinaG: 2, carbohidratosG: 10, grasasG: 0.8 }, notas: "Para taza", activo: true },
+  { nombre: "Bebida isotónica zero", categoria: "bebida", porcionReferencia: { cantidad: 250, unidad: "ml" }, macrosPorPorcion: { kcal: 5, proteinaG: 0, carbohidratosG: 1, grasasG: 0 }, activo: true },
+  { nombre: "Limonada sin azúcar", categoria: "bebida", porcionReferencia: { cantidad: 250, unidad: "ml" }, macrosPorPorcion: { kcal: 15, proteinaG: 0.2, carbohidratosG: 3, grasasG: 0 }, activo: true },
+  { nombre: "Batido de proteína listo", categoria: "bebida", porcionReferencia: { cantidad: 250, unidad: "ml" }, macrosPorPorcion: { kcal: 120, proteinaG: 20, carbohidratosG: 5, grasasG: 2 }, activo: true },
+  { nombre: "Leche de coco sin azúcar", categoria: "bebida", porcionReferencia: { cantidad: 200, unidad: "ml" }, macrosPorPorcion: { kcal: 80, proteinaG: 0.5, carbohidratosG: 2, grasasG: 8 }, activo: true },
+  { nombre: "Kombucha", categoria: "bebida", porcionReferencia: { cantidad: 250, unidad: "ml" }, macrosPorPorcion: { kcal: 30, proteinaG: 0, carbohidratosG: 7, grasasG: 0 }, activo: true },
+  { nombre: "Té de hierbas sin azúcar", categoria: "bebida", porcionReferencia: { cantidad: 200, unidad: "ml" }, macrosPorPorcion: { kcal: 0, proteinaG: 0, carbohidratosG: 0, grasasG: 0 }, activo: true },
+
+  { nombre: "Sémola cruda", categoria: "otro", porcionReferencia: { cantidad: 40, unidad: "g" }, macrosPorPorcion: { kcal: 145, proteinaG: 5, carbohidratosG: 30, grasasG: 0.5 }, activo: true },
+  { nombre: "Choclo en lata escurrido", categoria: "otro", porcionReferencia: { cantidad: 100, unidad: "g" }, macrosPorPorcion: { kcal: 80, proteinaG: 2.5, carbohidratosG: 17, grasasG: 1 }, activo: true },
+  { nombre: "Oblea de arroz", categoria: "otro", porcionReferencia: { cantidad: 1, unidad: "unidad" }, macrosPorPorcion: { kcal: 25, proteinaG: 0.5, carbohidratosG: 5.5, grasasG: 0.1 }, activo: true },
+  { nombre: "Barrita proteica", categoria: "otro", porcionReferencia: { cantidad: 1, unidad: "unidad" }, macrosPorPorcion: { kcal: 180, proteinaG: 15, carbohidratosG: 18, grasasG: 6 }, activo: true },
+  { nombre: "Edulcorante en sobre", categoria: "otro", porcionReferencia: { cantidad: 1, unidad: "g" }, macrosPorPorcion: { kcal: 0, proteinaG: 0, carbohidratosG: 0, grasasG: 0 }, activo: true },
+  { nombre: "Alfajor light", categoria: "otro", porcionReferencia: { cantidad: 1, unidad: "unidad" }, macrosPorPorcion: { kcal: 120, proteinaG: 2, carbohidratosG: 22, grasasG: 3 }, activo: true },
+  { nombre: "Copos de maíz sin azúcar", categoria: "otro", porcionReferencia: { cantidad: 30, unidad: "g" }, macrosPorPorcion: { kcal: 110, proteinaG: 2.5, carbohidratosG: 24, grasasG: 0.5 }, activo: true },
+  { nombre: "Levadura nutricional", categoria: "otro", porcionReferencia: { cantidad: 10, unidad: "g" }, macrosPorPorcion: { kcal: 35, proteinaG: 5, carbohidratosG: 3, grasasG: 0.5 }, activo: true },
+  { nombre: "Agar-agar", categoria: "otro", porcionReferencia: { cantidad: 5, unidad: "g" }, macrosPorPorcion: { kcal: 8, proteinaG: 0.2, carbohidratosG: 2, grasasG: 0 }, activo: true },
+  { nombre: "Mermelada light", categoria: "otro", porcionReferencia: { cantidad: 20, unidad: "g" }, macrosPorPorcion: { kcal: 30, proteinaG: 0.2, carbohidratosG: 7, grasasG: 0 }, activo: true },
 ];
 
 async function main() {
@@ -234,6 +354,19 @@ async function main() {
   console.log(
     `Listo: ${inserted} creado(s), ${skipped} ya existían. Catálogo seed: ${ALIMENTOS_BASE.length} alimentos.`,
   );
+
+  const porCategoria = await Alimento.aggregate<{ _id: string; count: number }>([
+    { $match: { activo: true } },
+    { $group: { _id: "$categoria", count: { $sum: 1 } } },
+    { $sort: { _id: 1 } },
+  ]);
+
+  const totalActivos = porCategoria.reduce((acc, row) => acc + row.count, 0);
+  console.log(`\nAlimentos activos en Mongo: ${totalActivos}`);
+  console.log("Por categoría:");
+  for (const row of porCategoria) {
+    console.log(`  ${row._id}: ${row.count}`);
+  }
 
   process.exit(0);
 }

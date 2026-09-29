@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { SkeletonLine } from "@/components/skeletons/AppSkeleton";
+import { PageHeaderSkeleton } from "@/components/skeletons/AppSkeleton";
 import { AlumnaAlimentacionWorkspace } from "@/features/profe/components/AlumnaAlimentacionWorkspace";
 import { useAlumna } from "@/features/profe/hooks/useAlumna";
 import type { AlumnaDetail } from "@/types/usuario";
@@ -89,7 +89,7 @@ function AlumnaAlimentacionView({
 
   const renderContent = () => {
     if (alumnaLoading) {
-      return <SkeletonLine size="lg" width="w-48" gold />;
+      return <PageHeaderSkeleton titleWidth="w-48" subtitle={false} />;
     }
     if (alumnaError) {
       return <p className="auth-error">{alumnaError}</p>;

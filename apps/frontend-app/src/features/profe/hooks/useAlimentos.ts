@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { invalidateCache } from "@/lib/apiCache";
 import { mapDocId } from "@/lib/map-doc-id";
@@ -23,6 +23,69 @@ function mapAlimentoFromApi(doc: AlimentoApiDoc | null | undefined): Alimento | 
     notas: doc.notas ?? "",
     activo: doc.activo,
   };
+}
+
+const CATALOG_SUGGESTION_LIMIT = 20;
+
+let catalogCache: Alimento[] | null = null;
+let catalogPromise: Promise<Alimento[]> | null = null;
+
+export function invalidateAlimentosCatalogCache() {
+  catalogCache = null;
+  catalogPromise = null;
+}
+
+export async function loadAlimentosCatalog(
+  signal?: AbortSignal,
+): Promise<Alimento[]> {
+  if (catalogCache) return catalogCache;
+
+  if (!catalogPromise) {
+    catalogPromise = apiFetch<AlimentoApiDoc[]>(
+      "/api/alimentos?soloActivos=true",
+      { signal },
+    )
+      .then((data) => {
+        const mapped = data
+          .map(mapAlimentoFromApi)
+          .filter((item): item is Alimento => item !== null)
+          .sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+        catalogCache = mapped;
+        return mapped;
+      })
+      .catch((error) => {
+        catalogPromise = null;
+        throw error;
+      });
+  }
+
+  return catalogPromise;
+}
+
+function filterAlimentosCatalog(
+  catalog: Alimento[],
+  query: string,
+  limit = CATALOG_SUGGESTION_LIMIT,
+): Alimento[] {
+  const trimmed = query.trim().toLowerCase();
+  if (!trimmed) {
+    return catalog.slice(0, limit);
+  }
+  return catalog
+    .filter((alimento) => alimento.nombre.toLowerCase().includes(trimmed))
+    .slice(0, limit);
+}
+
+function mergeAlimentosLists(...lists: Alimento[][]): Alimento[] {
+  const byId = new Map<string, Alimento>();
+  for (const list of lists) {
+    for (const alimento of list) {
+      byId.set(alimento.id, alimento);
+    }
+  }
+  return [...byId.values()].sort((a, b) =>
+    a.nombre.localeCompare(b.nombre, "es"),
+  );
 }
 
 export function useAlimentos(enabled = true) {
@@ -100,6 +163,7 @@ export function useAlimentos(enabled = true) {
           void fetchAlimentos();
         }
         invalidateCache("alimentos");
+        invalidateAlimentosCatalogCache();
         return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo crear el alimento");
@@ -131,6 +195,7 @@ export function useAlimentos(enabled = true) {
           void fetchAlimentos();
         }
         invalidateCache("alimentos");
+        invalidateAlimentosCatalogCache();
         return true;
       } catch (err) {
         setError(
@@ -153,6 +218,7 @@ export function useAlimentos(enabled = true) {
       await apiFetch<void>(`/api/alimentos/${id}`, { method: "DELETE" });
       setAlimentos((current) => current.filter((alimento) => alimento.id !== id));
       invalidateCache("alimentos");
+      invalidateAlimentosCatalogCache();
       return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo eliminar el alimento");
@@ -174,37 +240,79 @@ export function useAlimentos(enabled = true) {
   };
 }
 
-export function useAlimentosBusqueda(query: string) {
-  const [resultados, setResultados] = useState<Alimento[]>([]);
-  const [loading, setLoading] = useState(false);
+export function useAlimentosBusqueda(
+  query: string,
+  options?: { enabled?: boolean },
+) {
+  const enabled = options?.enabled ?? true;
+  const [catalog, setCatalog] = useState<Alimento[]>([]);
+  const [catalogLoading, setCatalogLoading] = useState(false);
+  const [catalogLoaded, setCatalogLoaded] = useState(false);
+  const [serverHits, setServerHits] = useState<Alimento[]>([]);
+  const [serverLoading, setServerLoading] = useState(false);
+
+  useEffect(() => {
+    if (!enabled) {
+      setCatalogLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    setCatalogLoading(true);
+    setCatalogLoaded(false);
+
+    void loadAlimentosCatalog(controller.signal)
+      .then((data) => {
+        if (!controller.signal.aborted) {
+          setCatalog(data);
+          setCatalogLoaded(true);
+        }
+      })
+      .catch((err) => {
+        if (err instanceof Error && err.name === "AbortError") return;
+        if (!controller.signal.aborted) {
+          setCatalog([]);
+          setCatalogLoaded(true);
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setCatalogLoading(false);
+        }
+      });
+
+    return () => controller.abort();
+  }, [enabled]);
 
   useEffect(() => {
     const trimmed = query.trim();
-    if (trimmed.length < 2) {
-      setResultados([]);
+    if (!enabled || trimmed.length < 2) {
+      setServerHits([]);
+      setServerLoading(false);
       return;
     }
 
     const controller = new AbortController();
     const timeout = setTimeout(() => {
-      setLoading(true);
+      setServerLoading(true);
       apiFetch<AlimentoApiDoc[]>(
         `/api/alimentos?q=${encodeURIComponent(trimmed)}&soloActivos=true`,
         { signal: controller.signal },
       )
-        .then((data) =>
-          setResultados(
+        .then((data) => {
+          if (controller.signal.aborted) return;
+          setServerHits(
             data
               .map(mapAlimentoFromApi)
               .filter((item): item is Alimento => item !== null),
-          ),
-        )
+          );
+        })
         .catch((err) => {
           if (err instanceof Error && err.name === "AbortError") return;
-          setResultados([]);
+          setServerHits([]);
         })
         .finally(() => {
-          if (!controller.signal.aborted) setLoading(false);
+          if (!controller.signal.aborted) setServerLoading(false);
         });
     }, 250);
 
@@ -212,7 +320,35 @@ export function useAlimentosBusqueda(query: string) {
       clearTimeout(timeout);
       controller.abort();
     };
-  }, [query]);
+  }, [query, enabled]);
 
-  return { resultados, loading };
+  const localHits = useMemo(
+    () => filterAlimentosCatalog(catalog, query),
+    [catalog, query],
+  );
+
+  const resultados = useMemo(
+    () =>
+      mergeAlimentosLists(localHits, serverHits).slice(
+        0,
+        CATALOG_SUGGESTION_LIMIT,
+      ),
+    [localHits, serverHits],
+  );
+
+  const loading = catalogLoading || serverLoading;
+  const catalogEmpty = catalogLoaded && catalog.length === 0;
+  const noMatches =
+    catalogLoaded &&
+    !catalogEmpty &&
+    resultados.length === 0 &&
+    query.trim().length > 0;
+
+  return {
+    resultados,
+    loading,
+    catalogEmpty,
+    noMatches,
+    catalogLoaded,
+  };
 }

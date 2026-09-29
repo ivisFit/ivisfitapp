@@ -21,8 +21,11 @@ export const asistenteController = {
       throw new AppError(403, "No tenés permiso para esta acción");
     }
 
-    const { mensaje, categoria } = asistenteChatSchema.parse(req.body);
-    const result = await asistenteService.chat(usuario.id, mensaje, categoria);
+    const { mensaje, categoria, intent, sustitucion } = asistenteChatSchema.parse(req.body);
+    const result = await asistenteService.chat(usuario.id, mensaje ?? "", categoria, {
+      intent,
+      sustitucion,
+    });
     res.json(result);
   },
 

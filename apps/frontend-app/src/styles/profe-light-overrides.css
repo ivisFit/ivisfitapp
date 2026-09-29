@@ -6,6 +6,7 @@
 .app-shell--profe[data-color-scheme="light"] .profe-dashboard__header h1,
 .app-shell--profe[data-color-scheme="light"] .planes-profe-page__hero > div h1,
 .app-shell--profe[data-color-scheme="light"] .alumna-detail__header h1,
+.app-shell--profe[data-color-scheme="light"] .alumna-detail__header-compact-name,
 .app-shell--profe[data-color-scheme="light"] .alumna-detail-body__name,
 .app-shell--profe[data-color-scheme="light"] .alumna-historial__content strong,
 .app-shell--profe[data-color-scheme="light"] .gestion-alimentacion-workspace__title,
@@ -398,6 +399,11 @@ html[data-profe-color-scheme="light"] .alumna-sheet-modal__close:hover {
 
 .app-shell--profe[data-color-scheme="light"] .alumna-detail__avatar {
   background: linear-gradient(145deg, #fffdf8 0%, #f4efe6 100%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .alumna-detail__header-compact {
+  background: rgb(255 255 255 / 82%);
+  border-color: var(--glass-border);
 }
 
 .app-shell--profe[data-color-scheme="light"] .seguimiento-hero__stats strong small,
@@ -864,8 +870,7 @@ html[data-profe-color-scheme="light"] .alumna-sheet-modal__close:hover {
 /* Modales (in-tree o portaleados) */
 
 html[data-profe-color-scheme="light"] .confirm-leave-modal,
-html[data-profe-color-scheme="light"] .success-modal,
-html[data-profe-color-scheme="light"] .agenda-dia-modal {
+html[data-profe-color-scheme="light"] .success-modal {
   background: #fffdf8;
   border-color: rgb(184 148 31 / 28%);
   color: #1c1814;
@@ -873,7 +878,6 @@ html[data-profe-color-scheme="light"] .agenda-dia-modal {
 
 html[data-profe-color-scheme="light"] .confirm-leave-modal-backdrop,
 html[data-profe-color-scheme="light"] .success-modal-backdrop,
-html[data-profe-color-scheme="light"] .agenda-dia-modal-backdrop,
 html[data-profe-color-scheme="light"] .health-review__backdrop {
   background: rgb(28 24 20 / 28%);
 }
@@ -888,16 +892,14 @@ html[data-profe-color-scheme="light"] .health-review__footer {
 html[data-profe-color-scheme="light"] .confirm-leave-modal__title,
 html[data-profe-color-scheme="light"] .success-modal__title,
 html[data-profe-color-scheme="light"] .health-review__title,
-html[data-profe-color-scheme="light"] .health-review__field-label,
-html[data-profe-color-scheme="light"] .agenda-dia-modal .agenda-dia-detalle__header h3 {
+html[data-profe-color-scheme="light"] .health-review__field-label {
   color: #1c1814;
 }
 
 html[data-profe-color-scheme="light"] .confirm-leave-modal__message,
 html[data-profe-color-scheme="light"] .success-modal__message,
 html[data-profe-color-scheme="light"] .health-review__subtitle,
-html[data-profe-color-scheme="light"] .health-review__requested,
-html[data-profe-color-scheme="light"] .agenda-dia-modal .agenda-dia-detalle__date {
+html[data-profe-color-scheme="light"] .health-review__requested {
   color: #5c5348;
 }
 
@@ -912,18 +914,6 @@ html[data-profe-color-scheme="light"] .health-review__close:hover:not(:disabled)
 html[data-profe-color-scheme="light"] .health-review__item {
   background: rgb(255 255 255 / 88%);
   border-color: rgb(28 24 20 / 10%);
-}
-
-html[data-profe-color-scheme="light"] .agenda-dia-modal .agenda-dia-detalle,
-html[data-profe-color-scheme="light"] .agenda-dia-modal .agenda-dia-detalle__item {
-  background: transparent;
-  border-color: rgb(28 24 20 / 10%);
-}
-
-html[data-profe-color-scheme="light"] .agenda-dia-modal__close {
-  background: rgb(255 255 255 / 88%);
-  color: #1c1814;
-  border-color: rgb(28 24 20 / 12%);
 }
 
 html[data-profe-color-scheme="light"] .gamif-toast {

@@ -168,11 +168,11 @@ export function ReunionForm({
       />
 
       <Input
-        label="Link de Google Meet"
+        label="Link de Reunión"
         name="meetLink"
-        type="url"
+        type="text"
         required
-        placeholder="https://meet.google.com/..."
+        placeholder="URL, código o indicaciones para conectarse"
         value={form.meetLink}
         disabled={isSubmitting}
         onChange={(event) =>

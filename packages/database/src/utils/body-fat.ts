@@ -10,7 +10,42 @@ export type PlieguesJP3 = {
   muslo?: number;
 };
 
+export type PliegueJP7Key =
+  | "biceps"
+  | "tricipital"
+  | "subescapular"
+  | "supraespinal"
+  | "abdominal"
+  | "cuadricipital"
+  | "peroneal";
+
 export type PlieguesJP7 = {
+  biceps?: number;
+  tricipital?: number;
+  subescapular?: number;
+  supraespinal?: number;
+  abdominal?: number;
+  cuadricipital?: number;
+  peroneal?: number;
+};
+
+/** Sitios JP7 en orden de UI (mm). */
+export const JP7_PLIEGUE_SITES: ReadonlyArray<{
+  key: PliegueJP7Key;
+  label: string;
+}> = [
+  { key: "biceps", label: "Bíceps" },
+  { key: "tricipital", label: "Tríceps" },
+  { key: "subescapular", label: "Subescapular" },
+  { key: "supraespinal", label: "Supraespinal" },
+  { key: "abdominal", label: "Abdominal" },
+  { key: "cuadricipital", label: "Cuadricipital" },
+  { key: "peroneal", label: "Peroneal" },
+];
+
+export const JP7_FIELDS = JP7_PLIEGUE_SITES.map((site) => site.key);
+
+type PlieguesJP7Legacy = {
   pectoral?: number;
   axilarMedia?: number;
   tricipital?: number;
@@ -19,6 +54,43 @@ export type PlieguesJP7 = {
   suprailiaco?: number;
   muslo?: number;
 };
+
+function hasLegacyJP7Keys(pliegues: PlieguesJP7 & PlieguesJP7Legacy): boolean {
+  const hasNewSite =
+    pliegues.biceps !== undefined ||
+    pliegues.supraespinal !== undefined ||
+    pliegues.cuadricipital !== undefined ||
+    pliegues.peroneal !== undefined;
+  if (hasNewSite) {
+    return false;
+  }
+
+  return (
+    pliegues.axilarMedia !== undefined ||
+    (pliegues.pectoral !== undefined &&
+      pliegues.suprailiaco !== undefined &&
+      pliegues.subescapular !== undefined)
+  );
+}
+
+/** Convierte pliegues Jackson-Pollock (7 sitios viejos) al protocolo actual. */
+export function normalizePlieguesJP7(
+  pliegues: PlieguesJP7 & PlieguesJP7Legacy,
+): PlieguesJP7 {
+  if (!hasLegacyJP7Keys(pliegues)) {
+    return pliegues;
+  }
+
+  return {
+    biceps: pliegues.biceps ?? pliegues.pectoral,
+    tricipital: pliegues.tricipital,
+    subescapular: pliegues.subescapular,
+    supraespinal: pliegues.supraespinal ?? pliegues.axilarMedia,
+    abdominal: pliegues.abdominal,
+    cuadricipital: pliegues.cuadricipital ?? pliegues.muslo,
+    peroneal: pliegues.peroneal ?? pliegues.suprailiaco,
+  };
+}
 
 export type Circunferencias = {
   cuelloCm?: number;
@@ -88,18 +160,12 @@ export function sumaPlieguesJP3(sexo: Sexo, pliegues: PlieguesJP3): number {
   );
 }
 
-const JP7_FIELDS = [
-  "pectoral",
-  "axilarMedia",
-  "tricipital",
-  "subescapular",
-  "abdominal",
-  "suprailiaco",
-  "muslo",
-] as const;
-
 export function sumaPlieguesJP7(pliegues: PlieguesJP7): number {
-  return JP7_FIELDS.reduce((sum, field) => sum + (pliegues[field] ?? 0), 0);
+  const normalized = normalizePlieguesJP7(pliegues);
+  return JP7_FIELDS.reduce(
+    (sum, field) => sum + (normalized[field] ?? 0),
+    0,
+  );
 }
 
 export function densidadCorporalJP3(
@@ -179,9 +245,12 @@ export function validatePlieguesJP3(
   return null;
 }
 
-export function validatePlieguesJP7(pliegues: PlieguesJP7): string | null {
+export function validatePlieguesJP7(
+  pliegues: PlieguesJP7 & PlieguesJP7Legacy,
+): string | null {
+  const normalized = normalizePlieguesJP7(pliegues);
   for (const field of JP7_FIELDS) {
-    const value = pliegues[field];
+    const value = normalized[field];
     if (value === undefined || value === null || Number.isNaN(value)) {
       return `El pliegue ${field} es requerido`;
     }
@@ -237,7 +306,7 @@ export function calculateJacksonPollock3(
 export function calculateJacksonPollock7(
   sexo: Sexo,
   edad: number,
-  pliegues: PlieguesJP7,
+  pliegues: PlieguesJP7 & PlieguesJP7Legacy,
 ): { porcentajeGrasaCorporal: number; densidadCorporal: number } {
   const validationError = validatePlieguesJP7(pliegues);
   if (validationError) {

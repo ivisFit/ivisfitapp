@@ -569,17 +569,19 @@ export function buildChallenge28Days(
           ? "unlocked"
           : "locked";
 
+    const nombreDia =
+      routineDay?.dia.nombreDia ??
+      configuredDay?.title ??
+      `Día ${dayNumber}`;
+
     return attachStoryMedia(rutina, dayNumber, {
       dayNumber,
       dateKey,
-      title:
-        configuredDay?.title ??
-        routineDay?.dia.nombreDia ??
-        `Día ${dayNumber}`,
+      title: configuredDay?.title ?? nombreDia,
       tags: buildDayTags(routineDay?.dia, configuredDay?.tags),
       state,
       isToday: dayNumber === currentDayNumber,
-      nombreDia: routineDay?.dia.nombreDia,
+      nombreDia,
       numeroSemana: routineDay?.numeroSemana,
       ejercicios: routineDay?.dia.ejercicios ?? [],
       media,

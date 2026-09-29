@@ -5,6 +5,7 @@ import { Button } from "@/components";
 import { apiFetch } from "@/lib/api";
 import type { NutricionChatResponse } from "@/features/alumna/types/plan-nutricional";
 import { useAppAssistantContext } from "@/features/alumna/components/assistant/AppAssistantProvider";
+import { SustitucionAlimentoFlow } from "@/features/alumna/components/alimentacion/SustitucionAlimentoFlow";
 
 type NutricionChatPanelProps = {
   rol: "alumna" | "profe";
@@ -34,13 +35,12 @@ export function NutricionChatPanel({
   if (rol === "alumna") {
     return (
       <section className="nutricion-chat-panel">
-        <h4>{title}</h4>
-        <p className="alumnas-panel__status">
-          Preguntale a tu asistente sobre tu plan, sustituciones o dudas del día.
-        </p>
-        <Button type="button" onClick={() => assistant?.openAssistant()}>
-          Abrir asistente
-        </Button>
+        <SustitucionAlimentoFlow
+          title="Asistente nutricional"
+          description="Pedí alternativas concretas si necesitás cambiar un alimento de tu plan."
+          onOpenAssistant={() => assistant?.openAssistant()}
+          assistantButtonLabel="Consultar otra cosa en el asistente"
+        />
       </section>
     );
   }

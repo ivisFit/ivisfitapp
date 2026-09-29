@@ -508,14 +508,12 @@ export default function CmsEditor({
 
   if (loading) {
     return (
-      <div className="py-12 text-center" aria-busy="true" aria-label="Cargando editor">
-        <div className="mb-4 flex justify-center">
-          <SkeletonLine size="lg" width="w-40" />
-        </div>
-        <div className="mx-auto grid max-w-xl gap-3 text-left">
-          <SkeletonLine size="md" width="full" />
-          <SkeletonLine size="md" width="full" />
-          <SkeletonLine size="md" width="w-75" />
+      <div className="sk-stack sk-stack--tight py-12" aria-busy="true" aria-label="Cargando editor">
+        <div className="mx-auto grid max-w-xl gap-3">
+          <SkeletonLine size="md" width="w-40" gold />
+          <SkeletonLine size="sm" width="full" />
+          <SkeletonLine size="sm" width="full" />
+          <SkeletonLine size="sm" width="w-75" />
         </div>
       </div>
     );

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { MembresiaEditor } from "./MembresiaEditor";
 import { CoachNotaComposer } from "./CoachNotaComposer";
+import { UserAvatar } from "@/components/UserAvatar";
 import type { AlumnaDetail } from "@/types/usuario";
 
 type SheetField = {
@@ -42,15 +43,6 @@ function calcularEdad(fecha?: string) {
     new Date(hoy.getFullYear(), nacimiento.getMonth(), nacimiento.getDate());
   if (hoy < cumple) edad -= 1;
   return edad >= 0 ? edad : null;
-}
-
-function initials(nombre: string) {
-  return nombre
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
 }
 
 function SheetRow({ field, highlight }: { field: SheetField; highlight?: boolean }) {
@@ -196,17 +188,14 @@ export function AlumnaProfileSections({
     <div className="alumna-sheet">
       <article className="alumna-sheet__document">
         <header className="alumna-sheet__header">
-          <div className="alumna-sheet__portrait" aria-hidden>
-            {alumna.fotoPerfil?.url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={alumna.fotoPerfil.url} alt="" />
-            ) : (
-              <span>{initials(alumna.nombre)}</span>
-            )}
-          </div>
+          <UserAvatar
+            name={alumna.nombre}
+            photoUrl={alumna.fotoPerfil?.url ?? null}
+            className="alumna-sheet__portrait"
+          />
           <div className="alumna-sheet__identity">
             <p className="alumna-sheet__kicker">Ficha técnica</p>
-            <h2 className="alumna-sheet__name">{alumna.nombre}</h2>
+            <p className="alumna-sheet__name">{alumna.nombre}</p>
             <div className="alumna-sheet__meta">
               <span
                 className={`alumna-detail-badge alumna-detail-badge--${alumna.estadoAdmision}`}

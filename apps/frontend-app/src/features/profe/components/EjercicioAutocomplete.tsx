@@ -84,11 +84,6 @@ export function EjercicioAutocomplete({
                 <span className="ejercicio-autocomplete__result-name">
                   {ejercicio.nombre}
                 </span>
-                {ejercicio.descripcion ? (
-                  <span className="ejercicio-autocomplete__result-meta">
-                    {ejercicio.descripcion}
-                  </span>
-                ) : null}
               </button>
             </li>
           ))}

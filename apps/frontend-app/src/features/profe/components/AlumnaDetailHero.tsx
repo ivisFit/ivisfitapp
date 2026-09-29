@@ -94,17 +94,46 @@ export function AlumnaDetailHeroMobile({
   );
 }
 
+function estadoAdmisionLabel(estado: AlumnaDetail["estadoAdmision"]) {
+  if (estado === "admitida") return "Admitida";
+  if (estado === "rechazada") return "Rechazada";
+  return "Pendiente";
+}
+
+export function AlumnaDetailHeaderCompact({
+  alumna,
+}: {
+  alumna: AlumnaDetail;
+}) {
+  const estadoLabel = estadoAdmisionLabel(alumna.estadoAdmision);
+
+  return (
+    <div
+      className="alumna-detail__header-compact"
+      role="region"
+      aria-label="Alumna activa"
+    >
+      <UserAvatar
+        name={alumna.nombre}
+        photoUrl={alumna.fotoPerfil?.url ?? null}
+        className="alumna-detail__avatar alumna-detail__avatar--compact"
+      />
+      <p className="alumna-detail__header-compact-name">{alumna.nombre}</p>
+      <span
+        className={`alumna-detail-badge alumna-detail-badge--${alumna.estadoAdmision}`}
+      >
+        {estadoLabel}
+      </span>
+    </div>
+  );
+}
+
 export function AlumnaDetailHeroDesktop({
   alumna,
 }: {
   alumna: AlumnaDetail;
 }) {
-  const estadoLabel =
-    alumna.estadoAdmision === "admitida"
-      ? "Admitida"
-      : alumna.estadoAdmision === "rechazada"
-        ? "Rechazada"
-        : "Pendiente";
+  const estadoLabel = estadoAdmisionLabel(alumna.estadoAdmision);
 
   return (
     <header className="alumna-detail__header">

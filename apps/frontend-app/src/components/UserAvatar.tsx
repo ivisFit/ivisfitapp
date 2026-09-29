@@ -1,6 +1,7 @@
 "use client";
 
 import { getInitials } from "@/lib/display-name";
+import "./UserAvatar.css";
 
 interface UserAvatarProps {
   name: string;

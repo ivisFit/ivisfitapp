@@ -82,6 +82,12 @@ export const PREFERENCIA_OPTIONS: { value: PreferenciaAlimentaria; label: string
     { value: "mediterranea", label: "Mediterránea" },
   ];
 
+export const RESTRICCION_NINGUNA_VALUE = "ninguno" as const;
+
+export type RestriccionWizardValue =
+  | RestriccionAlimentaria
+  | typeof RESTRICCION_NINGUNA_VALUE;
+
 export const RESTRICCION_OPTIONS: {
   value: RestriccionAlimentaria;
   label: string;
@@ -93,6 +99,37 @@ export const RESTRICCION_OPTIONS: {
   { value: "colesterol", label: "Colesterol" },
   { value: "embarazo", label: "Embarazo" },
 ];
+
+export const RESTRICCION_CHIP_OPTIONS: {
+  value: RestriccionWizardValue;
+  label: string;
+}[] = [
+  { value: RESTRICCION_NINGUNA_VALUE, label: "Ninguna" },
+  ...RESTRICCION_OPTIONS,
+];
+
+const MAX_ESTATURA_CM = 250;
+
+export function isEmptyHealthTag(value: string): boolean {
+  return /^(ninguna|ninguno|no)$/i.test(value.trim());
+}
+
+export function filterMeaningfulHealthTags(values: string[]): string[] {
+  return values.filter((value) => value.trim() && !isEmptyHealthTag(value));
+}
+
+export function normalizeRestriccionesSelection(
+  previous: RestriccionWizardValue[],
+  next: RestriccionWizardValue[],
+): RestriccionWizardValue[] {
+  if (next.includes(RESTRICCION_NINGUNA_VALUE) && !previous.includes(RESTRICCION_NINGUNA_VALUE)) {
+    return [RESTRICCION_NINGUNA_VALUE];
+  }
+  if (previous.includes(RESTRICCION_NINGUNA_VALUE) && next.length > 1) {
+    return next.filter((value) => value !== RESTRICCION_NINGUNA_VALUE);
+  }
+  return next;
+}
 
 export const NIVEL_ACTIVIDAD_OPTIONS: { value: NivelActividad; label: string }[] =
   [
@@ -145,12 +182,15 @@ export type WizardQuestionInputType =
 
 export type WizardQuestionField = keyof NutricionWizardFormState;
 
+export type WizardQuestionNumberKind = "integer" | "decimal";
+
 export type WizardQuestionConfig = {
   id: string;
   sectionIndex: number;
   field: WizardQuestionField | null;
   question: string;
   inputType: WizardQuestionInputType;
+  numberKind?: WizardQuestionNumberKind;
   optional?: boolean;
   help?: string;
 };
@@ -186,6 +226,7 @@ export const WIZARD_QUESTIONS: WizardQuestionConfig[] = [
     field: "pesoActualKg",
     question: "¿Cuál es tu peso actual en kilogramos?",
     inputType: "number",
+    numberKind: "decimal",
     help: "Pesate por la mañana, en ayunas y con ropa liviana para mayor precisión.",
   },
   {
@@ -194,6 +235,7 @@ export const WIZARD_QUESTIONS: WizardQuestionConfig[] = [
     field: "pesoObjetivoKg",
     question: "¿Cuál es tu peso objetivo en kilogramos?",
     inputType: "number",
+    numberKind: "decimal",
     help: "El peso al que querés llegar. Si tenés dudas, tu profe puede ayudarte a definirlo.",
   },
   {
@@ -300,7 +342,7 @@ export const WIZARD_QUESTIONS: WizardQuestionConfig[] = [
     id: "resumen",
     sectionIndex: 6,
     field: null,
-    question: "Revisá tus respuestas antes de generar tu plan",
+    question: "Revisá tus respuestas antes de enviar la evaluación a tu profe",
     inputType: "resumen",
   },
 ];
@@ -316,7 +358,7 @@ export type NutricionWizardFormState = {
   ocupacion: Ocupacion | "";
   objetivo: ObjetivoNutricional | "";
   preferenciasAlimentarias: PreferenciaAlimentaria[];
-  restricciones: RestriccionAlimentaria[];
+  restricciones: RestriccionWizardValue[];
   alergias: string[];
   alimentosFavoritos: string[];
   alimentosEvitados: string[];
@@ -367,10 +409,13 @@ export function calculateAgeFromBirthDate(fechaNacimiento?: string): string {
 
 export function parseAlergiasFromProfile(alergias?: string): string[] {
   if (!alergias?.trim()) return [];
-  return alergias
-    .split(/[,;]+/)
-    .map((item) => item.trim())
-    .filter(Boolean);
+  if (isEmptyHealthTag(alergias)) return [];
+  return filterMeaningfulHealthTags(
+    alergias
+      .split(/[,;]+/)
+      .map((item) => item.trim())
+      .filter(Boolean),
+  );
 }
 
 export function prefillFormFromProfile(
@@ -399,14 +444,21 @@ export function shouldSkipQuestion(
   switch (questionId) {
     case "edad": {
       const edad = calculateAgeFromBirthDate(profile.fechaNacimiento);
-      return edad !== "" && Number(edad) > 0;
+      if (edad === "") return false;
+      return (
+        validateQuestion("edad", { ...createInitialFormState(), edad }) === null
+      );
     }
     case "sexo":
       return profile.sexo === "hombre" || profile.sexo === "mujer";
     case "estaturaCm":
-      return typeof profile.alturaCm === "number" && profile.alturaCm > 0;
+      return (
+        typeof profile.alturaCm === "number" &&
+        profile.alturaCm > 0 &&
+        profile.alturaCm <= MAX_ESTATURA_CM
+      );
     case "alergias":
-      return Boolean(profile.alergias?.trim());
+      return parseAlergiasFromProfile(profile.alergias).length > 0;
     default:
       return false;
   }
@@ -426,6 +478,26 @@ export type StepValidationResult = {
 function parsePositiveNumber(value: string): number | null {
   const parsed = Number(value);
   if (!Number.isFinite(parsed) || parsed <= 0) return null;
+  return parsed;
+}
+
+const MAX_PESO_KG = 300;
+
+export function sanitizeDecimalInput(raw: string): string {
+  const normalized = raw.replace(",", ".");
+  const digitsOnly = normalized.replace(/[^\d.]/g, "");
+  const [whole = "", ...rest] = digitsOnly.split(".");
+  if (rest.length === 0) return whole;
+  return `${whole}.${rest.join("")}`;
+}
+
+export function parsePositiveDecimal(value: string): number | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const parsed = Number.parseFloat(sanitizeDecimalInput(trimmed));
+  if (!Number.isFinite(parsed) || parsed <= 0 || parsed > MAX_PESO_KG) {
+    return null;
+  }
   return parsed;
 }
 
@@ -480,18 +552,20 @@ export function validateQuestion(
         return "Seleccioná tu sexo";
       }
       return null;
-    case "estaturaCm":
-      if (!parsePositiveNumber(form.estaturaCm)) {
-        return "Ingresá una estatura válida en cm";
+    case "estaturaCm": {
+      const estatura = parsePositiveNumber(form.estaturaCm);
+      if (!estatura || estatura > MAX_ESTATURA_CM) {
+        return `Ingresá una estatura válida en cm (máx. ${MAX_ESTATURA_CM})`;
       }
       return null;
+    }
     case "pesoActualKg":
-      if (!parsePositiveNumber(form.pesoActualKg)) {
+      if (!parsePositiveDecimal(form.pesoActualKg)) {
         return "Ingresá tu peso actual";
       }
       return null;
     case "pesoObjetivoKg":
-      if (!parsePositiveNumber(form.pesoObjetivoKg)) {
+      if (!parsePositiveDecimal(form.pesoObjetivoKg)) {
         return "Ingresá tu peso objetivo";
       }
       return null;
@@ -563,6 +637,21 @@ export function isQuestionValid(
   return validateQuestion(questionId, form) === null;
 }
 
+export function findFirstInvalidQuestion(
+  form: NutricionWizardFormState,
+  activeQuestions: WizardQuestionConfig[],
+): { index: number; message: string } | null {
+  for (let index = 0; index < activeQuestions.length; index += 1) {
+    const question = activeQuestions[index];
+    if (question.inputType === "resumen") continue;
+    const message = validateQuestion(question.id, form);
+    if (message) {
+      return { index, message };
+    }
+  }
+  return null;
+}
+
 export function validateStep(
   stepIndex: number,
   form: NutricionWizardFormState,
@@ -578,13 +667,16 @@ export function validateStep(
       if (form.sexo !== "hombre" && form.sexo !== "mujer") {
         errors.sexo = "Seleccioná tu sexo";
       }
-      if (!parsePositiveNumber(form.estaturaCm)) {
-        errors.estaturaCm = "Ingresá una estatura válida en cm";
+      {
+        const estatura = parsePositiveNumber(form.estaturaCm);
+        if (!estatura || estatura > MAX_ESTATURA_CM) {
+          errors.estaturaCm = `Ingresá una estatura válida en cm (máx. ${MAX_ESTATURA_CM})`;
+        }
       }
-      if (!parsePositiveNumber(form.pesoActualKg)) {
+      if (!parsePositiveDecimal(form.pesoActualKg)) {
         errors.pesoActualKg = "Ingresá tu peso actual";
       }
-      if (!parsePositiveNumber(form.pesoObjetivoKg)) {
+      if (!parsePositiveDecimal(form.pesoObjetivoKg)) {
         errors.pesoObjetivoKg = "Ingresá tu peso objetivo";
       }
       if (!form.fechaObjetivo) {
@@ -646,21 +738,30 @@ export function validateStep(
 export function buildPayload(
   form: NutricionWizardFormState,
 ): CreateEvaluacionNutricionalPayload {
+  const pesoActualKg = parsePositiveDecimal(form.pesoActualKg);
+  const pesoObjetivoKg = parsePositiveDecimal(form.pesoObjetivoKg);
+  if (pesoActualKg === null || pesoObjetivoKg === null) {
+    throw new Error("Peso actual u objetivo inválido");
+  }
+
   return {
     edad: Number(form.edad),
     sexo: form.sexo as Sexo,
     estaturaCm: Number(form.estaturaCm),
-    pesoActualKg: Number(form.pesoActualKg),
-    pesoObjetivoKg: Number(form.pesoObjetivoKg),
+    pesoActualKg,
+    pesoObjetivoKg,
     fechaObjetivo: form.fechaObjetivo,
     nivelActividad: form.nivelActividad as NivelActividad,
     ocupacion: form.ocupacion as Ocupacion,
     objetivo: form.objetivo as ObjetivoNutricional,
     preferenciasAlimentarias: form.preferenciasAlimentarias,
-    restricciones: form.restricciones,
-    alergias: form.alergias,
-    alimentosFavoritos: form.alimentosFavoritos,
-    alimentosEvitados: form.alimentosEvitados,
+    restricciones: form.restricciones.filter(
+      (value): value is RestriccionAlimentaria =>
+        value !== RESTRICCION_NINGUNA_VALUE,
+    ),
+    alergias: filterMeaningfulHealthTags(form.alergias),
+    alimentosFavoritos: filterMeaningfulHealthTags(form.alimentosFavoritos),
+    alimentosEvitados: filterMeaningfulHealthTags(form.alimentosEvitados),
     horariosDisponibles: form.horariosDisponibles,
     cantidadComidas: Number(form.cantidadComidas),
     tiempoCocinaMinutos: Number(form.tiempoCocinaMinutos),

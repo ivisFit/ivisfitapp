@@ -91,6 +91,9 @@ export {
   resolveMetodoCalculo,
   sumaPlieguesJP3,
   sumaPlieguesJP7,
+  normalizePlieguesJP7,
+  JP7_PLIEGUE_SITES,
+  JP7_FIELDS,
   validateCircunferenciasUsNavy,
   validatePlieguesForSexo,
   validatePlieguesJP3,
@@ -100,6 +103,7 @@ export {
   type PlieguesHombre,
   type PlieguesJP3,
   type PlieguesJP7,
+  type PliegueJP7Key,
   type PlieguesMujer,
   type Sexo,
 } from "./utils/body-fat";

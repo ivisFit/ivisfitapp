@@ -1,10 +1,18 @@
 export interface GamificacionBadge {
   codigo: string;
+  categoria: string;
   nombre: string;
   descripcion: string;
   icono: string;
   desbloqueado: boolean;
   desbloqueadoAt?: string | null;
+}
+
+export interface GamificacionCategoriaResumen {
+  id: string;
+  label: string;
+  total: number;
+  desbloqueados: number;
 }
 
 export interface GamificacionEvento {
@@ -23,6 +31,7 @@ export interface GamificacionPerfil {
   rachaActual: number;
   rachaMaxima: number;
   badges: GamificacionBadge[];
+  categorias?: GamificacionCategoriaResumen[];
   proximosLogros: GamificacionBadge[];
   eventosRecientes: GamificacionEvento[];
 }

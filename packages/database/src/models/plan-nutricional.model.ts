@@ -69,6 +69,10 @@ const planNutricionalSchema = new Schema(
     generadoPorIa: { type: Boolean, default: false },
     publicadoAt: { type: Date },
     notificacionEnviada: { type: Boolean, default: false },
+    clonadoDesdeId: {
+      type: Schema.Types.ObjectId,
+      ref: "PlanNutricional",
+    },
   },
   { timestamps: true, collection: "planes_nutricionales" },
 );

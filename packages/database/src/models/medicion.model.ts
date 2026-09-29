@@ -20,6 +20,14 @@ const plieguesSchema = new Schema(
 
     subescapular: { type: Number },
 
+    biceps: { type: Number },
+
+    supraespinal: { type: Number },
+
+    cuadricipital: { type: Number },
+
+    peroneal: { type: Number },
+
   },
 
   { _id: false },

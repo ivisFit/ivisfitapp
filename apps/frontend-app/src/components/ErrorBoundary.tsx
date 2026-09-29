@@ -51,6 +51,23 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           <p style={{ marginBottom: "2rem", maxWidth: "500px", color: "#aaa" }}>
             Ocurrió un error inesperado. Por favor, intenta recargar la página.
           </p>
+          {process.env.NODE_ENV === "development" && this.state.error ? (
+            <pre
+              style={{
+                marginBottom: "2rem",
+                maxWidth: "min(90vw, 720px)",
+                padding: "1rem",
+                textAlign: "left",
+                overflow: "auto",
+                fontSize: "0.75rem",
+                color: "#f5c518",
+                background: "#1a1a1a",
+                borderRadius: "8px",
+              }}
+            >
+              {this.state.error.message}
+            </pre>
+          ) : null}
           <Button onClick={() => window.location.reload()}>Recargar página</Button>
         </div>
       );

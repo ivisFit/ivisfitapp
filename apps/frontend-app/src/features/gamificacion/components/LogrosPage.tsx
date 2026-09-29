@@ -3,7 +3,31 @@
 import { Button } from "@/components/Button";
 import { SkeletonLine } from "@/components/skeletons/AppSkeleton";
 import { useGamificacion } from "@/features/gamificacion/hooks/useGamificacion";
-import { xpProgresoPorcentaje, type GamificacionBadge } from "@/features/gamificacion/types";
+import {
+  xpProgresoPorcentaje,
+  type GamificacionBadge,
+  type GamificacionCategoriaResumen,
+} from "@/features/gamificacion/types";
+
+const CATEGORIA_LABELS: Record<string, string> = {
+  entrenamiento: "Entrenamiento",
+  alimentacion: "Alimentación",
+  medicion: "Medición",
+  fuerza: "Fuerza",
+  nivel: "Nivel",
+  app: "Tu perfil y la app",
+  combo: "Combos",
+};
+
+const CATEGORIA_ORDEN = [
+  "entrenamiento",
+  "alimentacion",
+  "medicion",
+  "fuerza",
+  "nivel",
+  "combo",
+  "app",
+];
 
 function formatFecha(iso?: string | null): string {
   if (!iso) return "";
@@ -49,6 +73,33 @@ function BadgeCard({ badge }: { badge: GamificacionBadge }) {
   );
 }
 
+function resolveCategorias(
+  badges: GamificacionBadge[],
+  fromApi?: GamificacionCategoriaResumen[],
+): GamificacionCategoriaResumen[] {
+  if (fromApi && fromApi.length > 0) return fromApi;
+  const map = new Map<string, { total: number; desbloqueados: number }>();
+  for (const badge of badges) {
+    const current = map.get(badge.categoria) ?? { total: 0, desbloqueados: 0 };
+    current.total += 1;
+    if (badge.desbloqueado) current.desbloqueados += 1;
+    map.set(badge.categoria, current);
+  }
+  return CATEGORIA_ORDEN.filter((id) => map.has(id)).map((id) => ({
+    id,
+    label: CATEGORIA_LABELS[id] ?? id,
+    total: map.get(id)?.total ?? 0,
+    desbloqueados: map.get(id)?.desbloqueados ?? 0,
+  }));
+}
+
+function badgesPorCategoria(
+  badges: GamificacionBadge[],
+  categoriaId: string,
+): GamificacionBadge[] {
+  return badges.filter((badge) => badge.categoria === categoriaId);
+}
+
 export function LogrosPage() {
   const { data, isLoading, error } = useGamificacion();
 
@@ -65,21 +116,27 @@ export function LogrosPage() {
             <span className="gamif-level-card__label">Nivel</span>
           </div>
           <div className="gamif-level-card__main" aria-hidden>
-            <SkeletonLine size="md" width="w-60" />
-            <SkeletonLine size="lg" width="w-90" />
-            <SkeletonLine size="sm" width="w-75" />
+            <SkeletonLine size="sm" width="w-40" />
+            <span className="sk sk--pill sk--xs sk--full" />
+            <SkeletonLine size="xs" width="w-56" />
           </div>
         </section>
-        <section className="gamif-section" aria-hidden>
-          <ul className="gamif-badges-grid">
-            {Array.from({ length: 4 }).map((_, index) => (
-              <li key={index} className="gamif-badge gamif-badge--locked">
-                <SkeletonLine size="lg" width="w-40" />
-                <SkeletonLine size="sm" width="w-75" />
-              </li>
-            ))}
-          </ul>
-        </section>
+        {Array.from({ length: 3 }).map((_, sectionIndex) => (
+          <section key={sectionIndex} className="gamif-section gamif-category-block" aria-hidden>
+            <SkeletonLine size="md" width="w-40" />
+            <ul className="gamif-badges-grid">
+              {Array.from({ length: 4 }).map((__, index) => (
+                <li key={index} className="gamif-badge gamif-badge--locked">
+                  <span className="sk sk--avatar-sm" aria-hidden />
+                  <span className="gamif-badge__info" aria-hidden>
+                    <SkeletonLine size="sm" width="w-60" />
+                    <SkeletonLine size="xs" width="w-90" />
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
       </div>
     );
   }
@@ -105,8 +162,8 @@ export function LogrosPage() {
 
   const progreso = xpProgresoPorcentaje(data);
   const desbloqueados = data.badges.filter((badge) => badge.desbloqueado);
-  const bloqueados = data.badges.filter((badge) => !badge.desbloqueado);
-  const proximos = data.proximosLogros.filter((badge) => !badge.desbloqueado).slice(0, 3);
+  const proximos = data.proximosLogros.slice(0, 3);
+  const categorias = resolveCategorias(data.badges, data.categorias);
 
   return (
     <div className="logros-page page">
@@ -152,22 +209,11 @@ export function LogrosPage() {
 
       <section className="gamif-section">
         <div className="gamif-section__header">
-          <h2>Logros desbloqueados</h2>
+          <h2>Resumen</h2>
           <span className="gamif-section__count">
             {desbloqueados.length}/{data.badges.length}
           </span>
         </div>
-        {desbloqueados.length > 0 ? (
-          <ul className="gamif-badges-grid">
-            {desbloqueados.map((badge) => (
-              <BadgeCard key={badge.codigo} badge={badge} />
-            ))}
-          </ul>
-        ) : (
-          <p className="gamif-empty">
-            Todavía no desbloqueaste logros. ¡Completá tu primer entrenamiento!
-          </p>
-        )}
       </section>
 
       {proximos.length > 0 ? (
@@ -183,18 +229,25 @@ export function LogrosPage() {
         </section>
       ) : null}
 
-      {bloqueados.length > 0 ? (
-        <section className="gamif-section">
-          <div className="gamif-section__header">
-            <h2>Por descubrir</h2>
-          </div>
-          <ul className="gamif-badges-grid">
-            {bloqueados.slice(0, 6).map((badge) => (
-              <BadgeCard key={badge.codigo} badge={badge} />
-            ))}
-          </ul>
-        </section>
-      ) : null}
+      {categorias.map((categoria) => {
+        const items = badgesPorCategoria(data.badges, categoria.id);
+        if (items.length === 0) return null;
+        return (
+          <section key={categoria.id} className="gamif-section gamif-category-block">
+            <div className="gamif-section__header gamif-category__header">
+              <h2 className="gamif-category__title">{categoria.label}</h2>
+              <span className="gamif-section__count">
+                {categoria.desbloqueados}/{categoria.total}
+              </span>
+            </div>
+            <ul className="gamif-badges-grid">
+              {items.map((badge) => (
+                <BadgeCard key={badge.codigo} badge={badge} />
+              ))}
+            </ul>
+          </section>
+        );
+      })}
 
       {data.eventosRecientes.length > 0 ? (
         <section className="gamif-section">

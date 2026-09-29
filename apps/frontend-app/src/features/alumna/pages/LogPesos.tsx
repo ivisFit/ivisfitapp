@@ -117,20 +117,10 @@ export function LogPesos() {
           />
         </div>
       ) : (
-        <>
-          <div className="waiting-state__actions">
-            <Link
-              href={alumnaRoutes.progresoImprimir}
-              className="btn btn--ghost"
-            >
-              Imprimir progreso
-            </Link>
-          </div>
-          <div className="progreso-page__charts">
-            <ProgresoCumplimientoChart summary={summary} />
-            <ProgresoCargasChart series={series} />
-          </div>
-        </>
+        <div className="progreso-page__charts">
+          <ProgresoCumplimientoChart summary={summary} />
+          <ProgresoCargasChart series={series} />
+        </div>
       )}
 
       {circunferenciasHabilitadas ? (

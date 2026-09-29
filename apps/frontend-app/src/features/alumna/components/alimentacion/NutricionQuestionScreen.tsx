@@ -25,7 +25,9 @@ import {
   OBJETIVO_OPTIONS,
   OCUPACION_OPTIONS,
   PREFERENCIA_OPTIONS,
-  RESTRICCION_OPTIONS,
+  RESTRICCION_CHIP_OPTIONS,
+  normalizeRestriccionesSelection,
+  sanitizeDecimalInput,
   TIEMPO_COCINA_OPTIONS,
 } from "@/features/alumna/lib/nutricion-wizard";
 import type { ObjetivoNutricional } from "@/features/alumna/types/evaluacion-nutricional";
@@ -107,22 +109,32 @@ function renderControl(
   if (!field) return null;
 
   switch (question.inputType) {
-    case "number":
+    case "number": {
+      const isDecimal = question.numberKind === "decimal";
       return (
         <Input
           label=""
           name={field}
-          type="number"
-          inputMode="decimal"
+          type={isDecimal ? "text" : "number"}
+          inputMode={isDecimal ? "decimal" : "numeric"}
+          step={isDecimal ? undefined : "1"}
+          placeholder={isDecimal ? "Ej. 72,5" : undefined}
+          autoComplete={isDecimal ? "off" : undefined}
           value={form[field] as string}
-          onChange={(event) =>
-            onChange(field, event.target.value as NutricionWizardFormState[typeof field])
-          }
+          onChange={(event) => {
+            const raw = event.target.value;
+            const next = isDecimal ? sanitizeDecimalInput(raw) : raw;
+            onChange(
+              field,
+              next as NutricionWizardFormState[typeof field],
+            );
+          }}
           className="nutricion-wizard__question-input"
           aria-label={question.question}
           autoFocus
         />
       );
+    }
     case "date":
       return (
         <Input
@@ -225,9 +237,14 @@ function renderControl(
         return (
           <SelectionChipGroup
             label=""
-            options={RESTRICCION_OPTIONS}
+            options={RESTRICCION_CHIP_OPTIONS}
             value={form.restricciones}
-            onChange={(values) => onChange("restricciones", values)}
+            onChange={(values) =>
+              onChange(
+                "restricciones",
+                normalizeRestriccionesSelection(form.restricciones, values),
+              )
+            }
           />
         );
       }
@@ -258,16 +275,38 @@ function renderControl(
       );
     case "tags": {
       const suggestions = field !== "alergias";
+      const showNoneShortcut =
+        field === "alergias" || field === "alimentosEvitados";
+      const tagValues = form[field] as string[];
       return (
-        <TagInput
-          label=""
-          value={form[field] as string[]}
-          onChange={(values) =>
-            onChange(field, values as NutricionWizardFormState[typeof field])
-          }
-          placeholder="Escribí y presioná Enter"
-          suggestions={suggestions}
-        />
+        <div className="nutricion-wizard__tag-field">
+          {showNoneShortcut ? (
+            <div className="nutricion-chip-group nutricion-chip-group--inline">
+              <button
+                type="button"
+                className={`nutricion-chip${tagValues.length === 0 ? " nutricion-chip--active" : ""}`}
+                aria-pressed={tagValues.length === 0}
+                onClick={() =>
+                  onChange(
+                    field,
+                    [] as NutricionWizardFormState[typeof field],
+                  )
+                }
+              >
+                Ninguna
+              </button>
+            </div>
+          ) : null}
+          <TagInput
+            label=""
+            value={tagValues}
+            onChange={(values) =>
+              onChange(field, values as NutricionWizardFormState[typeof field])
+            }
+            placeholder="Escribí y presioná Enter"
+            suggestions={suggestions}
+          />
+        </div>
       );
     }
     default:

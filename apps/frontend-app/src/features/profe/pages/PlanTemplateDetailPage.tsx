@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/Button";
-import { FormSkeleton, SkeletonLine } from "@/components/skeletons/AppSkeleton";
+import { FormSkeleton, PageHeaderSkeleton, SkeletonCard } from "@/components/skeletons/AppSkeleton";
 import { RutinaBuilder } from "@/features/profe/components/RutinaBuilder";
 import { usePlanTemplateDetail } from "@/features/profe/hooks/usePlanTemplateDetail";
 import { profeRoutes } from "@/routes/paths";
@@ -27,17 +27,17 @@ export function PlanTemplateDetailPage({ planId }: { planId: string }) {
   if (loading || !plan) {
     return (
       <div
-        className="page planes-profe-page"
+        className="page planes-profe-page sk-stack"
         aria-busy="true"
         aria-label="Cargando plantilla"
       >
         <p className="page__back">
           <Link href={profeRoutes.nuevaRutina}>← Volver a laboratorio</Link>
         </p>
-        <SkeletonLine size="2xl" width="w-48" gold />
-        <div className="sk sk--card-elevated">
+        <PageHeaderSkeleton titleWidth="w-48" subtitle={false} />
+        <SkeletonCard elevated>
           <FormSkeleton fields={4} />
-        </div>
+        </SkeletonCard>
       </div>
     );
   }

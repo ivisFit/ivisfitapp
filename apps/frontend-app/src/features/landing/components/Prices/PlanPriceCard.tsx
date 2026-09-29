@@ -9,6 +9,7 @@ import { useEditOptional } from "@/lib/preview-cms/lib/content-edit/EditProvider
 import { getApiErrorMessage } from "@/lib/preview-cms/lib/api-errors";
 import { useImageUpload } from "@/lib/preview-cms/lib/content-edit/useImageUpload";
 import { normalizeStoredImageUrl, resolveUploadUrl } from "@/lib/preview-cms/lib/uploads";
+import { publicBackgroundStyle } from "@/lib/public-image";
 import { PlanCardPreviewChrome } from "./PlanCardPreviewChrome";
 import {
   CardBadge,
@@ -118,7 +119,7 @@ export function PlanPriceCard({
     <CardSurface
       $variant={variant}
       className={surfaceClassName}
-      style={{ backgroundImage: `url(${imageUrl})` }}
+      style={{ backgroundImage: publicBackgroundStyle(imageUrl) }}
       onClick={isEditing ? handleCardClick : undefined}
       aria-label={isEditing ? "Clic en el fondo para cambiar la imagen del plan" : undefined}
     >

@@ -133,6 +133,7 @@ body:has(.app-bottom-nav-more-sheet__backdrop) .app-assistant-fab {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
+  flex-shrink: 0;
   padding: calc(1rem + env(safe-area-inset-top, 0px)) 1.125rem 1rem;
   background: rgb(20 17 15 / 82%);
   backdrop-filter: blur(10px);
@@ -213,8 +214,10 @@ body:has(.app-bottom-nav-more-sheet__backdrop) .app-assistant-fab {
 
 .app-assistant-page__messages {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 1.25rem 1rem;
   display: flex;
   flex-direction: column;
@@ -350,6 +353,7 @@ body:has(.app-bottom-nav-more-sheet__backdrop) .app-assistant-fab {
 }
 
 .app-assistant-page__error {
+  flex-shrink: 0;
   margin: 0 1rem 0.5rem;
   padding: 0.625rem 0.875rem;
   border-radius: var(--radius-md);
@@ -360,6 +364,7 @@ body:has(.app-bottom-nav-more-sheet__backdrop) .app-assistant-fab {
 }
 
 .app-assistant-page__escalation {
+  flex-shrink: 0;
   padding: 0 1rem 0.75rem;
 }
 
@@ -387,10 +392,11 @@ body:has(.app-bottom-nav-more-sheet__backdrop) .app-assistant-fab {
 }
 
 .app-assistant-page__composer {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.75rem 0.875rem 1rem;
+  padding: 0.75rem 0.875rem calc(1rem + env(safe-area-inset-bottom, 0px));
   background: rgb(20 17 15 / 82%);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -455,6 +461,36 @@ body:has(.app-bottom-nav-more-sheet__backdrop) .app-assistant-fab {
 .app-assistant-page__composer-submit:disabled {
   opacity: 0.35;
   cursor: not-allowed;
+}
+
+.app-shell--alumna .app-main:has(.app-assistant-page) {
+  overflow: hidden;
+}
+
+.app-shell--alumna .app-content:has(.app-assistant-page) {
+  flex: 1;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.app-shell--alumna .app-content:has(.app-assistant-page) .page-transition {
+  flex: 1;
+  min-height: 0;
+}
+
+@media (min-width: 768px) {
+  .app-shell--alumna .app-assistant-page {
+    top: var(--app-shell-offset-y);
+    right: var(--sidebar-inset);
+    bottom: var(--app-shell-offset-bottom);
+    left: var(--sidebar-width);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--glass-border-amber);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

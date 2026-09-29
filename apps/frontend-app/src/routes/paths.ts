@@ -22,7 +22,6 @@ export const alumnaRoutes = {
   alimentacion: "/alimentacion",
   evaluacionNutricional: "/evaluacion-nutricional",
   progreso: "/progreso",
-  progresoImprimir: "/progreso/imprimir",
   circunferencias: "/circunferencias",
   asistente: "/asistente",
   tutoriales: "/tutoriales",

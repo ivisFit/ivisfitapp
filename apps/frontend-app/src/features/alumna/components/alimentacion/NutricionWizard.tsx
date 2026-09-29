@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FormSkeleton, SkeletonLine } from "@/components/skeletons/AppSkeleton";
+import { FormSkeleton, PageHeaderSkeleton, SkeletonCard, SkeletonStack } from "@/components/skeletons/AppSkeleton";
 import { NutricionQuestionScreen } from "@/features/alumna/components/alimentacion/NutricionQuestionScreen";
 import { NutricionWizardNav } from "@/features/alumna/components/alimentacion/NutricionWizardNav";
 import { NutricionWizardProgress } from "@/features/alumna/components/alimentacion/NutricionWizardProgress";
@@ -9,6 +9,7 @@ import { useEvaluacionNutricional } from "@/features/alumna/hooks/useEvaluacionN
 import {
   buildPayload,
   createInitialFormState,
+  findFirstInvalidQuestion,
   getActiveWizardQuestions,
   getFirstQuestionIndexForSection,
   getSectionIndexForQuestion,
@@ -18,7 +19,7 @@ import {
   type NutricionWizardFormState,
   type WizardQuestionConfig,
 } from "@/features/alumna/lib/nutricion-wizard";
-import { apiFetch } from "@/lib/api";
+import { ApiError, apiFetch, formatValidationErrorMessage } from "@/lib/api";
 import { fetchCached } from "@/lib/apiCache";
 import type { UsuarioApiDoc } from "@/types/usuario";
 
@@ -84,17 +85,33 @@ export function NutricionWizard({ onComplete }: NutricionWizardProps) {
   }
 
   async function handleSubmit() {
-    setSubmitting(true);
     setSubmitError(null);
+
+    const invalid = findFirstInvalidQuestion(form, activeQuestions);
+    if (invalid) {
+      setSubmitError(invalid.message);
+      setCurrentQuestionIndex(invalid.index);
+      return;
+    }
+
+    setSubmitting(true);
     try {
       await submitEvaluacion(buildPayload(form));
       onComplete();
     } catch (err) {
-      setSubmitError(
-        err instanceof Error
-          ? err.message
-          : "No se pudo guardar la evaluación nutricional",
-      );
+      if (err instanceof ApiError) {
+        setSubmitError(
+          formatValidationErrorMessage(err.message, err.details) ??
+            err.message ??
+            "Datos inválidos. Revisá los campos del formulario.",
+        );
+      } else {
+        setSubmitError(
+          err instanceof Error
+            ? err.message
+            : "No se pudo guardar la evaluación nutricional",
+        );
+      }
     } finally {
       setSubmitting(false);
     }
@@ -137,12 +154,16 @@ export function NutricionWizard({ onComplete }: NutricionWizardProps) {
 
   if (profileLoading || !currentQuestion) {
     return (
-      <div className="nutricion-wizard" aria-busy="true" aria-label="Cargando evaluación">
-        <SkeletonLine size="2xl" width="w-56" gold />
-        <div className="sk sk--card-elevated">
+      <SkeletonStack
+        className="nutricion-wizard"
+        aria-busy={true}
+        aria-label="Cargando evaluación"
+      >
+        <PageHeaderSkeleton titleWidth="w-56" subtitleWidth="w-75" eyebrow />
+        <SkeletonCard elevated>
           <FormSkeleton fields={4} />
-        </div>
-      </div>
+        </SkeletonCard>
+      </SkeletonStack>
     );
   }
 
@@ -151,6 +172,10 @@ export function NutricionWizard({ onComplete }: NutricionWizardProps) {
       <header className="nutricion-wizard__hero nutricion-wizard__hero--compact">
         <span className="nutricion-wizard__eyebrow">Plan nutricional</span>
         <h1>Evaluación Inicial Nutricional</h1>
+        <p>
+          Al enviarla, tu profe la revisa y prepara tu plan. Te avisamos cuando
+          esté publicado en la app.
+        </p>
       </header>
 
       <div className="nutricion-wizard__progress-sticky">

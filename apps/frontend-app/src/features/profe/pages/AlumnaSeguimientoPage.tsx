@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/Button";
-import { CardSkeleton, InlineSkeleton, SkeletonLine } from "@/components/skeletons/AppSkeleton";
+import { CardSkeleton, ListSkeleton, PageHeaderSkeleton, SkeletonStack } from "@/components/skeletons/AppSkeleton";
 import { SeguimientoDayTimeline } from "@/features/profe/components/seguimiento/SeguimientoDayTimeline";
 import { SeguimientoHero } from "@/features/profe/components/seguimiento/SeguimientoHero";
 import { useAlumna } from "@/features/profe/hooks/useAlumna";
@@ -71,11 +71,11 @@ export function SeguimientoContent({
 
   if (loading) {
     return (
-      <div aria-busy="true" aria-label="Cargando seguimiento">
+      <SkeletonStack tight aria-busy={true} aria-label="Cargando seguimiento">
         <CardSkeleton lines={3} elevated />
-        <InlineSkeleton />
-        <CardSkeleton lines={4} elevated />
-      </div>
+        <ListSkeleton items={4} />
+        <CardSkeleton lines={3} elevated />
+      </SkeletonStack>
     );
   }
 
@@ -130,7 +130,7 @@ function AlumnaSeguimientoView({
 
   const renderContent = () => {
     if (alumnaLoading) {
-      return <SkeletonLine size="lg" width="w-48" gold />;
+      return <PageHeaderSkeleton titleWidth="w-48" subtitle={false} />;
     }
     if (alumnaError) {
       return <p className="auth-error">{alumnaError}</p>;

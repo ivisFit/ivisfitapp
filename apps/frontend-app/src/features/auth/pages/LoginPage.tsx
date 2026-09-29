@@ -13,6 +13,7 @@ import {
 } from "@/routes/auth-redirect";
 import { PwaInstallButton } from "@/components/pwa/PwaInstallButton";
 import { publicRoutes } from "@/routes/paths";
+import { prefetchPostLoginRoutes } from "@/lib/prefetch-app-routes";
 import type { AuthUser } from "@/types/auth";
 
 function getPostLoginRoute(user: AuthUser, returnTo: string | null): string {
@@ -29,6 +30,10 @@ export function LoginPage() {
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    prefetchPostLoginRoutes(router, user?.role ?? null);
+  }, [router, user?.role]);
 
   useEffect(() => {
     if (!user || submitting) return;

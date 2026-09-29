@@ -13,6 +13,7 @@
   ],
   "scripts": {
     "dev": "turbo dev",
+    "dev:clean": "node apps/frontend-app/scripts/clean-dev-cache.mjs && turbo dev",
     "build": "turbo build",
     "lint": "turbo lint",
     "start": "turbo start"

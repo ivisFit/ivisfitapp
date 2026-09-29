@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@/components/Button";
 import { apiFetch } from "@/lib/api";
 
 type Resumen = {
@@ -59,13 +58,5 @@ export function ResumenSemanalCard() {
         </li>
       </ul>
     </section>
-  );
-}
-
-export function PrintNowButton() {
-  return (
-    <Button type="button" onClick={() => window.print()}>
-      Imprimir / guardar PDF
-    </Button>
   );
 }

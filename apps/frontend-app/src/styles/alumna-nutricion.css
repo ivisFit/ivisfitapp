@@ -592,7 +592,9 @@
 .alimentacion-waiting {
   display: grid;
   justify-items: start;
-  max-width: 48rem;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
   gap: 0.35rem;
 }
 
@@ -627,8 +629,10 @@
   display: flex;
   flex-direction: column;
   gap: 1.1rem;
-  max-width: 52rem;
-  margin: 0 auto;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  margin: 0;
 }
 
 
@@ -2121,6 +2125,7 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: rgb(255 255 255 / 2%);
+  overflow: visible;
 }
 
 .plan-nutricional-comida__header {
@@ -2437,23 +2442,46 @@
 
 .alimento-autocomplete {
   position: relative;
+  z-index: 1;
 }
 
-.alimento-autocomplete__results {
+.alimento-autocomplete:focus-within {
+  z-index: 25;
+}
+
+.alimento-autocomplete__hint {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.alimento-autocomplete__panel {
   position: absolute;
-  z-index: 5;
-  top: calc(100% + 0.25rem);
+  z-index: 30;
+  top: calc(100% + 0.15rem);
   left: 0;
   right: 0;
-  max-height: 220px;
+  max-height: 260px;
   overflow-y: auto;
-  list-style: none;
-  margin: 0;
-  padding: 0.35rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--glass-border);
   background: var(--glass-bg-solid-elevated);
   box-shadow: var(--glass-shadow-float);
+}
+
+.alimento-autocomplete__loading,
+.alimento-autocomplete__empty {
+  margin: 0;
+  padding: 0.65rem 0.75rem;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.alimento-autocomplete__results {
+  list-style: none;
+  margin: 0;
+  padding: 0.35rem;
 }
 
 .alimento-autocomplete__result {
@@ -2552,4 +2580,141 @@
   margin: 0.75rem 0 0;
   font-size: 0.8rem;
   color: var(--color-text-muted);
+}
+
+.plan-nutricional-builder__version-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid rgb(199 152 10 / 35%);
+  background: rgb(199 152 10 / 10%);
+}
+
+.plan-nutricional-builder__version-banner p {
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+.plan-nutricional-ingredientes__alimento {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.plan-nutricional-ingredientes__row--sin-catalogo {
+  border-left: 3px solid #f59e0b;
+  padding-left: 0.5rem;
+}
+
+.plan-nutricional-ingredientes__catalogo-hint {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #f59e0b;
+}
+
+.alimento-catalog-picker__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 45%);
+  z-index: 40;
+}
+
+.alimento-catalog-picker {
+  position: fixed;
+  z-index: 41;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(640px, calc(100vw - 2rem));
+  max-height: min(80vh, 720px);
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg-solid-elevated);
+  box-shadow: var(--shadow-lg);
+  overflow: auto;
+}
+
+.alimento-catalog-picker__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.alimento-catalog-picker__header h3 {
+  margin: 0 0 0.25rem;
+}
+
+.alimento-catalog-picker__header p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+.alimento-catalog-picker__categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.alimento-catalog-picker__category {
+  border: 1px solid var(--glass-border);
+  background: transparent;
+  color: inherit;
+  border-radius: 999px;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.alimento-catalog-picker__category.is-active {
+  border-color: rgb(199 152 10 / 50%);
+  background: rgb(199 152 10 / 14%);
+}
+
+.alimento-catalog-picker__list {
+  min-height: 180px;
+}
+
+.sustitucion-alimento-flow {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.sustitucion-alimento-flow__header h4 {
+  margin: 0 0 0.25rem;
+}
+
+.sustitucion-alimento-flow__header p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.sustitucion-alimento-flow__form {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.sustitucion-alimento-flow__result {
+  padding: 0.75rem 0.85rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  background: rgb(255 255 255 / 4%);
+  white-space: pre-wrap;
+}
+
+.sustitucion-alimento-flow__result p {
+  margin: 0 0 0.5rem;
+}
+
+.app-assistant-page__embedded-flow {
+  padding: 0.5rem 0.75rem 0.75rem;
 }

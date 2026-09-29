@@ -7,6 +7,7 @@ import {
   calculateJacksonPollock7,
   calculateMasaMagra,
   calculateUsNavy,
+  normalizePlieguesJP7,
   type CreateMedicionInput,
   type Sexo,
 } from "@ivisfit/database";
@@ -153,11 +154,16 @@ export const medicionesService = {
         : null,
     };
 
+    const pliegues =
+      data.metodoCalculo === "jp7" && data.pliegues
+        ? normalizePlieguesJP7(data.pliegues)
+        : data.pliegues;
+
     return Medicion.create({
       alumnaId: data.alumnaId,
       metodoCalculo: data.metodoCalculo,
       fecha: fechaMedicion,
-      pliegues: data.pliegues,
+      pliegues,
       circunferencias: data.circunferencias,
       notas: data.notas,
       pesoCorporalKg: data.pesoCorporalKg,

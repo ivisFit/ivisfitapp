@@ -156,13 +156,57 @@ export type UsuarioApiDoc = {
   tienePlanNutricional?: boolean;
 };
 
-function formatFechaRegistro(fecha?: string) {
-  if (!fecha) return undefined;
-  return new Date(fecha).toLocaleDateString("es-UY", {
+function parseFechaLegible(fecha: string): Date | null {
+  const trimmed = fecha.trim();
+  const display = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(trimmed);
+  if (display) {
+    const [, dd, mm, yyyy] = display;
+    const parsed = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  const isoDate = /^(\d{4})-(\d{2})-(\d{2})/.exec(trimmed);
+  if (isoDate) {
+    const [, yyyy, mm, dd] = isoDate;
+    const parsed = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  if (/T\d/.test(trimmed)) {
+    const parsed = new Date(trimmed);
+    if (Number.isNaN(parsed.getTime())) return null;
+    return new Date(
+      parsed.getUTCFullYear(),
+      parsed.getUTCMonth(),
+      parsed.getUTCDate(),
+    );
+  }
+
+  const parsed = new Date(trimmed);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function formatFechaRegistro(fecha?: string | Date) {
+  if (fecha == null || fecha === "") return undefined;
+  const raw = typeof fecha === "string" ? fecha : fecha.toISOString();
+  const parsed = parseFechaLegible(raw);
+  if (!parsed) return typeof fecha === "string" ? fecha.trim() : undefined;
+  return parsed.toLocaleDateString("es-UY", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
   });
+}
+
+/** Valor para `<input type="date">` (yyyy-mm-dd). */
+export function fechaToDateInputValue(fecha?: string) {
+  if (!fecha?.trim()) return "";
+  const parsed = parseFechaLegible(fecha);
+  if (!parsed) return "";
+  const y = parsed.getFullYear();
+  const m = String(parsed.getMonth() + 1).padStart(2, "0");
+  const d = String(parsed.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 
 export function mapUsuarioFromApi(doc: UsuarioApiDoc): AlumnaListItem {
@@ -188,9 +232,9 @@ export function mapUsuarioFromApi(doc: UsuarioApiDoc): AlumnaListItem {
 export function mapUsuarioDetailFromApi(doc: UsuarioApiDoc): AlumnaDetail {
   return {
     id: doc._id ?? doc.id ?? "",
-    nombre: doc.nombre,
-    email: doc.correo,
-    telefono: doc.telefono,
+    nombre: doc.nombre?.trim() || "Sin nombre",
+    email: doc.correo?.trim() || "",
+    telefono: doc.telefono?.trim() || "",
     mutualista: doc.mutualista || undefined,
     sexo:
       doc.sexo === "hombre" || doc.sexo === "mujer" ? doc.sexo : undefined,

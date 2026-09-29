@@ -8,6 +8,7 @@ import {
   type AsistenteCategoria,
   type ChipSet,
 } from "@/features/alumna/hooks/useAppAssistant";
+import { SustitucionAlimentoFlow } from "@/features/alumna/components/alimentacion/SustitucionAlimentoFlow";
 
 const MAIN_CHIPS = [
   { value: "entrenamiento", label: "🏋️ Mi entrenamiento" },
@@ -29,6 +30,7 @@ const ENTRENAMIENTO_CHIPS = [
 
 const ALIMENTACION_CHIPS = [
   { value: "checkin_alimentacion_hoy", label: "Alimentación de hoy" },
+  { value: "__sustitucion__", label: "Hacer una sustitución" },
   { value: "¿Cuántas proteínas necesito?", label: "¿Cuántas proteínas necesito?" },
   { value: "¿Cómo reemplazo el pollo?", label: "¿Cómo reemplazo el pollo?" },
   { value: "No llego a mis calorías.", label: "No llego a mis calorías" },
@@ -90,6 +92,8 @@ function chipsFor(set: ChipSet) {
       return CHECKIN_ALIMENTACION_CHIPS;
     case "motivo":
       return MOTIVO_CHIPS;
+    case "sustitucion":
+      return [];
     default:
       return [];
   }
@@ -124,6 +128,7 @@ export function AsistentePage() {
     sendCheckin,
     sendCheckinAlimentacion,
     openCheckinAlimentacion,
+    openSustitucionFlow,
     askProgress,
   } = useAppAssistant();
 
@@ -132,10 +137,12 @@ export function AsistentePage() {
   }, [loadBootstrap]);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({
-      top: scrollRef.current.scrollHeight,
-      behavior: "smooth",
+    const el = scrollRef.current;
+    if (!el) return;
+    const frame = requestAnimationFrame(() => {
+      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
     });
+    return () => cancelAnimationFrame(frame);
   }, [messages, loading, chipSet]);
 
   useEffect(() => {
@@ -184,6 +191,11 @@ export function AsistentePage() {
 
     if (chipSet === "alimentacion" && value === "checkin_alimentacion_hoy") {
       openCheckinAlimentacion();
+      return;
+    }
+
+    if (chipSet === "alimentacion" && value === "__sustitucion__") {
+      openSustitucionFlow();
       return;
     }
 
@@ -256,6 +268,16 @@ export function AsistentePage() {
 
         {options.length > 0 && !loading ? (
           <AppAssistantChips options={options} disabled={loading} onSelect={handleChip} />
+        ) : null}
+
+        {chipSet === "sustitucion" && !loading ? (
+          <div className="app-assistant-page__embedded-flow">
+            <SustitucionAlimentoFlow
+              title="Sustitución de alimento"
+              onOpenAssistant={showMainMenu}
+              assistantButtonLabel="Volver al menú"
+            />
+          </div>
         ) : null}
       </div>
 

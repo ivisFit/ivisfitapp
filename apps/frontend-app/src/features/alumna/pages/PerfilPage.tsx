@@ -3,45 +3,36 @@
 import { useState } from "react";
 import { Suspense } from "react";
 import { Button } from "@/components/Button";
-import { FormSkeleton, SkeletonLine } from "@/components/skeletons/AppSkeleton";
-import { UserAvatar } from "@/components/UserAvatar";
-import { getInitials } from "@/lib/display-name";
+import { FormSkeleton, SkeletonCard, SkeletonLine } from "@/components/skeletons/AppSkeleton";
 import { usePerfil, useInvalidatePerfil } from "@/features/alumna/hooks/usePerfil";
 import { PerfilSections } from "@/features/alumna/components/PerfilSections";
 import { PerfilEditForm } from "@/features/alumna/components/PerfilEditForm";
-import { alumnaRoutes } from "@/routes/paths";
-import { useRouter } from "next/navigation";
+import { fechaToDateInputValue } from "@/types/usuario";
 import "./PerfilPage.css";
 
 function PerfilSkeleton() {
   return (
     <div className="perfil-page page" aria-busy="true" aria-label="Cargando perfil">
-      <div className="perfil-skeleton-hero">
-        <SkeletonLine size="xl" width="w-25" className="perfil-skeleton-avatar" />
-        <SkeletonLine size="lg" width="w-48" />
-        <SkeletonLine size="sm" width="w-40" />
-        <SkeletonLine size="sm" width="w-25" />
-      </div>
-      <div className="perfil-skeleton-sections">
-        <SkeletonLine size="md" width="w-32" gold />
-        <div className="sk sk--card-elevated">
-          <FormSkeleton fields={3} />
+      <SkeletonCard elevated className="perfil-skeleton-sheet">
+        <div className="perfil-skeleton-sheet__header">
+          <span className="sk sk--avatar-lg" aria-hidden />
+          <div className="sk-header">
+            <SkeletonLine size="xs" width="w-25" gold />
+            <SkeletonLine size="lg" width="w-48" />
+            <SkeletonLine size="sm" width="w-40" />
+          </div>
         </div>
-        <SkeletonLine size="md" width="w-32" gold />
-        <div className="sk sk--card-elevated">
-          <FormSkeleton fields={4} />
-        </div>
-        <SkeletonLine size="md" width="w-32" gold />
-        <div className="sk sk--card-elevated">
-          <FormSkeleton fields={3} />
-        </div>
-      </div>
+        <FormSkeleton fields={5} showButton={false} />
+      </SkeletonCard>
+      <div
+        className="sk sk--card-elevated perfil-skeleton-gamif"
+        aria-hidden
+      />
     </div>
   );
 }
 
 export function PerfilPage() {
-  const router = useRouter();
   const invalidatePerfil = useInvalidatePerfil();
   const { data: alumna, isLoading, error, refetch } = usePerfil();
 
@@ -83,7 +74,7 @@ export function PerfilPage() {
     personal: {
       telefono: alumna.telefono,
       cedula: alumna.cedula,
-      fechaNacimiento: alumna.fechaNacimiento ? new Date(alumna.fechaNacimiento).toISOString().split("T")[0] : "",
+      fechaNacimiento: fechaToDateInputValue(alumna.fechaNacimiento),
       sexo: alumna.sexo,
       alturaCm: alumna.alturaCm,
     },
@@ -106,7 +97,6 @@ export function PerfilPage() {
       <Suspense fallback={<PerfilSkeleton />}>
         <PerfilSections
           alumna={alumna}
-          gamificacion={alumna.gamificacion}
           onEditSection={handleEditSection}
         />
       </Suspense>

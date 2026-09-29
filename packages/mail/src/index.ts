@@ -8,6 +8,10 @@ export {
   type SendPlanNutricionalEmailParams,
 } from "./send-plan-nutricional-email.js";
 export {
+  sendEvaluacionNutricionalProfeEmail,
+  type SendEvaluacionNutricionalProfeEmailParams,
+} from "./send-evaluacion-nutricional-profe-email.js";
+export {
   sendRutinaAsignadaEmail,
   sendRecordatorioEntrenamientoEmail,
   sendResumenSemanalEmail,

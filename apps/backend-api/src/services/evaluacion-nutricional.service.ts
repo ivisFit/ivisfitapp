@@ -3,7 +3,34 @@ import {
   Usuario,
   type CreateEvaluacionNutricionalInput,
 } from "@ivisfit/database";
+import { sendEvaluacionNutricionalProfeEmail } from "@ivisfit/mail";
+import { getAppName, getAppUrl } from "../lib/email.js";
 import { AppError, assertFound } from "../utils/errors.js";
+
+const OBJETIVO_NUTRICIONAL_LABELS: Record<
+  CreateEvaluacionNutricionalInput["objetivo"],
+  string
+> = {
+  bajar_grasa: "Bajar grasa",
+  ganar_masa: "Ganar masa muscular",
+  recomposicion: "Recomposición corporal",
+  mantener: "Mantener peso",
+  rendimiento: "Mejorar rendimiento",
+  salud: "Salud general",
+};
+
+function getProfeNotificationEmail(): string | null {
+  const value = process.env.PROFE_NOTIFICATION_EMAIL?.trim();
+  return value || null;
+}
+
+function canSendProfeNotificationEmail(): boolean {
+  return Boolean(
+    getProfeNotificationEmail() &&
+      process.env.RESEND_API_KEY?.trim() &&
+      process.env.RESEND_FROM_EMAIL?.trim(),
+  );
+}
 
 export const evaluacionNutricionalService = {
   async getByAlumnaId(alumnaId: string) {
@@ -29,9 +56,37 @@ export const evaluacionNutricionalService = {
       );
     }
 
-    return EvaluacionNutricional.create({
+    const evaluacion = await EvaluacionNutricional.create({
       ...data,
       completada: true,
     });
+
+    if (!canSendProfeNotificationEmail()) {
+      console.warn(
+        "Evaluación guardada sin notificar a profe: configurá PROFE_NOTIFICATION_EMAIL y Resend.",
+      );
+      return evaluacion;
+    }
+
+    try {
+      const to = getProfeNotificationEmail();
+      if (!to) return evaluacion;
+
+      const objetivoLabel =
+        OBJETIVO_NUTRICIONAL_LABELS[data.objetivo] ?? data.objetivo;
+
+      await sendEvaluacionNutricionalProfeEmail({
+        to,
+        alumnaNombre: alumna.nombre,
+        objetivoLabel,
+        alumnaId: String(data.alumnaId),
+        appName: getAppName(),
+        appUrl: getAppUrl(),
+      });
+    } catch (error) {
+      console.error("No se pudo notificar evaluación nutricional a profe:", error);
+    }
+
+    return evaluacion;
   },
 };

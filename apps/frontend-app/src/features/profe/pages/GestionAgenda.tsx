@@ -5,7 +5,6 @@ import { Button } from "@/components";
 import { ListSkeleton } from "@/components/skeletons/AppSkeleton";
 import { AgendaCalendario } from "@/features/profe/components/agenda/AgendaCalendario";
 import { AgendaDiaDetalle } from "@/features/profe/components/agenda/AgendaDiaDetalle";
-import { AgendaDiaModal } from "@/features/profe/components/agenda/AgendaDiaModal";
 import { ReunionForm } from "@/features/profe/components/agenda/ReunionForm";
 import { useReuniones } from "@/features/profe/hooks/useReuniones";
 import {
@@ -33,7 +32,6 @@ export function GestionAgenda({
   const [selectedDate, setSelectedDate] = useState<string | null>(
     formatDateParam(today),
   );
-  const [modalDateKey, setModalDateKey] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingReunion, setEditingReunion] = useState<Reunion | null>(null);
 
@@ -61,27 +59,10 @@ export function GestionAgenda({
   const isSubmitting =
     actionId === "create" || (editingReunion !== null && actionId === editingReunion.id);
 
-  function dayHasReuniones(dateKey: string) {
-    return reuniones.some(
-      (reunion) => getReunionDateKey(reunion.fecha) === dateKey,
-    );
-  }
-
   function handleSelectDate(dateKey: string) {
     setSelectedDate(dateKey);
-
-    if (dayHasReuniones(dateKey)) {
-      setModalDateKey(dateKey);
-      return;
-    }
-
-    setModalDateKey(null);
     setEditingReunion(null);
     setShowForm(false);
-  }
-
-  function closeModal() {
-    setModalDateKey(null);
   }
 
   function handlePrevMonth() {
@@ -101,13 +82,11 @@ export function GestionAgenda({
   function openCreateForm() {
     setEditingReunion(null);
     setShowForm(true);
-    closeModal();
   }
 
   function openEditForm(reunion: Reunion) {
     setEditingReunion(reunion);
     setShowForm(true);
-    closeModal();
   }
 
   function closeForm() {
@@ -143,24 +122,8 @@ export function GestionAgenda({
     );
     if (!confirmed) return;
 
-    const dateKey = getReunionDateKey(reunion.fecha);
-    const success = await deleteReunion(reunion.id);
-    if (!success) return;
-
-    const remaining = reuniones.filter(
-      (item) =>
-        item.id !== reunion.id && getReunionDateKey(item.fecha) === dateKey,
-    );
-
-    if (remaining.length === 0) {
-      closeModal();
-    }
+    await deleteReunion(reunion.id);
   }
-
-  const selectedDayHasReuniones = selectedDate
-    ? dayHasReuniones(selectedDate)
-    : false;
-  const showSidebarDetail = Boolean(selectedDate) && (!selectedDayHasReuniones || showForm);
 
   return (
     <>
@@ -198,18 +161,8 @@ export function GestionAgenda({
             onNextMonth={handleNextMonth}
           />
 
-          <AgendaDiaModal
-            dateKey={modalDateKey}
-            reuniones={reuniones}
-            actionId={actionId}
-            onClose={closeModal}
-            onAdd={openCreateForm}
-            onEdit={openEditForm}
-            onDelete={(reunion) => void handleDelete(reunion)}
-          />
-
           <div className="agenda-layout__detail">
-            {showSidebarDetail ? (
+            {selectedDate ? (
               <AgendaDiaDetalle
                 dateKey={selectedDate}
                 reuniones={reuniones}
@@ -221,8 +174,8 @@ export function GestionAgenda({
             ) : (
               <section className="agenda-dia-detalle agenda-dia-detalle--empty">
                 <p className="alumnas-panel__status">
-                  Elegí un día libre para agendar una nueva reunión, o tocá un día
-                  con citas para ver el detalle.
+                  Elegí un día en el calendario; el detalle y las acciones aparecen
+                  al lado.
                 </p>
               </section>
             )}

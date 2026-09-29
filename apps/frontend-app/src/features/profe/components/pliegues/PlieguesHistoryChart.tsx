@@ -14,9 +14,11 @@ import {
 import type { Medicion } from "@/features/profe/types/medicion";
 import type { MetodoCalculo } from "@/features/profe/types/medicion";
 import type { Sexo } from "@/types/usuario";
+import { normalizePlieguesJP7 } from "@/lib/jp7-pliegues";
 import {
   formatGrasaCorporal,
   formatMedicionDateShort,
+  JP7_PLIEGUE_SITES,
 } from "@/features/profe/utils/pliegues-period";
 
 const AXIS_STROKE = "rgb(91 155 213 / 55%)";
@@ -35,15 +37,21 @@ const JP3_HOMBRE = [
   { key: "muslo", label: "Muslo", color: "#ffc000" },
 ] as const;
 
-const JP7_SERIES = [
-  { key: "pectoral", label: "Pectoral", color: "#f5c518" },
-  { key: "axilarMedia", label: "Axilar", color: "#e8a838" },
-  { key: "tricipital", label: "Tríceps", color: "#5b9bd5" },
-  { key: "subescapular", label: "Subesc.", color: "#7eb8e8" },
-  { key: "abdominal", label: "Abdomen", color: "#ffc000" },
-  { key: "suprailiaco", label: "Suprail.", color: "#c9a227" },
-  { key: "muslo", label: "Muslo", color: "#9ec5e8" },
+const JP7_CHART_COLORS = [
+  "#f5c518",
+  "#5b9bd5",
+  "#7eb8e8",
+  "#e8a838",
+  "#ffc000",
+  "#c9a227",
+  "#9ec5e8",
 ] as const;
+
+const JP7_SERIES = JP7_PLIEGUE_SITES.map((site, index) => ({
+  key: site.key,
+  label: site.label,
+  color: JP7_CHART_COLORS[index] ?? "#5b9bd5",
+}));
 
 const NAVY_MUJER = [
   { key: "cuelloCm", label: "Cuello", color: "#f5c518" },
@@ -98,20 +106,21 @@ function buildChartData(
       };
     }
 
-    const p = medicion.pliegues ?? {};
     if (metodo === "jp7") {
+      const p = normalizePlieguesJP7(medicion.pliegues ?? {});
       return {
         ...base,
-        pectoral: p.pectoral ?? null,
-        axilarMedia: p.axilarMedia ?? null,
+        biceps: p.biceps ?? null,
         tricipital: p.tricipital ?? null,
         subescapular: p.subescapular ?? null,
+        supraespinal: p.supraespinal ?? null,
         abdominal: p.abdominal ?? null,
-        suprailiaco: p.suprailiaco ?? null,
-        muslo: p.muslo ?? null,
+        cuadricipital: p.cuadricipital ?? null,
+        peroneal: p.peroneal ?? null,
       };
     }
 
+    const p = medicion.pliegues ?? {};
     return {
       ...base,
       tricipital: p.tricipital ?? null,

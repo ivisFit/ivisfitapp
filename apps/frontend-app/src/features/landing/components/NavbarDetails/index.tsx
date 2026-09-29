@@ -3,8 +3,9 @@
 import { Box } from "@mui/material";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { MouseEvent } from "react";
+import { useThrottledScroll } from "@/hooks/useThrottledScroll";
 import { LandingAuthButtons } from "@/features/landing/components/LandingAuthButtons";
 import { LinkComponent } from "./LinkComponent";
 
@@ -14,11 +15,9 @@ export const NavbarDetails = () => {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 10);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  useThrottledScroll((scrollTop) => {
+    setScrolled(scrollTop > 10);
+  });
 
   const handleLogoClick = (e: MouseEvent<HTMLAnchorElement>) => {
     if (pathname === "/") {
@@ -33,8 +32,8 @@ export const NavbarDetails = () => {
   return (
     <Box
       sx={{
-        height: scrolled ? 80 : 140,
-        transition: "all 1s ease",
+        height: 80,
+        transition: "background-color 0.3s ease, box-shadow 0.3s ease",
         backgroundColor: "#ffffff",
         position: "fixed",
         top: 0,
@@ -44,11 +43,12 @@ export const NavbarDetails = () => {
         alignItems: "center",
         justifyContent: "space-between",
         zIndex: 10,
-        padding: "0 12%",
+        padding: scrolled ? "0 12%" : "1.75rem 12% 0",
         boxSizing: "border-box",
         margin: 0,
         border: "none",
         outline: "none",
+        boxShadow: scrolled ? "0 1px 0 rgba(0,0,0,0.06)" : "none",
       }}
     >
       <Link
@@ -68,9 +68,16 @@ export const NavbarDetails = () => {
           }}
         >
           <img
+            width={160}
+            height={48}
+            loading="eager"
+            decoding="async"
             style={{
-              width: scrolled ? "7rem" : "10rem",
-              transition: "all 1s ease",
+              width: "auto",
+              height: scrolled ? "2.25rem" : "3.25rem",
+              transform: scrolled ? "scale(0.88)" : "scale(1)",
+              transformOrigin: "left center",
+              transition: "transform 0.35s ease, height 0.35s ease",
               display: "block",
             }}
             src={logo}

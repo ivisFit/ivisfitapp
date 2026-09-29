@@ -26,7 +26,7 @@ export default function AppLoading() {
 
   return (
     <div className="app-route-skeleton" suppressHydrationWarning>
-      <RouteSkeleton role={role} />
+      <RouteSkeleton role={role} pathname={pathname} />
     </div>
   );
 }

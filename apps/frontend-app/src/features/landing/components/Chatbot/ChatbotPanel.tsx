@@ -6,6 +6,7 @@ import { publicRoutes } from "@/routes/paths";
 import { ChatbotChips } from "./ChatbotChips";
 import { ChatbotMessage } from "./ChatbotMessage";
 import { ChatbotAvatar } from "./ChatbotAvatar";
+import { VirtualizedMessageList } from "@/components/VirtualizedMessageList";
 import { useChatbot } from "./useChatbot";
 
 type ChatbotPanelProps = {
@@ -142,23 +143,29 @@ export function ChatbotPanel({ open, openKey, onClose }: ChatbotPanelProps) {
           </button>
         </header>
 
-        <div className="chatbot-panel__messages" ref={scrollRef}>
-          {messages.map((message) => (
-            <ChatbotMessage key={message.id} message={message} />
-          ))}
-          {loading ? (
-            <div className="chatbot-message chatbot-message--assistant">
-              <div className="chatbot-message__avatar" aria-hidden>
-                <ChatbotAvatar />
+        <VirtualizedMessageList
+          className="chatbot-panel__messages"
+          scrollRef={scrollRef}
+          items={messages}
+          estimateSize={88}
+          getItemKey={(message) => message.id}
+          renderItem={(message) => <ChatbotMessage message={message} />}
+          scrollToEndDeps={[loading, showCtAs, open]}
+          footer={
+            loading ? (
+              <div className="chatbot-message chatbot-message--assistant">
+                <div className="chatbot-message__avatar" aria-hidden>
+                  <ChatbotAvatar />
+                </div>
+                <div className="chatbot-message__bubble chatbot-message__bubble--typing">
+                  <span />
+                  <span />
+                  <span />
+                </div>
               </div>
-              <div className="chatbot-message__bubble chatbot-message__bubble--typing">
-                <span />
-                <span />
-                <span />
-              </div>
-            </div>
-          ) : null}
-        </div>
+            ) : null
+          }
+        />
 
         {error ? <p className="chatbot-panel__error">{error}</p> : null}
 

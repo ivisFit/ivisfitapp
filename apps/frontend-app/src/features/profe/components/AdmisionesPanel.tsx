@@ -2,7 +2,7 @@
 
 import { Button } from "@/components";
 import { UserAvatar } from "@/components/UserAvatar";
-import { CardSkeleton } from "@/components/skeletons/AppSkeleton";
+import { CardSkeleton, SkeletonStack } from "@/components/skeletons/AppSkeleton";
 import type { AdmissionRequest } from "@/types/usuario";
 
 function formatMetodo(metodo?: string) {
@@ -77,11 +77,11 @@ export function AdmisionesPanel({
       ) : null}
 
       {loading ? (
-        <div aria-busy="true" aria-label="Cargando solicitudes">
+        <SkeletonStack tight aria-busy={true} aria-label="Cargando solicitudes">
           <CardSkeleton lines={4} elevated />
           <CardSkeleton lines={4} elevated />
           <CardSkeleton lines={4} elevated />
-        </div>
+        </SkeletonStack>
       ) : null}
 
       {!loading && solicitudes.length === 0 ? (

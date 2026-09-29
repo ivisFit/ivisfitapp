@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
-import { FormSkeleton, SkeletonLine } from "@/components/skeletons/AppSkeleton";
+import { FormSkeleton, PageHeaderSkeleton, SkeletonCard, SkeletonStack } from "@/components/skeletons/AppSkeleton";
 import { NutricionWizard } from "@/features/alumna/components/alimentacion/NutricionWizard";
 import { useEvaluacionBridgeTransition } from "@/features/alumna/components/evaluacion-bridge/EvaluacionBridgeProvider";
 import { useEvaluacionNutricional } from "@/features/alumna/hooks/useEvaluacionNutricional";
@@ -33,13 +33,12 @@ export function EvaluacionNutricionalPage() {
 
   if (loading) {
     return (
-      <div aria-busy="true" aria-label="Cargando evaluación">
-        <SkeletonLine size="2xl" width="w-40" gold />
-        <SkeletonLine size="sm" width="w-60" />
-        <div className="sk sk--card-elevated">
+      <SkeletonStack aria-busy={true} aria-label="Cargando evaluación">
+        <PageHeaderSkeleton titleWidth="w-56" subtitleWidth="w-60" eyebrow />
+        <SkeletonCard elevated>
           <FormSkeleton fields={5} />
-        </div>
-      </div>
+        </SkeletonCard>
+      </SkeletonStack>
     );
   }
 

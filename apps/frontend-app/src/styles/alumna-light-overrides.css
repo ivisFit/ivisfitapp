@@ -190,17 +190,111 @@ html[data-color-scheme="light"] .alumna-scheme-toggle {
 }
 
 .app-shell--alumna[data-color-scheme="light"] .pliegues-hero__copy h1,
-.app-shell--alumna[data-color-scheme="light"] .pliegues-settings-card h2,
-.app-shell--alumna[data-color-scheme="light"] .perfil-hero__name {
+.app-shell--alumna[data-color-scheme="light"] .pliegues-settings-card h2 {
   color: var(--color-heading);
 }
 
 .app-shell--alumna[data-color-scheme="light"] .pliegues-hero__copy p,
 .app-shell--alumna[data-color-scheme="light"] .pliegues-settings-card__copy,
 .app-shell--alumna[data-color-scheme="light"] .pliegues-settings-card__toggle,
-.app-shell--alumna[data-color-scheme="light"] .perfil-hero__email,
 .app-shell--alumna[data-color-scheme="light"] .progreso-chart__summary {
   color: var(--color-text-muted);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .perfil-sheet__email,
+.app-shell--alumna[data-color-scheme="light"] .perfil-sheet__hint {
+  color: var(--color-text-muted);
+}
+
+/* Mi perfil — ficha alumna-sheet (misma legibilidad que panel profe) */
+.app-shell--alumna[data-color-scheme="light"] .alumna-sheet__row dt {
+  color: var(--color-text-muted);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .alumna-sheet__row dd,
+.app-shell--alumna[data-color-scheme="light"] .alumna-sheet__name {
+  color: var(--color-text);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .alumna-sheet__row--empty dd {
+  color: rgb(28 24 20 / 38%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .alumna-sheet__header {
+  background: linear-gradient(
+    135deg,
+    rgb(245 197 24 / 16%),
+    rgb(245 197 24 / 5%) 55%,
+    transparent
+  );
+}
+
+.app-shell--alumna[data-color-scheme="light"] .alumna-sheet__portrait {
+  background: rgb(245 197 24 / 16%);
+  border-color: rgb(184 148 31 / 35%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .alumna-sheet__group + .alumna-sheet__group {
+  border-top-color: rgb(28 24 20 / 10%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .alumna-sheet__group--salud {
+  background: rgb(248 113 113 / 6%);
+  border-top-color: rgb(220 38 38 / 20%);
+  border-bottom-color: rgb(220 38 38 / 20%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .alumna-sheet__group--salud .alumna-sheet__group-title,
+.app-shell--alumna[data-color-scheme="light"] .alumna-sheet__group--salud .alumna-sheet__group-icon {
+  color: #b42318;
+}
+
+.app-shell--alumna[data-color-scheme="light"] .alumna-sheet__group--salud .alumna-sheet__group-icon {
+  background: rgb(248 113 113 / 14%);
+  border-color: rgb(220 38 38 / 28%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .alumna-sheet__group-icon {
+  background: rgb(245 197 24 / 14%);
+  border-color: rgb(184 148 31 / 28%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .alumna-sheet__row {
+  border-bottom-color: rgb(28 24 20 / 9%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .alumna-detail-badge {
+  background: rgb(245 197 24 / 14%);
+  border-color: rgb(184 148 31 / 32%);
+  color: var(--color-gold);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .alumna-detail-badge--admitida {
+  background: rgb(34 197 94 / 12%);
+  border-color: rgb(34 197 94 / 32%);
+  color: #15803d;
+}
+
+.app-shell--alumna[data-color-scheme="light"] .alumna-detail-badge--pendiente {
+  background: rgb(251 191 36 / 16%);
+  border-color: rgb(217 119 6 / 32%);
+  color: #b45309;
+}
+
+.app-shell--alumna[data-color-scheme="light"] .alumna-detail-badge--rechazada {
+  background: rgb(248 113 113 / 14%);
+  border-color: rgb(220 38 38 / 30%);
+  color: #b42318;
+}
+
+.app-shell--alumna[data-color-scheme="light"] .perfil-sheet__edit.btn--ghost,
+.app-shell--alumna[data-color-scheme="light"] .perfil-page .btn--ghost {
+  color: var(--color-gold);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .perfil-sheet__edit.btn--ghost:hover:not(:disabled),
+.app-shell--alumna[data-color-scheme="light"] .perfil-page .btn--ghost:hover:not(:disabled) {
+  color: var(--color-heading);
 }
 
 .app-shell--alumna[data-color-scheme="light"] .pliegues-period-filter__chip {
@@ -320,6 +414,61 @@ html[data-color-scheme="light"] .alumna-scheme-toggle {
   color: rgb(28 24 20 / 42%);
 }
 
+.app-shell--alumna[data-color-scheme="light"] .app-assistant-page__menu-btn {
+  background: rgb(28 24 20 / 4%);
+  border-color: rgb(28 24 20 / 12%);
+  color: var(--color-text);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .app-assistant-page__menu-btn:hover:not(:disabled) {
+  border-color: rgb(184 148 31 / 40%);
+  color: #6b4f0a;
+  background: rgb(245 197 24 / 10%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .app-assistant-chips__chip {
+  background: #fff;
+  border-color: rgb(28 24 20 / 14%);
+  color: var(--color-text);
+  box-shadow: 0 1px 2px rgb(40 28 12 / 6%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .app-assistant-chips__chip:hover:not(:disabled) {
+  border-color: rgb(184 148 31 / 45%);
+  background: rgb(245 197 24 / 14%);
+  color: var(--color-heading);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .app-assistant-message--user .app-assistant-message__bubble {
+  background: linear-gradient(
+    135deg,
+    rgb(245 197 24 / 24%) 0%,
+    rgb(199 152 10 / 16%) 100%
+  );
+  border-color: rgb(184 148 31 / 30%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .app-assistant-message__bubble--typing span {
+  background: rgb(184 148 31 / 55%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .app-assistant-page__error {
+  color: #991b1b;
+  background: rgb(248 113 113 / 12%);
+  border-color: rgb(248 113 113 / 28%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .app-assistant-page__composer-submit:disabled {
+  opacity: 0.55;
+}
+
+.app-shell--alumna[data-color-scheme="light"] .app-assistant-page__embedded-flow .sustitucion-alimento-flow__header p,
+.app-shell--alumna[data-color-scheme="light"] .app-assistant-page__embedded-flow .sustitucion-alimento-flow__result {
+  color: var(--color-text);
+  background: #fff;
+  border-color: rgb(28 24 20 / 10%);
+}
+
 .app-shell--alumna[data-color-scheme="light"] .app-assistant-fab {
   background: linear-gradient(145deg, #fffdf8 0%, #f4efe6 100%);
   border-color: rgb(184 148 31 / 28%);
@@ -348,6 +497,18 @@ html[data-alumna-color-scheme="light"] .app-assistant-fab {
 
 html[data-alumna-color-scheme="light"] .app-assistant-fab__status {
   border-color: #fffdf8;
+}
+
+html[data-alumna-color-scheme="light"] .app-assistant-chips__chip {
+  background: #fff;
+  border-color: rgb(28 24 20 / 14%);
+  color: #1c1814;
+}
+
+html[data-alumna-color-scheme="light"] .app-assistant-page__menu-btn {
+  background: rgb(28 24 20 / 4%);
+  border-color: rgb(28 24 20 / 12%);
+  color: #1c1814;
 }
 
 html[data-alumna-color-scheme="light"] .gamif-toast {
@@ -734,8 +895,4 @@ html[data-alumna-color-scheme="light"] .onboarding-switch__input:checked
 .app-shell--alumna[data-color-scheme="light"] .page h1,
 .app-shell--alumna[data-color-scheme="light"] .page h2 {
   color: var(--color-heading);
-}
-
-.app-shell--alumna[data-color-scheme="light"] .print-progreso-page__toolbar .btn {
-  color: inherit;
 }

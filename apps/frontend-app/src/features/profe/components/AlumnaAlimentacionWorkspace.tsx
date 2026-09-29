@@ -18,7 +18,8 @@ export function AlumnaAlimentacionWorkspace({
   alumnaNombre,
   onDirtyChange,
 }: AlumnaAlimentacionWorkspaceProps) {
-  const { plan, loading, refetch } = usePlanNutricionalProfe(alumnaId);
+  const { plan, planBorrador, planPublicado, loading, refetch } =
+    usePlanNutricionalProfe(alumnaId);
   const [macrosSugeridos, setMacrosSugeridos] = useState<MacrosObjetivo | null>(null);
 
   return (
@@ -32,6 +33,8 @@ export function AlumnaAlimentacionWorkspace({
         alumnaId={alumnaId}
         alumnaNombre={alumnaNombre}
         plan={plan}
+        planBorrador={planBorrador}
+        planPublicado={planPublicado}
         loading={loading}
         macrosSugeridos={macrosSugeridos}
         onSaved={() => void refetch()}

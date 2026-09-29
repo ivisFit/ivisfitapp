@@ -1,19 +1,23 @@
 "use client";
 
+import {
+  Bell,
+  ClipboardList,
+  HeartPulse,
+  User,
+} from "lucide-react";
 import { UserAvatar } from "@/components/UserAvatar";
-import { getInitials } from "@/lib/display-name";
+import { GamificacionWidget } from "@/features/gamificacion/components/GamificacionWidget";
 import type { AlumnaDetail, HealthChangesPendingApiDoc } from "@/types/usuario";
 import "./PerfilSections.css";
 
-type DetailField = {
+type SheetField = {
   label: string;
-  value: string | number | undefined;
-  icon?: React.ReactNode;
+  value?: string;
   pending?: boolean;
 };
 
-function displayValue(value?: string | number) {
-  if (typeof value === "number") return value.toLocaleString("es-UY");
+function displayValue(value?: string) {
   return value?.trim() ? value : "Sin dato";
 }
 
@@ -26,255 +30,211 @@ function formatEstadoAdmision(estado: AlumnaDetail["estadoAdmision"]) {
   return labels[estado];
 }
 
-function getHealthIcon(field: string) {
-  switch (field) {
-    case "mutualista":
-      return "🏥";
-    case "coberturaEmergenciaMedica":
-      return "🚑";
-    case "lesionesPatologias":
-      return "🩹";
-    case "alergias":
-      return "🌰";
-    default:
-      return "📋";
-  }
-}
-
-function getPersonalIcon(field: string) {
-  switch (field) {
-    case "telefono":
-      return "📱";
-    case "cedula":
-      return "🪪";
-    case "fechaNacimiento":
-      return "🎂";
-    case "sexo":
-      return "⚥";
-    case "alturaCm":
-      return "📏";
-    default:
-      return "👤";
-  }
-}
-
-function getAdmissionIcon(field: string) {
-  switch (field) {
-    case "rol":
-      return "👤";
-    case "estadoAdmision":
-      return "📄";
-    case "fechaRegistro":
-      return "📅";
-    case "fechaAdmision":
-      return "✅";
-    case "fechaRechazo":
-      return "❌";
-    default:
-      return "📋";
-  }
-}
-
-function DetailSection({
-  title,
-  fields,
-  icon,
-}: { title: string; fields: DetailField[]; icon?: React.ReactNode }) {
+function SheetRow({
+  field,
+  highlight,
+}: {
+  field: SheetField;
+  highlight?: boolean;
+}) {
+  const value = displayValue(field.value);
   return (
-    <section className="perfil-section">
-      <header className="perfil-section__header">
-        <h2 className="perfil-section__title">
-          {icon && <span className="perfil-section__icon" aria-hidden>{icon}</span>}
-          {title}
-        </h2>
-      </header>
-      <dl className="perfil-fields">
-        {fields.map((field, index) => (
-          <div className="perfil-field" key={`${field.label}-${index}`}>
-            <dt>
-              {field.icon && <span className="perfil-field__icon" aria-hidden>{field.icon}</span>}
-              {field.label}
-              {field.pending && (
-                <span className="perfil-field__badge-pending" title="Pendiente de revisión por tu profe">
-                  ⏳
-                </span>
-              )}
-            </dt>
-            <dd>{displayValue(field.value)}</dd>
-          </div>
-        ))}
-      </dl>
-    </section>
+    <div
+      className={`alumna-sheet__row${highlight && !field.value?.trim() ? " alumna-sheet__row--empty" : ""}`}
+    >
+      <dt>
+        {field.label}
+        {field.pending ? (
+          <span
+            className="alumna-detail__pending-badge"
+            title="Pendiente de revisión por tu profe"
+          >
+            ⏳
+          </span>
+        ) : null}
+      </dt>
+      <dd>{value}</dd>
+    </div>
   );
 }
 
-function HeroCard({ alumna }: { alumna: AlumnaDetail }) {
-  const initials = getInitials(alumna.nombre);
-  const estadoClass = `perfil-hero__badge--${alumna.estadoAdmision}`;
-
+function SheetGroup({
+  title,
+  icon,
+  fields,
+  variant,
+  onEdit,
+  children,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  fields?: SheetField[];
+  variant?: "salud";
+  onEdit?: () => void;
+  children?: React.ReactNode;
+}) {
   return (
-    <div className="perfil-hero">
-      <div className="perfil-hero__avatar-wrapper">
-        <UserAvatar
-          name={alumna.nombre}
-          photoUrl={alumna.fotoPerfil?.url ?? null}
-          className="perfil-hero__avatar"
-        />
-      </div>
-      <div className="perfil-hero__info">
-        <h1 className="perfil-hero__name">{alumna.nombre}</h1>
-        <p className="perfil-hero__email">{alumna.email}</p>
-        <div className="perfil-hero__meta">
-          <span className={`perfil-hero__badge ${estadoClass}`}>
-            {formatEstadoAdmision(alumna.estadoAdmision)}
+    <section
+      className={`alumna-sheet__group${variant === "salud" ? " alumna-sheet__group--salud" : ""}`}
+    >
+      <div className="perfil-sheet__group-head">
+        <h2 className="alumna-sheet__group-title">
+          <span className="alumna-sheet__group-icon" aria-hidden>
+            {icon}
           </span>
-        </div>
+          {title}
+        </h2>
+        {onEdit ? (
+          <button
+            type="button"
+            className="perfil-sheet__edit btn btn--ghost"
+            onClick={onEdit}
+          >
+            Editar
+          </button>
+        ) : null}
       </div>
-    </div>
+      {fields ? (
+        <dl className="alumna-sheet__rows">
+          {fields.map((field) => (
+            <SheetRow
+              key={field.label}
+              field={field}
+              highlight={variant === "salud"}
+            />
+          ))}
+        </dl>
+      ) : null}
+      {children}
+    </section>
   );
 }
 
 export function PerfilSections({
   alumna,
-  gamificacion,
   onEditSection,
 }: {
   alumna: AlumnaDetail;
-  gamificacion?: AlumnaDetail["gamificacion"];
   onEditSection: (section: "personal" | "salud" | "notificaciones") => void;
 }) {
   const healthPending = alumna.healthChangesPending;
+  const isPending = (field: keyof HealthChangesPendingApiDoc) =>
+    Boolean(healthPending?.[field]);
 
-  const isPending = (field: keyof HealthChangesPendingApiDoc) => !!healthPending?.[field];
-
-  const personalFields: DetailField[] = [
-    { label: "Teléfono", value: alumna.telefono, icon: getPersonalIcon("telefono") },
-    { label: "Cédula", value: alumna.cedula, icon: getPersonalIcon("cedula") },
-    { label: "Fecha de nacimiento", value: alumna.fechaNacimiento, icon: getPersonalIcon("fechaNacimiento") },
+  const personalFields: SheetField[] = [
+    { label: "Teléfono", value: alumna.telefono },
+    { label: "Cédula", value: alumna.cedula },
+    { label: "Fecha de nacimiento", value: alumna.fechaNacimiento },
     {
       label: "Sexo",
-      value: alumna.sexo === "hombre" ? "Hombre" : alumna.sexo === "mujer" ? "Mujer" : undefined,
-      icon: getPersonalIcon("sexo"),
+      value:
+        alumna.sexo === "hombre"
+          ? "Hombre"
+          : alumna.sexo === "mujer"
+            ? "Mujer"
+            : undefined,
     },
     {
       label: "Altura",
-      value: alumna.alturaCm ? `${alumna.alturaCm.toLocaleString("es-UY")} cm` : undefined,
-      icon: getPersonalIcon("alturaCm"),
+      value: alumna.alturaCm
+        ? `${alumna.alturaCm.toLocaleString("es-UY")} cm`
+        : undefined,
     },
   ];
 
-  const healthFields: DetailField[] = [
-    { label: "Mutualista", value: alumna.mutualista, icon: getHealthIcon("mutualista"), pending: isPending("mutualista") },
-    { label: "Cobertura emergencia", value: alumna.coberturaEmergenciaMedica, icon: getHealthIcon("coberturaEmergenciaMedica"), pending: isPending("coberturaEmergenciaMedica") },
-    { label: "Lesiones / patologías", value: alumna.lesionesPatologias, icon: getHealthIcon("lesionesPatologias"), pending: isPending("lesionesPatologias") },
-    { label: "Alergias", value: alumna.alergias, icon: getHealthIcon("alergias"), pending: isPending("alergias") },
+  const healthFields: SheetField[] = [
+    {
+      label: "Mutualista",
+      value: alumna.mutualista,
+      pending: isPending("mutualista"),
+    },
+    {
+      label: "Cobertura emergencia",
+      value: alumna.coberturaEmergenciaMedica,
+      pending: isPending("coberturaEmergenciaMedica"),
+    },
+    {
+      label: "Lesiones / patologías",
+      value: alumna.lesionesPatologias,
+      pending: isPending("lesionesPatologias"),
+    },
+    {
+      label: "Alergias",
+      value: alumna.alergias,
+      pending: isPending("alergias"),
+    },
   ];
 
-  const admissionFields: DetailField[] = [
-    { label: "Rol", value: alumna.rol, icon: getAdmissionIcon("rol") },
-    { label: "Estado de admisión", value: formatEstadoAdmision(alumna.estadoAdmision), icon: getAdmissionIcon("estadoAdmision") },
-    { label: "Fecha de registro", value: alumna.fechaRegistro, icon: getAdmissionIcon("fechaRegistro") },
-    { label: "Fecha de admisión", value: alumna.fechaAdmision, icon: getAdmissionIcon("fechaAdmision") },
-    { label: "Fecha de rechazo", value: alumna.fechaRechazo, icon: getAdmissionIcon("fechaRechazo") },
+  const admissionFields: SheetField[] = [
+    { label: "Rol", value: alumna.rol },
+    {
+      label: "Estado de admisión",
+      value: formatEstadoAdmision(alumna.estadoAdmision),
+    },
+    { label: "Fecha de registro", value: alumna.fechaRegistro },
+    { label: "Fecha de admisión", value: alumna.fechaAdmision },
+    ...(alumna.fechaRechazo?.trim()
+      ? [{ label: "Fecha de rechazo", value: alumna.fechaRechazo }]
+      : []),
   ];
 
   return (
     <div className="perfil-sections">
-      <HeroCard alumna={alumna} />
-
-      <DetailSection
-        title="Datos personales"
-        icon="👤"
-        fields={personalFields}
-      />
-
-      <DetailSection
-        title="Salud y cobertura"
-        icon="🏥"
-        fields={healthFields}
-      />
-
-      <DetailSection
-        title="Admisión"
-        icon="📄"
-        fields={admissionFields}
-      />
-
-      {gamificacion && (
-        <div className="perfil-section perfil-gamif">
-          <header className="perfil-section__header">
-            <h2 className="perfil-section__title">
-              <span className="perfil-section__icon" aria-hidden>🏆</span>
-              Gamificación
-            </h2>
+      <div className="alumna-sheet">
+        <article className="alumna-sheet__document">
+          <header className="alumna-sheet__header">
+            <UserAvatar
+              name={alumna.nombre}
+              photoUrl={alumna.fotoPerfil?.url ?? null}
+              className="alumna-sheet__portrait"
+            />
+            <div className="alumna-sheet__identity">
+              <p className="alumna-sheet__kicker">Mi perfil</p>
+              <p className="alumna-sheet__name">{alumna.nombre}</p>
+              <p className="perfil-sheet__email">{alumna.email}</p>
+              <div className="alumna-sheet__meta">
+                <span
+                  className={`alumna-detail-badge alumna-detail-badge--${alumna.estadoAdmision}`}
+                >
+                  {formatEstadoAdmision(alumna.estadoAdmision)}
+                </span>
+              </div>
+            </div>
           </header>
-          <GamificacionWidget gamificacion={gamificacion} />
-        </div>
-      )}
-    </div>
-  );
-}
 
-function GamificacionWidget({
-  gamificacion,
-}: {
-  gamificacion: NonNullable<AlumnaDetail["gamificacion"]>;
-}) {
-  const xpProgreso =
-    gamificacion.xpProgresoNivel != null &&
-    gamificacion.xpSiguiente != null &&
-    gamificacion.xpSiguiente > 0
-      ? Math.min(
-          100,
-          Math.round(
-            (gamificacion.xpProgresoNivel / gamificacion.xpSiguiente) * 100,
-          ),
-        )
-      : 0;
-
-  const badgesRecientes =
-    gamificacion.badges
-      ?.filter((b: { desbloqueado?: boolean }) => b.desbloqueado)
-      .slice(-3)
-      .reverse() ?? [];
-
-  return (
-    <div className="gamif-widget">
-      <div className="gamif-widget__header">
-        <span className="gamif-widget__eyebrow">Tu progreso</span>
-      </div>
-      <div className="gamif-widget__body">
-        <div className="gamif-widget__level">
-          <span className="gamif-widget__level-number">{gamificacion.nivel}</span>
-          <span className="gamif-widget__level-label">Nivel</span>
-        </div>
-        <div className="gamif-widget__xp">
-          <div className="gamif-widget__xp-row">
-            <span>{gamificacion.xpTotal?.toLocaleString("es-UY") ?? 0} XP totales</span>
-            <span>{gamificacion.xpProgresoNivel ?? 0}/{gamificacion.xpSiguiente ?? 0} XP al siguiente nivel</span>
+          <div className="alumna-sheet__body">
+            <SheetGroup
+              title="Datos personales"
+              icon={<User size={15} />}
+              fields={personalFields}
+              onEdit={() => onEditSection("personal")}
+            />
+            <SheetGroup
+              title="Salud y cobertura"
+              icon={<HeartPulse size={15} />}
+              fields={healthFields}
+              variant="salud"
+              onEdit={() => onEditSection("salud")}
+            />
+            <SheetGroup
+              title="Admisión"
+              icon={<ClipboardList size={15} />}
+              fields={admissionFields}
+            />
+            <SheetGroup
+              title="Notificaciones"
+              icon={<Bell size={15} />}
+              onEdit={() => onEditSection("notificaciones")}
+            >
+              <p className="perfil-sheet__hint">
+                Recordatorios de entrenamiento, logros y check-ins de alimentación.
+              </p>
+            </SheetGroup>
           </div>
-          <div className="gamif-widget__xp-bar">
-            <div className="gamif-widget__xp-bar-fill" style={{ width: `${xpProgreso}%` }} />
-          </div>
-        </div>
+        </article>
       </div>
-      <div className="gamif-widget__stats">
-        <span title="Racha actual">
-          <span aria-hidden>🔥</span> Racha: {gamificacion.rachaActual ?? 0} días
-        </span>
-        <span title="Mejor racha">
-          <span aria-hidden>🏅</span> Mejor: {gamificacion.rachaMaxima ?? 0} días
-        </span>
-      </div>
-      {badgesRecientes.length > 0 && (
-        <div className="gamif-widget__badges">
-          {badgesRecientes.map((badge) => (
-            <span key={badge.codigo} className="gamif-widget__badge" title={badge.codigo}>
-              {badge.icono ?? "🏅"}
-            </span>
-          ))}
-        </div>
-      )}
+
+      <GamificacionWidget />
     </div>
   );
 }

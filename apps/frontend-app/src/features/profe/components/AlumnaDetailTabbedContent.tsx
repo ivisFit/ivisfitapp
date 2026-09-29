@@ -1,7 +1,9 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { CardSkeleton, SkeletonStack } from "@/components/skeletons/AppSkeleton";
 import { ProfeChromeTabs } from "@/features/profe/components/ProfeChromeTabs";
 import { AlumnaAlimentacionWorkspace } from "@/features/profe/components/AlumnaAlimentacionWorkspace";
 import {
@@ -11,8 +13,6 @@ import { HealthChangesReview } from "@/features/profe/components/HealthChangesRe
 import { AlumnaHistorialSection } from "@/features/profe/components/historial/AlumnaHistorialSection";
 import { AlumnaRutinaSection } from "@/features/profe/components/AlumnaRutinaSection";
 import { MensajesThread } from "@/features/shared/MensajesThread";
-import { SeguimientoContent } from "@/features/profe/pages/AlumnaSeguimientoPage";
-import { PlieguesContent } from "@/features/profe/pages/AlumnaPlieguesPage";
 import { useAlumnaUnsavedReporter } from "@/features/profe/context/AlumnaUnsavedChangesProvider";
 import type { PlanTemplate } from "@/features/profe/hooks/usePlanTemplates";
 import {
@@ -21,6 +21,36 @@ import {
   type AlumnaDetailTab,
 } from "@/routes/paths";
 import type { AlumnaDetail } from "@/types/usuario";
+
+const SeguimientoContent = dynamic(
+  () =>
+    import("@/features/profe/pages/AlumnaSeguimientoPage").then(
+      (mod) => mod.SeguimientoContent,
+    ),
+  {
+    loading: () => (
+      <SkeletonStack aria-busy={true} aria-label="Cargando seguimiento">
+        <CardSkeleton lines={3} elevated />
+        <CardSkeleton lines={4} elevated />
+      </SkeletonStack>
+    ),
+  },
+);
+
+const PlieguesContent = dynamic(
+  () =>
+    import("@/features/profe/pages/AlumnaPlieguesPage").then(
+      (mod) => mod.PlieguesContent,
+    ),
+  {
+    loading: () => (
+      <SkeletonStack aria-busy={true} aria-label="Cargando pliegues">
+        <CardSkeleton lines={2} elevated />
+        <CardSkeleton lines={3} elevated />
+      </SkeletonStack>
+    ),
+  },
+);
 
 const ALUMNA_DETAIL_TABS: Array<{ id: AlumnaDetailTab; label: string }> = [
   { id: "perfil", label: "Perfil" },

@@ -1,0 +1,20 @@
+﻿
+lighthouse-alumnas
+  Scores: perf=ÔÇö pwa=ÔÇö bp=ÔÇö a11y=ÔÇö
+  FCP=ÔÇö LCP=ÔÇö TTI=ÔÇö TBT=ÔÇö CLS=ÔÇö
+
+lighthouse-home
+  Scores: perf=ÔÇö pwa=ÔÇö bp=ÔÇö a11y=ÔÇö
+  FCP=ÔÇö LCP=ÔÇö TTI=ÔÇö TBT=ÔÇö CLS=ÔÇö
+
+lighthouse-login
+  Scores: perf=37 pwa=ÔÇö bp=96 a11y=100
+  FCP=1.7┬ás LCP=9.6┬ás TTI=14.0┬ás TBT=3,690┬áms CLS=0.016
+
+lighthouse-panel
+  Scores: perf=ÔÇö pwa=ÔÇö bp=ÔÇö a11y=ÔÇö
+  FCP=ÔÇö LCP=ÔÇö TTI=ÔÇö TBT=ÔÇö CLS=ÔÇö
+
+lighthouse-rutina
+  Scores: perf=ÔÇö pwa=ÔÇö bp=ÔÇö a11y=ÔÇö
+  FCP=ÔÇö LCP=ÔÇö TTI=ÔÇö TBT=ÔÇö CLS=ÔÇö

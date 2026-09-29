@@ -28,7 +28,7 @@ const PanelWeeklyBarChart = dynamic(
         <h3 className="profe-dashboard__chart-title">
           Entrenamientos completados
         </h3>
-        <div className="profe-dashboard__skeleton profe-dashboard__skeleton--chart" />
+        <span className="sk sk--chart sk--full" aria-hidden />
       </section>
     ),
   },
@@ -46,7 +46,7 @@ const PanelPlansPieChart = dynamic(
         <h3 className="profe-dashboard__chart-title">
           Tipos de Planes Asignados
         </h3>
-        <div className="profe-dashboard__skeleton profe-dashboard__skeleton--chart" />
+        <span className="sk sk--chart sk--full" aria-hidden />
       </section>
     ),
   },

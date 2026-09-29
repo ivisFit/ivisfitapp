@@ -9,6 +9,7 @@
     "start": "node dist/index.js",
     "seed:mediciones-juana": "tsx scripts/seed-mediciones-juana.ts",
     "seed:alimentos": "tsx scripts/seed-alimentos.ts",
+    "seed:plan-gaston": "tsx scripts/seed-plan-nutricional-gaston.ts",
     "sync:rutina-videos": "tsx scripts/sync-rutina-videos-from-templates.ts"
   },
   "dependencies": {

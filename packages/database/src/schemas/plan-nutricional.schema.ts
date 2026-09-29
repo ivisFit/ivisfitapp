@@ -54,9 +54,14 @@ export const updatePlanNutricionalSchema = createPlanNutricionalSchema
   .partial()
   .omit({ alumnaId: true });
 
+export const diaPlantillaPlanSchema = z.object({
+  nombre: z.string().trim().min(1),
+});
+
 export const generarBorradorPlanSchema = z.object({
   alumnaId: objectIdSchema,
   planId: objectIdSchema.optional(),
+  diasPlantilla: z.array(diaPlantillaPlanSchema).min(1).max(14).optional(),
 });
 
 export const nutricionChatSchema = z.object({

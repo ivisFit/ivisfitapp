@@ -46,8 +46,15 @@ export type PlanNutricionalApiDoc = {
   dias: DiaPlanNutricional[];
   generadoPorIa?: boolean;
   publicadoAt?: string;
+  clonadoDesdeId?: string;
   createdAt?: string;
   updatedAt?: string;
+};
+
+export type PlanNutricionalProfeWorkspace = {
+  editing: PlanNutricionalApiDoc | null;
+  borrador: PlanNutricionalApiDoc | null;
+  publicado: PlanNutricionalApiDoc | null;
 };
 
 export type CreatePlanNutricionalPayload = {

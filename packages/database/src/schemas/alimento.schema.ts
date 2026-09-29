@@ -34,10 +34,14 @@ export const createAlimentoSchema = z.object({
 
 export const updateAlimentoSchema = createAlimentoSchema.partial();
 
+const queryBooleanSchema = z
+  .union([z.boolean(), z.enum(["true", "false"])])
+  .transform((value) => value === true || value === "true");
+
 export const listAlimentosQuerySchema = z.object({
   q: z.string().trim().optional(),
   categoria: alimentoCategoriaSchema.optional(),
-  soloActivos: z.coerce.boolean().optional(),
+  soloActivos: queryBooleanSchema.optional(),
 });
 
 export type AlimentoCategoria = z.infer<typeof alimentoCategoriaSchema>;

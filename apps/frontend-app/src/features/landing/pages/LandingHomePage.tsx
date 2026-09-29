@@ -152,13 +152,14 @@ export function LandingHomePage({ plans, previewSection }: LandingHomePageProps)
   useEffect(() => {
     if (isPreview) return;
 
-    const isMobileDevice = () => {
-      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-        navigator.userAgent
-      ) || window.innerWidth <= 768;
-    };
+    const prefersCoarsePointer = window.matchMedia("(pointer: coarse)").matches;
+    const isMobileViewport = window.innerWidth <= 900;
+    const isMobileDevice =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent,
+      ) || isMobileViewport;
 
-    if (isMobileDevice()) {
+    if (isMobileDevice || prefersCoarsePointer) {
       return;
     }
 

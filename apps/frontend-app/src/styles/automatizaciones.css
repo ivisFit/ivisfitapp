@@ -123,10 +123,6 @@
   font-size: 0.875rem;
 }
 
-.print-progreso-page__toolbar {
-  margin-bottom: 1rem;
-}
-
 @media print {
   .no-print,
   .app-sidebar,

@@ -4,6 +4,7 @@ import { Button } from "@/components";
 import {
   formatReunionDate,
   getReunionDateKey,
+  parseReunionLinkHref,
   type Reunion,
 } from "@/features/profe/types/reunion";
 
@@ -60,6 +61,7 @@ export function AgendaDiaDetalle({
         <ul className="agenda-dia-detalle__list">
           {dayReuniones.map((reunion) => {
             const isProcessing = actionId === reunion.id;
+            const linkHref = parseReunionLinkHref(reunion.meetLink);
 
             return (
               <li key={reunion.id} className="agenda-dia-detalle__item">
@@ -74,14 +76,20 @@ export function AgendaDiaDetalle({
                       {reunion.descripcion}
                     </p>
                   ) : null}
-                  <a
-                    className="auth-link"
-                    href={reunion.meetLink}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Abrir Meet
-                  </a>
+                  {linkHref ? (
+                    <a
+                      className="auth-link"
+                      href={linkHref}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Abrir enlace
+                    </a>
+                  ) : (
+                    <p className="agenda-dia-detalle__descripcion">
+                      Link de reunión: {reunion.meetLink}
+                    </p>
+                  )}
                 </div>
                 <div className="agenda-dia-detalle__actions">
                   <Button

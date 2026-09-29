@@ -4,19 +4,14 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/Button";
-import { FormSkeleton, SkeletonLine } from "@/components/skeletons/AppSkeleton";
+import { FormSkeleton, PageHeaderSkeleton, SkeletonCard, SkeletonStack } from "@/components/skeletons/AppSkeleton";
 import {
   normalizeAlumnaRouteId,
   useAlumna,
 } from "@/features/profe/hooks/useAlumna";
 import { usePlanTemplates } from "@/features/profe/hooks/usePlanTemplates";
-import {
-  profeRoutes,
-} from "@/routes/paths";
-import {
-  AlumnaDetailHeroMobile,
-  AlumnaDetailHeroDesktop,
-} from "@/features/profe/components/AlumnaDetailHero";
+import { profeRoutes } from "@/routes/paths";
+import { AlumnaDetailHeroMobile } from "@/features/profe/components/AlumnaDetailHero";
 import { AlumnaDetailTabbedContent } from "@/features/profe/components/AlumnaDetailTabbedContent";
 import { AlumnaUnsavedChangesProvider } from "@/features/profe/context/AlumnaUnsavedChangesProvider";
 import { useMediaQuery, isMobileQuery } from "@/hooks/useMediaQuery";
@@ -60,16 +55,15 @@ function AlumnaDetailBodyContent({
 
   if (loading || !alumna) {
     return (
-      <div aria-busy="true" aria-label="Cargando alumna">
-        <SkeletonLine size="2xl" width="w-48" gold />
-        <SkeletonLine size="sm" width="w-40" />
-        <div className="sk sk--card-elevated">
+      <SkeletonStack aria-busy={true} aria-label="Cargando alumna">
+        <PageHeaderSkeleton titleWidth="w-48" subtitleWidth="w-40" />
+        <SkeletonCard elevated>
           <FormSkeleton fields={4} />
-        </div>
-        <div className="sk sk--card-elevated">
+        </SkeletonCard>
+        <SkeletonCard elevated>
           <FormSkeleton fields={3} />
-        </div>
-      </div>
+        </SkeletonCard>
+      </SkeletonStack>
     );
   }
 
@@ -90,12 +84,12 @@ function AlumnaDetailBodyContent({
       </div>
       <Suspense
         fallback={
-          <div aria-busy="true" aria-label="Cargando secciones">
-            <SkeletonLine size="lg" width="w-40" gold />
-            <div className="sk sk--card-elevated">
+          <SkeletonStack aria-busy={true} aria-label="Cargando secciones">
+            <PageHeaderSkeleton titleWidth="w-40" subtitle={false} />
+            <SkeletonCard elevated>
               <FormSkeleton fields={3} />
-            </div>
-          </div>
+            </SkeletonCard>
+          </SkeletonStack>
         }
       >
         <AlumnaDetailTabbedContent
@@ -171,14 +165,14 @@ function AlumnaDetailDesktop({
 
   if (loading || !alumna) {
     return (
-      <div className="page alumna-detail-desktop alumna-detail-view" aria-busy="true" aria-label="Cargando alumna">
-        <SkeletonLine size="2xl" width="w-48" gold />
-        <div className="sk sk--card-elevated">
+      <div className="page alumna-detail-desktop alumna-detail-view sk-stack" aria-busy="true" aria-label="Cargando alumna">
+        <PageHeaderSkeleton titleWidth="w-48" subtitle={false} />
+        <SkeletonCard elevated>
           <FormSkeleton fields={4} />
-        </div>
-        <div className="sk sk--card-elevated">
+        </SkeletonCard>
+        <SkeletonCard elevated>
           <FormSkeleton fields={3} />
-        </div>
+        </SkeletonCard>
       </div>
     );
   }
@@ -188,22 +182,24 @@ function AlumnaDetailDesktop({
       <p className="page__back">
         <Link href={profeRoutes.alumnas}>← Volver a alumnas</Link>
       </p>
-      <AlumnaDetailHeroDesktop alumna={alumna} />
       <Suspense
         fallback={
-          <div aria-busy="true" aria-label="Cargando secciones">
-            <SkeletonLine size="lg" width="w-40" gold />
-            <div className="sk sk--card-elevated">
+          <SkeletonStack aria-busy={true} aria-label="Cargando secciones">
+            <PageHeaderSkeleton titleWidth="w-48" subtitleWidth="w-40" />
+            <SkeletonCard elevated>
               <FormSkeleton fields={3} />
-            </div>
-          </div>
+            </SkeletonCard>
+          </SkeletonStack>
         }
       >
-        <AlumnaDetailTabbedContent
-          alumna={alumna}
-          planTemplates={planTemplates}
-          onAlumnaUpdated={onAlumnaUpdated}
-        />
+        <>
+          <h1 className="sr-only">{alumna.nombre}</h1>
+          <AlumnaDetailTabbedContent
+            alumna={alumna}
+            planTemplates={planTemplates}
+            onAlumnaUpdated={onAlumnaUpdated}
+          />
+        </>
       </Suspense>
     </div>
   );

@@ -25,10 +25,46 @@ export function getApiBaseUrl() {
   );
 }
 
+export type ZodFlattenedError = {
+  formErrors?: string[];
+  fieldErrors?: Record<string, string[]>;
+};
+
+export function formatValidationErrorMessage(
+  fallback: string,
+  details?: unknown,
+): string | null {
+  if (!details || typeof details !== "object") {
+    return fallback === "Datos inválidos" ? null : fallback;
+  }
+
+  const flattened = details as ZodFlattenedError;
+  const parts: string[] = [];
+
+  if (flattened.formErrors?.length) {
+    parts.push(...flattened.formErrors);
+  }
+
+  if (flattened.fieldErrors) {
+    for (const [field, messages] of Object.entries(flattened.fieldErrors)) {
+      if (messages?.length) {
+        parts.push(`${field}: ${messages.join(", ")}`);
+      }
+    }
+  }
+
+  if (parts.length === 0) {
+    return fallback === "Datos inválidos" ? null : fallback;
+  }
+
+  return parts.join(". ");
+}
+
 export class ApiError extends Error {
   constructor(
     message: string,
     public status: number,
+    public details?: unknown,
   ) {
     super(message);
     this.name = "ApiError";
@@ -86,16 +122,22 @@ export async function apiFetch<T>(
 
   if (!response.ok) {
     let message = "Error al comunicarse con el servidor";
+    let details: unknown;
     try {
       const text = await response.text();
       if (text.trim()) {
-        const body = JSON.parse(text) as { error?: string; message?: string };
+        const body = JSON.parse(text) as {
+          error?: string;
+          message?: string;
+          details?: unknown;
+        };
         message = body.error ?? body.message ?? message;
+        details = body.details;
       }
     } catch {
       // ignore parse errors
     }
-    throw new ApiError(message, response.status);
+    throw new ApiError(message, response.status, details);
   }
 
   if (response.status === 204) {

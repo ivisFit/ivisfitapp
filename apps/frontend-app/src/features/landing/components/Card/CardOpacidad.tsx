@@ -2,6 +2,7 @@
 import styled from 'styled-components';
 import { FaArrowRight } from 'react-icons/fa';
 import { Box } from '@mui/material';
+import { publicBackgroundStyle } from '@/lib/public-image';
 
 const CardContainer = styled.div`
   width: 100%;
@@ -149,7 +150,7 @@ type CardOpacidadProps = {
 
 export const CardOpacidad = ({imagen}: CardOpacidadProps) => {
   return (
-    <CardContainer style={{backgroundImage:`url(${imagen})`}}>	
+    <CardContainer style={{ backgroundImage: publicBackgroundStyle(imagen) }}>
       <Box sx={{width:"100%", display:"flex", justifyContent:"center", alignItems:"center"}}>
         <Badge>PAGO MENSUAL</Badge>
       </Box>

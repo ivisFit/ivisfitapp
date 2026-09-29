@@ -92,3 +92,18 @@ export function isReunionToday(value: string) {
 export function getReunionDateKey(value: string) {
   return formatDateParam(parseReunionDate(value));
 }
+
+/** Returns an absolute http(s) href when the stored value looks like a URL; otherwise null (plain text). */
+export function parseReunionLinkHref(link: string): string | null {
+  const value = link.trim();
+  if (!value) return null;
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+      return parsed.href;
+    }
+  } catch {
+    /* not an absolute URL */
+  }
+  return null;
+}

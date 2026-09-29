@@ -1,11 +1,28 @@
 import {
   CheckinAlimentacion,
+  ConversacionAsistente,
+  EvaluacionNutricional,
   GamificacionEvento,
   LogPeso,
   Medicion,
   RutinaProgreso,
   Usuario,
+  type ConversacionAsistenteDocument,
+  type UsuarioDocument,
 } from "@ivisfit/database";
+import {
+  BADGE_CATEGORIAS,
+  BADGES_CATALOGO,
+} from "./gamificacion-badges.catalog.js";
+import {
+  badgeCumplido,
+  progresoBadge,
+  tieneDiaCompleto,
+  tieneSemanaEquilibrada,
+  type BadgeContext,
+} from "./gamificacion-badges.logic.js";
+
+export { BADGES_CATALOGO } from "./gamificacion-badges.catalog.js";
 
 export const GAMIFICACION_EVENTOS = {
   entrenamiento: { puntos: 10, descripcion: "Día de entrenamiento completado" },
@@ -29,83 +46,6 @@ const RACHAS_BONUS: Array<{
   { dias: 14, tipo: "racha_14", referencia: "racha-14" },
   { dias: 28, tipo: "racha_28", referencia: "racha-28" },
 ];
-
-export const BADGES_CATALOGO = [
-  {
-    codigo: "primer_entrenamiento",
-    nombre: "Primer paso",
-    descripcion: "Completaste tu primer día de entrenamiento",
-    icono: "🏋️",
-  },
-  {
-    codigo: "racha_3",
-    nombre: "Racha de 3",
-    descripcion: "3 días seguidos entrenando",
-    icono: "🔥",
-  },
-  {
-    codigo: "racha_7",
-    nombre: "Una semana",
-    descripcion: "7 días seguidos entrenando",
-    icono: "🔥",
-  },
-  {
-    codigo: "racha_14",
-    nombre: "Dos semanas",
-    descripcion: "14 días seguidos entrenando",
-    icono: "🔥",
-  },
-  {
-    codigo: "racha_28",
-    nombre: "Acero",
-    descripcion: "28 días seguidos entrenando",
-    icono: "💪",
-  },
-  {
-    codigo: "desafio_completado",
-    nombre: "Desafío cumplido",
-    descripcion: "Completaste tu desafío de 28 días",
-    icono: "🏆",
-  },
-  {
-    codigo: "primer_checkin",
-    nombre: "Primer check-in",
-    descripcion: "Registraste tu alimentación por primera vez",
-    icono: "🍽️",
-  },
-  {
-    codigo: "checkin_semana",
-    nombre: "Constancia alimentaria",
-    descripcion: "7 check-ins de alimentación",
-    icono: "🥗",
-  },
-  {
-    codigo: "primera_medicion",
-    nombre: "Midiendo el progreso",
-    descripcion: "Registraste tu primera medición",
-    icono: "📏",
-  },
-  {
-    codigo: "peso_logueado",
-    nombre: "Cargando fuerza",
-    descripcion: "Registraste tu primer peso de ejercicio",
-    icono: "🎯",
-  },
-  {
-    codigo: "nivel_5",
-    nombre: "Nivel 5",
-    descripcion: "Alcanzaste el nivel 5",
-    icono: "⭐",
-  },
-  {
-    codigo: "nivel_10",
-    nombre: "Nivel 10",
-    descripcion: "Alcanzaste el nivel 10",
-    icono: "🌟",
-  },
-] as const;
-
-export type BadgeCodigo = (typeof BADGES_CATALOGO)[number]["codigo"];
 
 const XP_BASE_NIVEL = 100;
 
@@ -173,67 +113,147 @@ function computeRacha(dateKeys: string[]): {
   return { rachaActual, rachaMaxima };
 }
 
-interface BadgeContext {
-  totalDias: number;
-  rachaMaxima: number;
-  totalCheckins: number;
-  totalMediciones: number;
-  totalLogsPesos: number;
-  nivel: number;
+const MEDICION_PLIEGUES_OR = [
+  { "pliegues.tricipital": { $ne: null } },
+  { "pliegues.suprailiaco": { $ne: null } },
+  { "pliegues.pectoral": { $ne: null } },
+  { "pliegues.abdominal": { $ne: null } },
+  { "pliegues.muslo": { $ne: null } },
+];
+
+const MEDICION_CIRCUNFERENCIAS_OR = [
+  { "circunferencias.cuelloCm": { $ne: null } },
+  { "circunferencias.cinturaCm": { $ne: null } },
+  { "circunferencias.caderaCm": { $ne: null } },
+];
+
+async function buildBadgeContext(
+  alumnaId: string,
+  usuario: UsuarioDocument,
+  progresos: Array<{ dateKey: string }>,
+  totalDias: number,
+  rachaMaxima: number,
+  nivel: number,
+): Promise<BadgeContext> {
+  const [
+    totalCheckins,
+    checkinsDocs,
+    totalMediciones,
+    totalMedicionesPliegues,
+    totalMedicionesCircunferencias,
+    totalLogsPesos,
+    ejerciciosDistintos,
+    tieneEvaluacion,
+    conversacion,
+  ] = await Promise.all([
+    CheckinAlimentacion.countDocuments({ alumnaId }),
+    CheckinAlimentacion.find({
+      alumnaId,
+      estado: { $in: ["cumpli", "parcial"] },
+    })
+      .select("dateKey estado")
+      .lean(),
+    Medicion.countDocuments({ alumnaId }),
+    Medicion.countDocuments({ alumnaId, $or: MEDICION_PLIEGUES_OR }),
+    Medicion.countDocuments({ alumnaId, $or: MEDICION_CIRCUNFERENCIAS_OR }),
+    LogPeso.countDocuments({ alumnaId }),
+    LogPeso.distinct("ejercicioId", { alumnaId }),
+    EvaluacionNutricional.exists({ alumnaId }),
+    ConversacionAsistente.findOne({ alumnaId })
+      .select("mensajes ultimoCheckin")
+      .lean<Pick<ConversacionAsistenteDocument, "mensajes" | "ultimoCheckin">>(),
+  ]);
+
+  const checkinValidosKeys = checkinsDocs.map((c) => c.dateKey);
+  const { rachaMaxima: rachaAlimentacionMaxima } =
+    computeRacha(checkinValidosKeys);
+  const totalCheckinsCumpli = checkinsDocs.filter(
+    (c) => c.estado === "cumpli",
+  ).length;
+  const entrenamientoKeys = progresos.map((p) => p.dateKey);
+
+  const mensajesAsistenteUsuario =
+    conversacion?.mensajes?.filter((m) => m.role === "user").length ?? 0;
+
+  return {
+    totalDias,
+    rachaMaxima,
+    totalCheckins,
+    totalCheckinsValidos: checkinsDocs.length,
+    totalCheckinsCumpli,
+    rachaAlimentacionMaxima,
+    totalMediciones,
+    totalMedicionesPliegues,
+    totalMedicionesCircunferencias,
+    totalLogsPesos,
+    ejerciciosConPesoDistintos: ejerciciosDistintos.length,
+    nivel,
+    tieneEvaluacion: Boolean(tieneEvaluacion),
+    tieneFotoPerfil: Boolean(usuario.fotoPerfil?.url),
+    onboardingCompletado: Boolean(usuario.onboarding?.completado),
+    mensajesAsistenteUsuario,
+    tieneCheckinAsistente: Boolean(conversacion?.ultimoCheckin?.dateKey),
+    tieneDiaCompleto: tieneDiaCompleto(entrenamientoKeys, checkinValidosKeys),
+    tieneSemanaEquilibrada: tieneSemanaEquilibrada(
+      entrenamientoKeys,
+      checkinValidosKeys,
+    ),
+  };
 }
 
-function badgeCumplido(
-  codigo: BadgeCodigo,
+function ordenProximosLogros<T extends { codigo: string; desbloqueado: boolean }>(
+  badges: T[],
   ctx: BadgeContext,
-): boolean {
-  switch (codigo) {
-    case "primer_entrenamiento":
-      return ctx.totalDias >= 1;
-    case "racha_3":
-      return ctx.rachaMaxima >= 3;
-    case "racha_7":
-      return ctx.rachaMaxima >= 7;
-    case "racha_14":
-      return ctx.rachaMaxima >= 14;
-    case "racha_28":
-      return ctx.rachaMaxima >= 28;
-    case "desafio_completado":
-      return ctx.totalDias >= 28;
-    case "primer_checkin":
-      return ctx.totalCheckins >= 1;
-    case "checkin_semana":
-      return ctx.totalCheckins >= 7;
-    case "primera_medicion":
-      return ctx.totalMediciones >= 1;
-    case "peso_logueado":
-      return ctx.totalLogsPesos >= 1;
-    case "nivel_5":
-      return ctx.nivel >= 5;
-    case "nivel_10":
-      return ctx.nivel >= 10;
-    default:
-      return false;
+): T[] {
+  const bloqueados = badges.filter((b) => !b.desbloqueado);
+  const withIndex = bloqueados.map((badge, catalogIndex) => {
+    const prog = progresoBadge(
+      badge.codigo as (typeof BADGES_CATALOGO)[number]["codigo"],
+      ctx,
+    );
+    const ratio =
+      prog && prog.objetivo > 0
+        ? Math.min(1, prog.actual / prog.objetivo)
+        : 0;
+    return { badge, ratio, catalogIndex };
+  });
+  withIndex.sort((a, b) => {
+    if (b.ratio !== a.ratio) return b.ratio - a.ratio;
+    return a.catalogIndex - b.catalogIndex;
+  });
+  return withIndex.map((item) => item.badge);
+}
+
+function resumenCategorias(
+  badges: Array<{ categoria: string; desbloqueado: boolean }>,
+) {
+  const totals = new Map<string, { total: number; desbloqueados: number }>();
+  for (const badge of badges) {
+    const current = totals.get(badge.categoria) ?? {
+      total: 0,
+      desbloqueados: 0,
+    };
+    current.total += 1;
+    if (badge.desbloqueado) current.desbloqueados += 1;
+    totals.set(badge.categoria, current);
   }
+  return (Object.keys(BADGE_CATEGORIAS) as (keyof typeof BADGE_CATEGORIAS)[]).map(
+    (id) => ({
+      id,
+      label: BADGE_CATEGORIAS[id],
+      total: totals.get(id)?.total ?? 0,
+      desbloqueados: totals.get(id)?.desbloqueados ?? 0,
+    }),
+  );
 }
 
 async function recalcular(alumnaId: string) {
-  const [
-    usuario,
-    progresos,
-    totalDias,
-    totalCheckins,
-    totalMediciones,
-    totalLogsPesos,
-    eventos,
-  ] = await Promise.all([
+  const [usuario, progresos, totalDias, eventos] = await Promise.all([
     Usuario.findById(alumnaId),
     RutinaProgreso.find({ alumnaId, diaCompletado: true })
       .select("dateKey")
       .lean(),
     RutinaProgreso.countDocuments({ alumnaId, diaCompletado: true }),
-    CheckinAlimentacion.countDocuments({ alumnaId }),
-    Medicion.countDocuments({ alumnaId }),
-    LogPeso.countDocuments({ alumnaId }),
     GamificacionEvento.find({ alumnaId }).lean(),
   ]);
 
@@ -288,19 +308,21 @@ async function recalcular(alumnaId: string) {
   }
 
   const nivel = nivelPorXp(xpTotal);
+  const ctx = await buildBadgeContext(
+    alumnaId,
+    usuario as UsuarioDocument,
+    progresos as unknown as Array<{ dateKey: string }>,
+    totalDias,
+    rachaMaxima,
+    nivel,
+  );
+
   const badges = [...(usuario.gamificacion?.badges ?? [])];
   const badgesExistentes = badges.map((badge) => badge.codigo);
   const nuevosBadges = BADGES_CATALOGO.filter(
     (badge) =>
       !badgesExistentes.includes(badge.codigo) &&
-      badgeCumplido(badge.codigo, {
-        totalDias,
-        rachaMaxima,
-        totalCheckins,
-        totalMediciones,
-        totalLogsPesos,
-        nivel,
-      }),
+      badgeCumplido(badge.codigo, ctx),
   );
 
   for (const badge of nuevosBadges) {
@@ -332,6 +354,7 @@ async function recalcular(alumnaId: string) {
     rachaActual,
     rachaMaxima,
     badgesNuevos: nuevosBadges.map((badge) => badge.codigo),
+    badgeContext: ctx,
   };
 }
 
@@ -386,7 +409,7 @@ export const gamificacionService = {
   },
 
   async getPerfil(alumnaId: string) {
-    await recalcular(alumnaId);
+    const recalc = await recalcular(alumnaId);
 
     type BadgeGuardado = { codigo: string; desbloqueadoAt?: Date };
     const gamificacion: {
@@ -403,9 +426,9 @@ export const gamificacionService = {
       gamificacion.nivel = usuario.gamificacion.nivel ?? 1;
       gamificacion.rachaActual = usuario.gamificacion.rachaActual ?? 0;
       gamificacion.rachaMaxima = usuario.gamificacion.rachaMaxima ?? 0;
-      gamificacion.badges = (
-        usuario.gamificacion.badges as unknown as BadgeGuardado[] | undefined
-      ) ?? [];
+      gamificacion.badges =
+        (usuario.gamificacion.badges as unknown as BadgeGuardado[] | undefined) ??
+        [];
     }
 
     const xpTotal = gamificacion.xpTotal;
@@ -435,6 +458,29 @@ export const gamificacionService = {
       };
     });
 
+    let ctx = recalc?.badgeContext;
+    if (!ctx && usuario) {
+      const progresos = await RutinaProgreso.find({
+        alumnaId,
+        diaCompletado: true,
+      })
+        .select("dateKey")
+        .lean();
+      const totalDias = progresos.length;
+      ctx = await buildBadgeContext(
+        alumnaId,
+        usuario as UsuarioDocument,
+        progresos as unknown as Array<{ dateKey: string }>,
+        totalDias,
+        gamificacion.rachaMaxima,
+        nivel,
+      );
+    }
+
+    const proximosLogros = ctx
+      ? ordenProximosLogros(badges, ctx).slice(0, 3)
+      : badges.filter((badge) => !badge.desbloqueado).slice(0, 3);
+
     return {
       xpTotal,
       nivel,
@@ -443,7 +489,8 @@ export const gamificacionService = {
       rachaActual: gamificacion.rachaActual ?? 0,
       rachaMaxima: gamificacion.rachaMaxima ?? 0,
       badges,
-      proximosLogros: badges.filter((badge) => !badge.desbloqueado).slice(0, 3),
+      categorias: resumenCategorias(badges),
+      proximosLogros,
       eventosRecientes,
     };
   },

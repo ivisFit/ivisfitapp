@@ -1,14 +1,19 @@
 "use client";
 
 import { memo } from "react";
-import type { Medicion } from "@/features/profe/types/medicion";
-import type { MetodoCalculo } from "@/features/profe/types/medicion";
+import type {
+  Medicion,
+  MetodoCalculo,
+  PlieguesMedicion,
+} from "@/features/profe/types/medicion";
 import type { Sexo } from "@/types/usuario";
 import {
   formatGrasaCorporal,
   formatMedicionDate,
+  JP7_PLIEGUE_SITES,
   sumMedicionValues,
 } from "@/features/profe/utils/pliegues-period";
+import { normalizePlieguesJP7 } from "@/lib/jp7-pliegues";
 
 type PlieguesHistoryTableProps = {
   mediciones: Medicion[];
@@ -30,15 +35,11 @@ function getColumns(metodo: MetodoCalculo, sexo: Sexo): Column[] {
     return cols;
   }
   if (metodo === "jp7") {
-    return [
-      { key: "pectoral", label: "Pectoral", source: "pliegues" },
-      { key: "axilarMedia", label: "Axilar", source: "pliegues" },
-      { key: "tricipital", label: "Tríceps", source: "pliegues" },
-      { key: "subescapular", label: "Subesc.", source: "pliegues" },
-      { key: "abdominal", label: "Abdomen", source: "pliegues" },
-      { key: "suprailiaco", label: "Suprail.", source: "pliegues" },
-      { key: "muslo", label: "Muslo", source: "pliegues" },
-    ];
+    return JP7_PLIEGUE_SITES.map((site) => ({
+      key: site.key,
+      label: site.label,
+      source: "pliegues" as const,
+    }));
   }
   if (sexo === "mujer") {
     return [
@@ -54,15 +55,17 @@ function getColumns(metodo: MetodoCalculo, sexo: Sexo): Column[] {
   ];
 }
 
-function getCellValue(medicion: Medicion, column: Column) {
+function getCellValue(medicion: Medicion, column: Column, metodo: MetodoCalculo) {
   if (column.source === "circ") {
     return medicion.circunferencias?.[
       column.key as keyof NonNullable<Medicion["circunferencias"]>
     ];
   }
-  return medicion.pliegues?.[
-    column.key as keyof NonNullable<Medicion["pliegues"]>
-  ];
+  const pliegues: PlieguesMedicion | undefined =
+    metodo === "jp7" && medicion.pliegues
+      ? normalizePlieguesJP7(medicion.pliegues)
+      : medicion.pliegues;
+  return pliegues?.[column.key as keyof PlieguesMedicion];
 }
 
 export const PlieguesHistoryTable = memo(function PlieguesHistoryTable({
@@ -112,7 +115,7 @@ export const PlieguesHistoryTable = memo(function PlieguesHistoryTable({
                 <td data-label="Fecha">{formatMedicionDate(medicion.fecha)}</td>
                 {columns.map((column) => (
                   <td key={column.key} data-label={column.label}>
-                    {getCellValue(medicion, column) ?? "—"}
+                    {getCellValue(medicion, column, metodo) ?? "—"}
                   </td>
                 ))}
                 <td data-label="Suma">

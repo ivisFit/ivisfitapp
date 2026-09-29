@@ -3,6 +3,7 @@ import {
   type CreateLogPesoInput,
   type UpsertLogPesoInput,
 } from "@ivisfit/database";
+import { Types } from "mongoose";
 import { assertFound } from "../utils/errors.js";
 
 interface LogPesoFilters {
@@ -13,12 +14,18 @@ interface LogPesoFilters {
   dia?: string;
 }
 
+function toObjectIdFilter(value: string): Types.ObjectId | string {
+  return Types.ObjectId.isValid(value) ? new Types.ObjectId(value) : value;
+}
+
 function buildQuery(filters: LogPesoFilters): Record<string, unknown> {
   const query: Record<string, unknown> = {};
 
-  if (filters.alumnaId) query.alumnaId = filters.alumnaId;
-  if (filters.rutinaId) query.rutinaId = filters.rutinaId;
-  if (filters.ejercicioId) query.ejercicioId = filters.ejercicioId;
+  if (filters.alumnaId) query.alumnaId = toObjectIdFilter(filters.alumnaId);
+  if (filters.rutinaId) query.rutinaId = toObjectIdFilter(filters.rutinaId);
+  if (filters.ejercicioId) {
+    query.ejercicioId = toObjectIdFilter(filters.ejercicioId);
+  }
   if (filters.semana !== undefined) query.semana = filters.semana;
   if (filters.dia) query.dia = filters.dia;
 
@@ -45,11 +52,15 @@ export const logsPesosService = {
   },
 
   async upsert(alumnaId: string, data: UpsertLogPesoInput) {
+    const alumnaObjectId = toObjectIdFilter(alumnaId);
+    const rutinaObjectId = toObjectIdFilter(data.rutinaId);
+    const ejercicioObjectId = toObjectIdFilter(data.ejercicioId);
+
     const log = await LogPeso.findOneAndUpdate(
       {
-        alumnaId,
-        rutinaId: data.rutinaId,
-        ejercicioId: data.ejercicioId,
+        alumnaId: alumnaObjectId,
+        rutinaId: rutinaObjectId,
+        ejercicioId: ejercicioObjectId,
         semana: data.semana,
         dia: data.dia,
       },
@@ -59,9 +70,9 @@ export const logsPesosService = {
           ...(data.fecha ? { fecha: data.fecha } : {}),
         },
         $setOnInsert: {
-          alumnaId,
-          rutinaId: data.rutinaId,
-          ejercicioId: data.ejercicioId,
+          alumnaId: alumnaObjectId,
+          rutinaId: rutinaObjectId,
+          ejercicioId: ejercicioObjectId,
           semana: data.semana,
           dia: data.dia,
         },
