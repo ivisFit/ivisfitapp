@@ -35,6 +35,18 @@ const landingTheme = createTheme({
       xl: 1536,
     },
   },
+  components: {
+    MuiButtonBase: {
+      defaultProps: {
+        disableRipple: true,
+      },
+      styleOverrides: {
+        root: {
+          WebkitTapHighlightColor: "transparent",
+        },
+      },
+    },
+  },
 });
 
 type LandingShellProps = {

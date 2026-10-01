@@ -2,6 +2,7 @@
 
 import { useMemo, useState, type FormEvent } from "react";
 import { Button, Input } from "@/components";
+import { useAppDialog } from "@/components/AppDialogProvider";
 import { ListSkeleton } from "@/components/skeletons/AppSkeleton";
 import {
   type LandingPlanGestion,
@@ -51,6 +52,7 @@ export function PlanesStructuralPanel({ onStructureChange }: PlanesStructuralPan
     deletePlan,
     togglePlanActive,
   } = useLandingPlanesGestion();
+  const dialog = useAppDialog();
 
   const [slug, setSlug] = useState("");
   const [route, setRoute] = useState("");
@@ -133,9 +135,12 @@ export function PlanesStructuralPanel({ onStructureChange }: PlanesStructuralPan
   }
 
   async function handleDelete(plan: LandingPlanGestion) {
-    const confirmed = window.confirm(
-      `¿Eliminar "${plan.title}"? Desaparecerá de la landing pública.`,
-    );
+    const confirmed = await dialog.confirm({
+      title: "Eliminar plan",
+      message: `¿Eliminar "${plan.title}"? Desaparecerá de la landing pública.`,
+      tone: "danger",
+      confirmLabel: "Eliminar",
+    });
     if (!confirmed) return;
 
     const success = await deletePlan(plan.id);

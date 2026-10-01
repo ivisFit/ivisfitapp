@@ -1,6 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 
-const DEFAULT_MODEL = "gemini-2.5-flash";
+/** Google deprecates model IDs over time; override with GEMINI_MODEL in .env */
+const DEFAULT_MODEL = "gemini-2.0-flash";
 
 function envInt(name: string, fallback: number): number {
   const raw = process.env[name]?.trim();

@@ -3,8 +3,18 @@ import {
   type ComidaPlan,
   type CreateEvaluacionNutricionalInput,
   type CreatePlanNutricionalInput,
+  type DiaPlanNutricional,
+  type EstructuraComida,
+  type GenerarComidaPlanInput,
   type MacrosObjetivo,
 } from "@ivisfit/database";
+import {
+  buildComidaFallbackDesdeCatalogo,
+  formatCatalogoParaPrompt,
+  resolverComidaAlCatalogo,
+  resolverDiasAlCatalogo,
+} from "../lib/plan-catalog-ingredientes.js";
+import type { CatalogAlimentoMacros } from "../lib/alimento-catalog-match.js";
 import { generateGeminiText, isGeminiConfigured } from "./gemini-client.js";
 
 const NUTRITION_SYSTEM_PROMPT = `Sos una nutricionista deportiva de IVIIS FIT, especializada en mujeres.
@@ -69,29 +79,108 @@ function extractJson<T>(text: string): T | null {
   }
 }
 
+function catalogInstructionBlock(catalog: CatalogAlimentoMacros[]): string {
+  const items = formatCatalogoParaPrompt(catalog);
+  return `
+CATÁLOGO OBLIGATORIO (solo estos alimentos; usá nombre EXACTO o alimentoId):
+${JSON.stringify(items)}
+PROHIBIDO: nombres genéricos ("Proteína magra", "Carbohidrato", "Vegetales") o alimentos fuera del catálogo.
+Formato ingrediente: { "alimentoId": "opcional", "nombre": "del catálogo", "cantidad": number, "unidad": "g|ml|unidad" }`;
+}
+
+function normalizeIngredienteRaw(
+  raw: unknown,
+): ComidaPlan["ingredientes"][number] | null {
+  if (!raw || typeof raw !== "object") return null;
+  const record = raw as Record<string, unknown>;
+  const nombreRaw =
+    record.nombre ??
+    record.name ??
+    record.alimento ??
+    record.ingrediente ??
+    record.food;
+  const nombre = typeof nombreRaw === "string" ? nombreRaw.trim() : "";
+  const alimentoIdRaw = record.alimentoId ?? record.alimento_id;
+  const alimentoId =
+    typeof alimentoIdRaw === "string" && alimentoIdRaw.trim()
+      ? alimentoIdRaw.trim()
+      : undefined;
+  if (!nombre && !alimentoId) return null;
+
+  let cantidadValue: unknown =
+    record.cantidad ?? record.amount ?? record.grams ?? record.gramos;
+  if (typeof cantidadValue === "string") {
+    cantidadValue = Number(cantidadValue.replace(",", "."));
+  }
+  const cantidad =
+    typeof cantidadValue === "number" &&
+    Number.isFinite(cantidadValue) &&
+    cantidadValue > 0
+      ? cantidadValue
+      : 100;
+
+  const unidadRaw = record.unidad ?? record.unit;
+  const unidad =
+    unidadRaw === "ml" || unidadRaw === "unidad" ? unidadRaw : ("g" as const);
+
+  return {
+    ...(alimentoId ? { alimentoId } : {}),
+    nombre,
+    cantidad,
+    unidad,
+  };
+}
+
+function normalizeIngredientesList(raw: unknown): ComidaPlan["ingredientes"] {
+  const list = Array.isArray(raw) ? raw : [];
+  return list
+    .map(normalizeIngredienteRaw)
+    .filter((ing): ing is ComidaPlan["ingredientes"][number] => ing !== null);
+}
+
+function normalizeComidaFromIa(comida: ComidaPlan, slot?: ComidaPlan): ComidaPlan {
+  return {
+    ...comida,
+    nombre: (slot?.nombre ?? comida.nombre)?.trim() || "Comida",
+    horario: slot?.horario ?? comida.horario,
+    macrosObjetivo: slot?.macrosObjetivo ?? comida.macrosObjetivo,
+    ingredientes: normalizeIngredientesList(comida.ingredientes),
+  };
+}
+
+export function sanitizePlanDias(dias: DiaPlanNutricional[]): DiaPlanNutricional[] {
+  return dias.map((dia) => ({
+    ...dia,
+    comidas: dia.comidas.map((comida) => normalizeComidaFromIa(comida)),
+  }));
+}
+
 function buildFallbackPlan(
   evaluacion: EvaluacionContext,
   macros: MacrosObjetivo,
+  catalog: CatalogAlimentoMacros[],
 ): Pick<CreatePlanNutricionalInput, "titulo" | "observacionesProfe" | "macrosObjetivo" | "dias" | "generadoPorIa"> {
   const mealNames = ["Desayuno", "Almuerzo", "Merienda", "Cena", "Colación", "Snack"];
-  const comidas = Array.from({ length: evaluacion.cantidadComidas }, (_, index) => ({
-    nombre: mealNames[index] ?? `Comida ${index + 1}`,
-    horario: undefined,
-    ingredientes: [
-      { nombre: "Proteína magra", cantidad: 120, unidad: "g" as const },
-      { nombre: "Carbohidrato complejo", cantidad: 80, unidad: "g" as const },
-      { nombre: "Vegetales", cantidad: 1, unidad: "unidad" as const },
-    ],
-    notas: "Ajustá porciones según hambre y energía del día.",
-    preparacion: "Preparación simple en menos de 30 minutos.",
-  }));
+  const comidas = Array.from({ length: evaluacion.cantidadComidas }, (_, index) =>
+    buildComidaFallbackDesdeCatalogo(
+      {
+        nombre: mealNames[index] ?? `Comida ${index + 1}`,
+        horario: undefined,
+        ingredientes: [],
+      },
+      catalog,
+      index,
+    ),
+  );
+
+  const dias = resolverDiasAlCatalogo([{ nombre: "Día tipo", comidas }], catalog);
 
   return {
     titulo: "Plan nutricional personalizado",
     observacionesProfe:
-      "Borrador base generado sin IA. Revisá porciones, horarios y alimentos según la evaluación de la alumna.",
+      "Borrador armado desde el catálogo. Revisá porciones y horarios según la evaluación.",
     macrosObjetivo: macros,
-    dias: [{ nombre: "Día tipo", comidas }],
+    dias,
     generadoPorIa: false,
   };
 }
@@ -99,25 +188,26 @@ function buildFallbackPlan(
 function enforceComidasCount(
   dias: NonNullable<Pick<CreatePlanNutricionalInput, "dias">["dias"]>,
   cantidadComidas: number,
+  catalog: CatalogAlimentoMacros[],
 ): typeof dias {
   const mealNames = ["Desayuno", "Almuerzo", "Merienda", "Cena", "Colación", "Snack"];
 
-  return dias.map((dia) => {
+  return dias.map((dia, diaIndex) => {
     const comidas = dia.comidas.slice(0, cantidadComidas);
 
     while (comidas.length < cantidadComidas) {
       const index = comidas.length;
-      comidas.push({
-        nombre: mealNames[index] ?? `Comida ${index + 1}`,
-        horario: undefined,
-        ingredientes: [
-          { nombre: "Proteína magra", cantidad: 120, unidad: "g" as const },
-          { nombre: "Carbohidrato complejo", cantidad: 80, unidad: "g" as const },
-          { nombre: "Vegetales", cantidad: 1, unidad: "unidad" as const },
-        ],
-        notas: "Ajustá porciones según hambre y energía del día.",
-        preparacion: "Preparación simple en menos de 30 minutos.",
-      });
+      comidas.push(
+        buildComidaFallbackDesdeCatalogo(
+          {
+            nombre: mealNames[index] ?? `Comida ${index + 1}`,
+            horario: undefined,
+            ingredientes: [],
+          },
+          catalog,
+          diaIndex * 10 + index,
+        ),
+      );
     }
 
     return { ...dia, comidas };
@@ -186,9 +276,12 @@ export const nutritionGeminiService = {
     );
   },
 
-  async generatePlanDraft(evaluacion: EvaluacionContext) {
+  async generatePlanDraft(
+    evaluacion: EvaluacionContext,
+    catalog: CatalogAlimentoMacros[],
+  ) {
     const macros = calculateMacrosObjetivo(evaluacion);
-    const fallback = buildFallbackPlan(evaluacion, macros);
+    const fallback = buildFallbackPlan(evaluacion, macros, catalog);
 
     const instruction = `Generá un plan nutricional diario tipo (un solo día replicable) en JSON con esta estructura exacta:
 {
@@ -216,6 +309,7 @@ Cantidad de comidas requeridas: ${evaluacion.cantidadComidas}
 OBLIGATORIO: el plan debe tener EXACTAMENTE ${evaluacion.cantidadComidas} comidas, ni una más ni una menos.
 Tiempo máximo de cocina: ${evaluacion.tiempoCocinaMinutos} minutos
 Respetá preferencias, restricciones, alergias y alimentos evitados.
+${catalogInstructionBlock(catalog)}
 Devolvé SOLO JSON válido.`;
 
     const text = await generateNutritionText(
@@ -230,12 +324,149 @@ Devolvé SOLO JSON válido.`;
       return fallback;
     }
 
+    const dias = enforceComidasCount(
+      parsed.dias,
+      evaluacion.cantidadComidas,
+      catalog,
+    );
+
     return {
       ...parsed,
       generadoPorIa: true,
       macrosObjetivo: parsed.macrosObjetivo ?? macros,
-      dias: enforceComidasCount(parsed.dias, evaluacion.cantidadComidas),
+      dias: resolverDiasAlCatalogo(sanitizePlanDias(dias), catalog),
     };
+  },
+
+  async generateDayPlan(
+    evaluacion: EvaluacionContext,
+    input: {
+      diaNombre: string;
+      macrosObjetivo: MacrosObjetivo;
+      estructuraComidas: EstructuraComida[];
+      comidasConObjetivo: ComidaPlan[];
+      diasPreviosResumen: string[];
+      catalog: CatalogAlimentoMacros[];
+      diaSeed: number;
+    },
+  ): Promise<DiaPlanNutricional> {
+    const fallback: DiaPlanNutricional = {
+      nombre: input.diaNombre,
+      comidas: input.comidasConObjetivo.map((slot, index) =>
+        buildComidaFallbackDesdeCatalogo(slot, input.catalog, input.diaSeed * 10 + index),
+      ),
+    };
+
+    const instruction = `Generá UN día del plan nutricional (${input.diaNombre}) en JSON:
+{
+  "nombre": "${input.diaNombre}",
+  "comidas": [{
+    "nombre": "string",
+    "horario": "08:00",
+    "ingredientes": [{ "nombre": "string", "cantidad": number, "unidad": "g|ml|unidad" }],
+    "notas": "opcional",
+    "preparacion": "breve"
+  }]
+}
+
+Evaluación: ${JSON.stringify(evaluacion)}
+Macros del día: ${JSON.stringify(input.macrosObjetivo)}
+Estructura de comidas (respetá nombres y horarios): ${JSON.stringify(input.estructuraComidas)}
+Metas por comida (aproximá ingredientes en gramos para llegar): ${JSON.stringify(
+      input.comidasConObjetivo.map((c) => ({
+        nombre: c.nombre,
+        horario: c.horario,
+        macrosObjetivo: c.macrosObjetivo,
+      })),
+    )}
+${input.diasPreviosResumen.length ? `Días ya armados (variá proteínas y carbos, no repitas menús): ${input.diasPreviosResumen.join(" | ")}` : ""}
+Tiempo máximo cocina: ${evaluacion.tiempoCocinaMinutos} min.
+Cantidades en gramos exactos.
+${catalogInstructionBlock(input.catalog)}
+Devolvé SOLO JSON válido.`;
+
+    const text = await generateNutritionText(
+      instruction,
+      JSON.stringify(fallback),
+      4096,
+      { jsonMode: true },
+    );
+    const parsed = extractJson<DiaPlanNutricional>(text);
+    if (!parsed?.comidas?.length) return fallback;
+
+    const comidas = parsed.comidas.map((comida, index) =>
+      normalizeComidaFromIa(comida, input.comidasConObjetivo[index]),
+    );
+
+    return resolverDiasAlCatalogo(
+      [{ nombre: input.diaNombre, comidas }],
+      input.catalog,
+    )[0]!;
+  },
+
+  async generateComidaPlan(
+    evaluacion: EvaluacionContext,
+    input: GenerarComidaPlanInput & {
+      macrosDia?: MacrosObjetivo;
+      comidaObjetivo?: MacrosObjetivo;
+      catalog: CatalogAlimentoMacros[];
+      comidaSeed?: number;
+    },
+  ): Promise<ComidaPlan> {
+    const base: ComidaPlan = input.comidaActual ?? {
+      nombre: "Comida",
+      ingredientes: [],
+    };
+    const fallbackComida = resolverComidaAlCatalogo(
+      buildComidaFallbackDesdeCatalogo(base, input.catalog, input.comidaSeed ?? 0),
+      input.catalog,
+      input.comidaSeed ?? 0,
+    );
+
+    const modoLabel =
+      input.modo === "sugerir"
+        ? "Sugerí una comida completa"
+        : input.modo === "alternativa"
+          ? "Proponé una alternativa distinta"
+          : `Ajustá la comida para acercarte a ${input.proteinaObjetivoG ?? "la"} g de proteína`;
+
+    const instruction = `${modoLabel} en JSON con esta estructura:
+{
+  "nombre": "string",
+  "horario": "opcional",
+  "ingredientes": [{ "nombre": "string", "cantidad": number, "unidad": "g|ml|unidad" }],
+  "notas": "opcional",
+  "preparacion": "breve"
+}
+Evaluación: ${JSON.stringify(evaluacion)}
+Comida actual: ${JSON.stringify(base)}
+${input.instruccion ? `Instrucción extra: ${input.instruccion}` : ""}
+${input.comidaObjetivo ? `Meta de la comida: ${JSON.stringify(input.comidaObjetivo)}` : ""}
+Cantidades en gramos exactos.
+${catalogInstructionBlock(input.catalog)}
+Devolvé SOLO JSON.`;
+
+    const text = await generateNutritionText(
+      instruction,
+      JSON.stringify(fallbackComida),
+      2048,
+      { jsonMode: true },
+    );
+    const parsed = extractJson<ComidaPlan>(text);
+    if (!parsed) return fallbackComida;
+    const merged = normalizeComidaFromIa(
+      {
+        ...base,
+        ...parsed,
+        macrosObjetivo: input.comidaObjetivo ?? base.macrosObjetivo,
+      },
+      base,
+    );
+    return resolverComidaAlCatalogo(
+      merged,
+      input.catalog,
+      input.comidaSeed ?? 0,
+    );
   },
 
   async chat(

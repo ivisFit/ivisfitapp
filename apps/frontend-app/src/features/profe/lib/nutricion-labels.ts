@@ -198,10 +198,116 @@ export function buildListaCompras(
     }
   }
 
-  return Array.from(items.entries())
+  const list = Array.from(items.entries())
     .map(([nombre, cantidades]) => ({
       nombre: nombre.charAt(0).toUpperCase() + nombre.slice(1),
       cantidades: [...new Set(cantidades)],
     }))
     .sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+
+  return list;
+}
+
+// Categorías para lista de compras
+export type CategoriaCompras =
+  | "Proteínas"
+  | "Verduras y hortalizas"
+  | "Frutas"
+  | "Carbohidratos"
+  | "Lácteos y huevos"
+  | "Grasas y aceites"
+  | "Condimentos y especias"
+  | "Bebidas"
+  | "Otros";
+
+const CATEGORIAS_KEYWORDS: Record<Exclude<CategoriaCompras, "Otros">, string[]> = {
+  "Proteínas": [
+    "pollo", "carne", "res", "cerdo", "pescado", "salmón", "atún", "merluza", "huevo", "huevos",
+    "tofu", "tempeh", "legumbres", "lentejas", "garbanzos", "porotos", "frijoles", "arvejas",
+    "proteína", "proteina", "whey", "caseína", "caseina", "pechuga", "bife", "milanesas"
+  ],
+  "Verduras y hortalizas": [
+    "lechuga", "tomate", "cebolla", "ajo", "pimiento", "morron", "zanahoria", "calabaza", "zapallo",
+    "brocoli", "brócoli", "coliflor", "espinaca", "acelga", "kale", "rucula", "rúcula", "pepino",
+    "apio", "puerro", "cebolla de verdeo", "berenjena", "calabacín", "calabacin", "choclo", "maíz",
+    "maiz", "arvejas", "arveja", "vainita", "vainitas", "espárragos", "esparragos", "hongo", "hongos",
+    "champiñon", "champiñón", "verdura", "verduras", "vegetal", "vegetales", "hoja", "hojas",
+    "ensalada", "mix", "mix de", "verde", "verdes"
+  ],
+  "Frutas": [
+    "manzana", "banana", "plátano", "platano", "naranja", "mandarina", "limon", "limón", "uva",
+    "frutilla", "frutillas", "fresa", "fresas", "arandano", "arándano", "mora", "kiwi", "pera",
+    "durazno", "melocoton", "melocotón", "ciruela", "higo", "granada", "mango", "piña", "anana",
+    "sandia", "sandía", "melon", "melón", "fruta", "frutas"
+  ],
+  "Carbohidratos": [
+    "arroz", "pasta", "fideo", "fideos", "tallarín", "tallarin", "spaghetti", "ñoqui", "ñoquis",
+    "papa", "patata", "batata", "boniato", "camote", "pan", "tostada", "tostadas", "galletita",
+    "galletas", "cereal", "cereales", "avena", "quinoa", "couscous", "mijo", "trigo", "centeno",
+    "harina", "maicena", "almidon", "almidón", "tapioca", "mandioca", "yuca", "carbohidrato",
+    "carbohidratos", "hidrato", "hidratos"
+  ],
+  "Lácteos y huevos": [
+    "leche", "yogur", "yogurt", "queso", "ricota", "requeson", "requesón", "crema", "manteca",
+    "mantequilla", "queso crema", "mozzarella", "parmesano", "gouda", "cheddar", "provolone",
+    "dulce de leche", "flan", "postre", "lacteo", "lácteo", "lacteos", "lácteos", "huevo", "huevos"
+  ],
+  "Grasas y aceites": [
+    "aceite", "oliva", "girasol", "coco", "palta", "avocado", "aguacate", "nuez", "nueces",
+    "almendra", "almendras", "castaña", "castañas", "pistacho", "pistachos", "mani", "maní",
+    "cacahuete", "semilla", "semillas", "chia", "chía", "lino", "girasol", "calabaza",
+    "manteca de mani", "manteca de maní", "peanut butter", "grasa", "grasas", "aceite de"
+  ],
+  "Condimentos y especias": [
+    "sal", "pimienta", "orégano", "oregano", "albahaca", "perejil", "cilantro", "romero", "tomillo",
+    "laurel", "comino", "curry", "pimenton", "pimentón", "aji", "ají", "chile", "mostaza",
+    "mayonesa", "ketchup", "soja", "salsa", "vinagre", "limon", "limón", "jugo de", "condimento",
+    "especia", "hierba", "hierbas", "provenzal", "merken", "ahumado"
+  ],
+  "Bebidas": [
+    "agua", "café", "cafe", "té", "te", "mate", "yerba", "jugo", "jugo de", "gaseosa", "refresco",
+    "cerveza", "vino", "bebida", "bebidas", "infusión", "infusion", "leche", "leche vegetal",
+    "leche de almendra", "leche de avena", "leche de soja"
+  ],
+};
+
+export function categorizarListaCompras(
+  items: { nombre: string; cantidades: string[] }[]
+): { categoria: CategoriaCompras; items: { nombre: string; cantidades: string[] }[] }[] {
+  const categorizados: Record<CategoriaCompras, { nombre: string; cantidades: string[] }[]> = {
+    "Proteínas": [],
+    "Verduras y hortalizas": [],
+    "Frutas": [],
+    "Carbohidratos": [],
+    "Lácteos y huevos": [],
+    "Grasas y aceites": [],
+    "Condimentos y especias": [],
+    "Bebidas": [],
+    "Otros": [],
+  };
+
+  for (const item of items) {
+    const nombreLower = item.nombre.toLowerCase();
+    let categorizado = false;
+
+    for (const [categoria, keywords] of Object.entries(CATEGORIAS_KEYWORDS)) {
+      if (keywords.some((kw) => nombreLower.includes(kw))) {
+        categorizados[categoria as CategoriaCompras].push(item);
+        categorizado = true;
+        break;
+      }
+    }
+
+    if (!categorizado) {
+      categorizados["Otros"].push(item);
+    }
+  }
+
+  // Filtrar categorías vacías y ordenar
+  return Object.entries(categorizados)
+    .filter(([, items]) => items.length > 0)
+    .map(([categoria, items]) => ({
+      categoria: categoria as CategoriaCompras,
+      items: items.sort((a, b) => a.nombre.localeCompare(b.nombre, "es")),
+    }));
 }

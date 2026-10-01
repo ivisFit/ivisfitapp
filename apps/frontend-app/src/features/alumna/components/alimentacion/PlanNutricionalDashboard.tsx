@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   Activity,
   Apple,
   CalendarDays,
   ChefHat,
+  CheckCheck,
   CheckCircle2,
   Clock3,
   Cookie,
@@ -17,22 +18,22 @@ import {
   Percent,
   Quote,
   Scale,
-  ShoppingBasket,
-  Sparkles,
   StickyNote,
   Utensils,
   Wheat,
+  XCircle,
 } from "lucide-react";
 import type {
   ComidaPlan,
   DiaPlanNutricional,
   PlanNutricionalApiDoc,
 } from "@/features/alumna/types/plan-nutricional";
-import { buildListaCompras } from "@/features/profe/lib/nutricion-labels";
-import { NutricionChatPanel } from "@/features/profe/components/NutricionChatPanel";
 import { useComposicionResumen } from "@/features/alumna/hooks/useComposicionResumen";
-import { CheckinAlimentacionCard } from "@/features/alumna/components/alimentacion/CheckinAlimentacionCard";
+import { useCheckinsAlimentacionSemana } from "@/features/alumna/hooks/useCheckinsAlimentacionSemana";
 import { InfoTooltip } from "@/components";
+import { ProximaComida } from "@/features/alumna/components/alimentacion/ProximaComida";
+import { ListaComprasAlumna } from "@/features/alumna/components/alimentacion/ListaComprasAlumna";
+import { getDiaHoyIndex } from "@/features/alumna/lib/alimentacion-dia-hoy";
 
 type Macros = PlanNutricionalApiDoc["macrosObjetivo"];
 
@@ -50,6 +51,32 @@ function getMealIcon(nombre: string) {
   return Utensils;
 }
 
+function getCheckinIcon(estado?: string) {
+  switch (estado) {
+    case "cumpli":
+      return <CheckCircle2 size={14} className="checkin-icon--cumpli" aria-hidden />;
+    case "parcial":
+      return <CheckCheck size={14} className="checkin-icon--parcial" aria-hidden />;
+    case "no_pude":
+      return <XCircle size={14} className="checkin-icon--no-pude" aria-hidden />;
+    default:
+      return null;
+  }
+}
+
+function getCheckinLabel(estado?: string) {
+  switch (estado) {
+    case "cumpli":
+      return "Cumplí";
+    case "parcial":
+      return "Parcial";
+    case "no_pude":
+      return "No pude";
+    default:
+      return null;
+  }
+}
+
 function getDiaKcal(dia: DiaPlanNutricional) {
   const total = dia.comidas.reduce(
     (sum, comida) => sum + (comida.macrosComida?.kcal ?? 0),
@@ -58,7 +85,7 @@ function getDiaKcal(dia: DiaPlanNutricional) {
   return total > 0 ? total : null;
 }
 
-function MacrosSummary({ macros }: { macros: Macros }) {
+export function MacrosSummary({ macros }: { macros: Macros }) {
   const kcalMacros =
     macros.proteinaG * KCAL_POR_GRAMO.proteina +
     macros.carbohidratosG * KCAL_POR_GRAMO.carbohidratos +
@@ -173,7 +200,7 @@ function MacrosSummary({ macros }: { macros: Macros }) {
   );
 }
 
-function ComposicionResumenAlumna() {
+export function ComposicionResumenAlumna() {
   const { composicion, loading } = useComposicionResumen();
 
   if (loading || !composicion) return null;
@@ -270,11 +297,21 @@ function ComidaCard({ comida }: { comida: ComidaPlan }) {
   );
 }
 
-function PlanDias({ dias }: { dias: DiaPlanNutricional[] }) {
+function PlanDias({
+  dias,
+  checkins,
+  getDateKeyForDia,
+}: {
+  dias: DiaPlanNutricional[];
+  checkins: Record<string, { estado: string }>;
+  getDateKeyForDia: (diaIndex: number) => string;
+}) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const safeIndex = Math.min(selectedIndex, dias.length - 1);
   const dia = dias[safeIndex];
   const diaKcal = dia ? getDiaKcal(dia) : null;
+  const selectedDateKey = dia ? getDateKeyForDia(safeIndex) : null;
+  const selectedCheckin = selectedDateKey ? checkins[selectedDateKey] : null;
 
   if (!dia) return null;
 
@@ -301,6 +338,8 @@ function PlanDias({ dias }: { dias: DiaPlanNutricional[] }) {
           {dias.map((diaTab, index) => {
             const selected = index === safeIndex;
             const kcal = getDiaKcal(diaTab);
+            const dateKey = getDateKeyForDia(index);
+            const checkin = checkins[dateKey];
             return (
               <button
                 key={diaTab.nombre}
@@ -334,11 +373,25 @@ function PlanDias({ dias }: { dias: DiaPlanNutricional[] }) {
                     {kcal} kcal
                   </span>
                 ) : null}
+                {checkin ? (
+                  <span className={`alimentacion-plan__tab-checkin checkin-${checkin.estado}`}>
+                    {getCheckinIcon(checkin.estado)}
+                  </span>
+                ) : null}
               </button>
             );
           })}
         </div>
       ) : null}
+
+      {selectedCheckin && (
+        <div className="alimentacion-plan__checkin-banner" role="status">
+          <span className={`checkin-badge checkin-${selectedCheckin.estado}`}>
+            {getCheckinIcon(selectedCheckin.estado)}
+            {getCheckinLabel(selectedCheckin.estado)} hoy
+          </span>
+        </div>
+      )}
 
       <div
         className="alimentacion-plan__panel"
@@ -368,103 +421,72 @@ function PlanDias({ dias }: { dias: DiaPlanNutricional[] }) {
   );
 }
 
-function ListaCompras({ dias }: { dias: DiaPlanNutricional[] }) {
-  const listaCompras = useMemo(() => buildListaCompras(dias), [dias]);
-
-  return (
-    <section
-      className="alimentacion-compras"
-      aria-labelledby="alimentacion-compras-title"
-    >
-      <div className="alimentacion-section-heading alimentacion-section-heading--row">
-        <div>
-          <h2 id="alimentacion-compras-title">Lista de compras</h2>
-          <p>Todo lo que necesitás para seguir tu plan.</p>
-        </div>
-        {listaCompras.length > 0 ? (
-          <span className="alimentacion-compras__count">
-            <ShoppingBasket size={14} aria-hidden />
-            {listaCompras.length}{" "}
-            {listaCompras.length === 1 ? "ítem" : "ítems"}
-          </span>
-        ) : null}
-      </div>
-
-      {listaCompras.length === 0 ? (
-        <p className="alimentacion-compras__empty">
-          Sin ingredientes cargados todavía.
-        </p>
-      ) : (
-        <ul className="alimentacion-compras__list">
-          {listaCompras.map((item) => (
-            <li key={item.nombre}>
-              <strong>{item.nombre}</strong>
-              <span>{item.cantidades.join(" · ")}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
-  );
-}
-
 export function PlanNutricionalDashboard({
   plan,
+  preview = false,
 }: {
   plan: PlanNutricionalApiDoc;
+  preview?: boolean;
 }) {
+  const { checkins, loading: checkinsLoading } = useCheckinsAlimentacionSemana();
+  const diaHoy = plan.dias[getDiaHoyIndex(plan.dias.length, plan.publicadoAt)];
+
+  // Calcular dateKey para cada día del plan (asumiendo que día 0 = fecha de publicación o hoy)
+  const getDateKeyForDia = (diaIndex: number): string => {
+    const baseDate = plan.publicadoAt ? new Date(plan.publicadoAt) : new Date();
+    const targetDate = new Date(baseDate);
+    targetDate.setDate(targetDate.getDate() + diaIndex);
+    return targetDate.toISOString().split("T")[0];
+  };
+
   return (
     <div className="alimentacion-dashboard alimentacion-dashboard--with-plan">
-      <header className="alimentacion-hero">
-        <div className="alimentacion-hero__top">
-          <span className="nutricion-wizard__eyebrow">Plan nutricional</span>
-          <span className="alimentacion-hero__badge">
-            <CheckCircle2 size={14} aria-hidden />
-            Plan publicado
-          </span>
-        </div>
-        <h1>{plan.titulo}</h1>
-        {plan.publicadoAt ? (
-          <p className="alimentacion-hero__meta">
-            <CalendarDays size={14} aria-hidden />
-            Publicado el{" "}
-            {new Date(plan.publicadoAt).toLocaleDateString("es-UY", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
-          </p>
-        ) : null}
-        {plan.observacionesProfe ? (
-          <blockquote className="alimentacion-hero__notes">
-            <Quote size={16} aria-hidden />
-            <p>{plan.observacionesProfe}</p>
-            <footer>Nota de tu profesora</footer>
-          </blockquote>
-        ) : null}
-      </header>
+      {preview ? (
+        <header className="alimentacion-hero">
+          <div className="alimentacion-hero__top">
+            <span className="nutricion-wizard__eyebrow">Plan nutricional</span>
+          </div>
+          <h1>{plan.titulo}</h1>
+          {plan.publicadoAt ? (
+            <p className="alimentacion-hero__meta">
+              <CalendarDays size={14} aria-hidden />
+              Publicado el{" "}
+              {new Date(plan.publicadoAt).toLocaleDateString("es-UY", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+            </p>
+          ) : null}
+          {plan.observacionesProfe ? (
+            <blockquote className="alimentacion-hero__notes">
+              <Quote size={16} aria-hidden />
+              <p>{plan.observacionesProfe}</p>
+              <footer>Nota de tu profesora</footer>
+            </blockquote>
+          ) : null}
+        </header>
+      ) : null}
 
-      <CheckinAlimentacionCard />
+      {preview || !diaHoy ? null : (
+        <ProximaComida
+          dia={diaHoy}
+          storageKey={`ivis-comidas-${plan._id ?? plan.id}-${new Date().toLocaleDateString("en-CA")}`}
+        />
+      )}
 
-      <MacrosSummary macros={plan.macrosObjetivo} />
-      <ComposicionResumenAlumna />
+      {preview ? <MacrosSummary macros={plan.macrosObjetivo} /> : null}
 
-      <PlanDias dias={plan.dias} />
-
-      <ListaCompras dias={plan.dias} />
-
-      <section className="alimentacion-asistente">
-        <span className="alimentacion-asistente__icon" aria-hidden>
-          <Sparkles size={20} />
-        </span>
-        <div className="alimentacion-asistente__body">
-          <NutricionChatPanel
-            rol="alumna"
-            planId={plan._id ?? plan.id}
-            title="Asistente nutricional"
+      {preview ? (
+        <>
+          <PlanDias
+            dias={plan.dias}
+            checkins={checkins}
+            getDateKeyForDia={getDateKeyForDia}
           />
-        </div>
-      </section>
+          <ListaComprasAlumna dias={plan.dias} semanas={plan.listasComprasSemanas} />
+        </>
+      ) : null}
     </div>
   );
 }

@@ -165,9 +165,16 @@ export const planNutricionalController = {
       throw new AppError(403, "Solo la profe puede generar borradores");
     }
 
-    const { alumnaId, planId, diasPlantilla } = req.body;
+    const { alumnaId, planId, diasPlantilla, estructuraComidas, macrosObjetivo } =
+      req.body;
     const job = createJob(() =>
-      planNutricionalService.generateDraft(alumnaId, planId, diasPlantilla),
+      planNutricionalService.generateDraft(
+        alumnaId,
+        planId,
+        diasPlantilla,
+        estructuraComidas,
+        macrosObjetivo,
+      ),
     );
     res.status(202).json({ jobId: job.jobId, status: job.status });
   },
@@ -213,6 +220,64 @@ export const planNutricionalController = {
     }
 
     const result = await planNutricionalService.getEvaluacionBriefing(alumnaId);
+    res.json(result);
+  },
+
+  async generateComida(req: Request, res: Response) {
+    const usuario = await getUsuarioForSession(req);
+    if (usuario.rol !== "profe") {
+      throw new AppError(403, "Solo la profe puede generar comidas");
+    }
+
+    const job = createJob(() => planNutricionalService.generateComida(req.body));
+    res.status(202).json({ jobId: job.jobId, status: job.status });
+  },
+
+  async generateComidaStatus(req: Request, res: Response) {
+    const job = getJob(String(req.params.jobId));
+    if (!job) {
+      throw new AppError(404, "Tarea no encontrada");
+    }
+    res.json({
+      status: job.status,
+      comida: job.result ?? undefined,
+      error: job.error,
+    });
+  },
+
+  async listPlanes(req: Request, res: Response) {
+    const usuario = await getUsuarioForSession(req);
+    if (usuario.rol !== "profe") {
+      throw new AppError(403, "No tenés permiso");
+    }
+    const items = await planNutricionalService.listPlanesReutilizables();
+    res.json(items);
+  },
+
+  async clonePlan(req: Request, res: Response) {
+    const usuario = await getUsuarioForSession(req);
+    if (usuario.rol !== "profe") {
+      throw new AppError(403, "No tenés permiso");
+    }
+    const { sourcePlanId, alumnaId, planId } = req.body;
+    if (!sourcePlanId || !alumnaId) {
+      throw new AppError(400, "sourcePlanId y alumnaId son requeridos");
+    }
+    const plan = await planNutricionalService.cloneToAlumna(
+      sourcePlanId,
+      alumnaId,
+      typeof planId === "string" ? planId : undefined,
+    );
+    res.status(201).json(plan);
+  },
+
+  async validatePlan(req: Request, res: Response) {
+    const usuario = await getUsuarioForSession(req);
+    if (usuario.rol !== "profe") {
+      throw new AppError(403, "No tenés permiso");
+    }
+    const { alumnaId, plan } = req.body;
+    const result = await planNutricionalService.validateForPublish(alumnaId, plan);
     res.json(result);
   },
 

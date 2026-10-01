@@ -1,5 +1,8 @@
 import {
   MensajeCoach,
+  Usuario,
+  emitNotificacionProfe,
+  notificacionMensajeAlumna,
   type CreateMensajeCoachInput,
 } from "@ivisfit/database";
 import { AppError } from "../utils/errors.js";
@@ -33,11 +36,25 @@ export const mensajesService = {
     const cuerpo = data.cuerpo.trim();
     if (!cuerpo) throw new AppError(400, "El mensaje no puede estar vacío");
 
-    return MensajeCoach.create({
+    const mensaje = await MensajeCoach.create({
       alumnaId,
       autorRol,
       cuerpo,
     });
+
+    if (autorRol === "alumna") {
+      const alumna = await Usuario.findById(alumnaId).select("nombre");
+      await emitNotificacionProfe(
+        notificacionMensajeAlumna(
+          alumnaId,
+          alumna?.nombre ?? "Una alumna",
+          cuerpo,
+          true,
+        ),
+      );
+    }
+
+    return mensaje;
   },
 
   async countUnreadForProfe() {

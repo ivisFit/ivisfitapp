@@ -3,6 +3,8 @@ import {
   PlanNutricional,
   Rutina,
   Usuario,
+  emitNotificacionProfe,
+  notificacionSaludPendiente,
   type CreateUsuarioInput,
   type UpdateUsuarioInput,
   type HealthChangesRequestInput,
@@ -110,6 +112,7 @@ export const usuariosService = {
 
     const pending = (usuario as any).healthChangesPending || {};
     const now = new Date();
+    let changed = false;
 
     const healthFields = [
       "mutualista",
@@ -126,12 +129,20 @@ export const usuariosService = {
           current: (usuario as any)[field] || "",
           requestedAt: now,
         };
+        changed = true;
       }
     }
 
     (usuario as any).healthChangesPending = pending;
     usuario.markModified("healthChangesPending");
     await usuario.save();
+
+    if (changed) {
+      await emitNotificacionProfe(
+        notificacionSaludPendiente(String(usuario._id), usuario.nombre, true),
+      );
+    }
+
     return usuario;
   },
 

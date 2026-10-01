@@ -925,3 +925,19 @@ html[data-profe-color-scheme="light"] .gamif-toast {
 html[data-profe-color-scheme="light"] .gamif-toast__detail {
   color: #5c5348;
 }
+
+html[data-profe-color-scheme="light"] .ia-sugerencia-globo,
+html[data-profe-color-scheme="light"] .ia-sugerencia-globo::after {
+  background: #fff;
+  border-color: rgb(184 148 31 / 28%);
+}
+
+html[data-profe-color-scheme="light"] .ia-sugerencia-globo__tile--before {
+  background: rgb(255 252 247 / 96%);
+  border-color: rgb(28 24 20 / 10%);
+}
+
+html[data-profe-color-scheme="light"] .ia-sugerencia-globo__tile--after {
+  background: rgb(212 175 55 / 14%);
+  border-color: rgb(184 148 31 / 32%);
+}

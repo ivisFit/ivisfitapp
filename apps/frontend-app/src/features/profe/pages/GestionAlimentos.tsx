@@ -3,9 +3,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { Button, Input, Pagination, Select, InfoTooltip } from "@/components";
+import { useAppDialog } from "@/components/AppDialogProvider";
 import { ListSkeleton } from "@/components/skeletons/AppSkeleton";
 import { useUrlPagination } from "@/hooks/useUrlPagination";
 import { useAlimentos } from "@/features/profe/hooks/useAlimentos";
+import {
+  alimentoFormStateToPayload,
+  getEmptyAlimentoFormState,
+  type AlimentoFormState,
+} from "@/features/profe/lib/alimento-form";
 import {
   ALIMENTO_CATEGORIA_OPTIONS,
   getAlimentoCategoriaLabel,
@@ -15,20 +21,6 @@ import {
 } from "@/features/profe/types/alimento";
 
 const PAGE_SIZE = 10;
-
-function getEmptyForm() {
-  return {
-    nombre: "",
-    categoria: "proteina" as AlimentoCategoria,
-    porcionCantidad: "100",
-    porcionUnidad: "g" as AlimentoUnidad,
-    kcal: "",
-    proteinaG: "",
-    carbohidratosG: "",
-    grasasG: "",
-    notas: "",
-  };
-}
 
 export function GestionAlimentos({
   embedded = false,
@@ -49,7 +41,8 @@ export function GestionAlimentos({
     updateAlimento,
     deleteAlimento,
   } = useAlimentos();
-  const [form, setForm] = useState(getEmptyForm);
+  const dialog = useAppDialog();
+  const [form, setForm] = useState<AlimentoFormState>(getEmptyAlimentoFormState);
   const [formKey, setFormKey] = useState(0);
   const [editingId, setEditingId] = useState<string | null>(null);
   const formCardRef = useRef<HTMLElement>(null);
@@ -122,29 +115,14 @@ export function GestionAlimentos({
 
   function resetForm() {
     setEditingId(null);
-    setForm(getEmptyForm());
+    setForm(getEmptyAlimentoFormState());
     setFormKey((current) => current + 1);
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const payload = {
-      nombre: form.nombre.trim(),
-      categoria: form.categoria,
-      porcionReferencia: {
-        cantidad: Number(form.porcionCantidad) || 1,
-        unidad: form.porcionUnidad,
-      },
-      macrosPorPorcion: {
-        kcal: Number(form.kcal) || 0,
-        proteinaG: Number(form.proteinaG) || 0,
-        carbohidratosG: Number(form.carbohidratosG) || 0,
-        grasasG: Number(form.grasasG) || 0,
-      },
-      notas: form.notas.trim() || undefined,
-      activo: true,
-    };
+    const payload = alimentoFormStateToPayload(form);
 
     const success = editingId
       ? await updateAlimento(editingId, payload)
@@ -154,7 +132,12 @@ export function GestionAlimentos({
   }
 
   async function handleDelete(alimento: Alimento) {
-    const confirmed = window.confirm(`¿Eliminar "${alimento.nombre}" del catálogo?`);
+    const confirmed = await dialog.confirm({
+      title: "Eliminar alimento",
+      message: `¿Eliminar "${alimento.nombre}" del catálogo?`,
+      tone: "danger",
+      confirmLabel: "Eliminar",
+    });
     if (!confirmed || !alimento.id) return;
     await deleteAlimento(alimento.id);
   }

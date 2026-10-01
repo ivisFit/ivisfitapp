@@ -151,6 +151,8 @@
 @media (max-width: 767px) {
   .app-shell--profe:not(:has(.app-mobile-header)) .app-profe-mobile-scheme {
     display: flex;
+    align-items: center;
+    gap: 0.5rem;
     position: fixed;
     top: max(0.55rem, env(safe-area-inset-top));
     right: 0.75rem;
@@ -1584,7 +1586,8 @@ button.app-bottom-nav-more-sheet__item--button {
   .app-shell--alumna[data-color-scheme="light"] .app-alumna-topbar__download,
   .app-shell--alumna[data-color-scheme="light"] .alumna-scheme-toggle,
   .app-shell--profe[data-color-scheme="light"] .app-alumna-topbar__download,
-  .app-shell--profe[data-color-scheme="light"] .alumna-scheme-toggle {
+  .app-shell--profe[data-color-scheme="light"] .alumna-scheme-toggle,
+  .app-shell--profe[data-color-scheme="light"] .profe-notificaciones-btn {
     color: #1c1814;
     background: rgb(255 255 255 / 72%);
     border-color: rgb(28 23 18 / 12%);

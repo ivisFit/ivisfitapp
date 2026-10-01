@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { NavIcon } from "@/components/icons/nav-icons";
 import { AlumnaSchemeToggle } from "@/components/layout/AlumnaSchemeToggle";
+import { ProfeNotificacionesButton } from "@/features/profe/components/ProfeNotificacionesButton";
 import { PwaInstallButton } from "@/components/pwa/PwaInstallButton";
 import { UserGreeting } from "@/components/layout/UserGreeting";
 import { useAuth } from "@/context/AuthContext";
@@ -32,6 +33,7 @@ export function AppMobileHeader() {
 
       <div className="app-mobile-header__actions">
         {user.role === "profe" ? <AlumnaSchemeToggle /> : null}
+        {user.role === "profe" ? <ProfeNotificacionesButton /> : null}
         <PwaInstallButton variant="header" />
         <Link
           href={sharedRoutes.ajustes}

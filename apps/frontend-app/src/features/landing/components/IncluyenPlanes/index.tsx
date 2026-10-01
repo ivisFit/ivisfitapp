@@ -5,6 +5,8 @@ import TrainingSelect from "../Select"
 import { ButtonArrow } from "../Buttons/ButtonArrow"
 import type { Plan } from "../../data/plans"
 import { HomeImg, HomeText } from "@/features/landing/cms/HomeCmsFields";
+import { CmsIncluyenPlanesAddControls } from "@/features/landing/cms/CmsIncluyenPlanesPlanControls";
+import { useIncluyenPlanesSlugActions } from "@/features/landing/cms/useIncluyenPlanesSlugActions";
 import { LandingSectionHeader } from "../shared/LandingSectionHeader";
 import { landingDarkSectionSx } from "@/features/landing/styles/landing-section";
 
@@ -28,7 +30,20 @@ function SectionIntro({ centered = false }: { centered?: boolean }) {
   );
 }
 
-export const IncluyenPlanes = ({ plans }: IncluyenPlanesProps) => {
+export const IncluyenPlanes = ({ plans: _plansProp }: IncluyenPlanesProps) => {
+  const { displayedPlans, addPlan, availableToAdd, isEditing } = useIncluyenPlanesSlugActions();
+
+  const accordionBlock = (
+    <>
+      <TrainingSelect plans={displayedPlans} />
+      <CmsIncluyenPlanesAddControls
+        available={availableToAdd}
+        onAdd={addPlan}
+        isEditing={isEditing}
+      />
+    </>
+  );
+
   return (
     <Box component="section">
       <Box
@@ -50,9 +65,7 @@ export const IncluyenPlanes = ({ plans }: IncluyenPlanesProps) => {
           }}
         >
           <SectionIntro />
-          <Box sx={{ mt: "2rem" }}>
-            <TrainingSelect plans={plans} />
-          </Box>
+          <Box sx={{ mt: "2rem" }}>{accordionBlock}</Box>
           <Box sx={{ mt: "1.5rem" }}>
             <a href="#planes-section" className="landing-cta-link" aria-label="Ver planes de entrenamiento">
               <ButtonArrow text="Ver planes" />
@@ -127,9 +140,7 @@ export const IncluyenPlanes = ({ plans }: IncluyenPlanesProps) => {
 
         <Box sx={{ width: "100%", padding: "2.5rem 1.5rem", boxSizing: "border-box" }}>
           <SectionIntro centered />
-          <Box sx={{ mt: "1.5rem" }}>
-            <TrainingSelect plans={plans} />
-          </Box>
+          <Box sx={{ mt: "1.5rem" }}>{accordionBlock}</Box>
           <Box sx={{ mt: "1.5rem", display: "flex", justifyContent: "center" }}>
             <a href="#planes-section" className="landing-cta-link" aria-label="Ver planes de entrenamiento">
               <ButtonArrow text="Ver planes" />

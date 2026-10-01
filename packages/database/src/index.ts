@@ -24,6 +24,10 @@ export {
   type PlanNutricionalDocument,
 } from "./models/plan-nutricional.model";
 export {
+  PlanNutricionalTemplate,
+  type PlanNutricionalTemplateDocument,
+} from "./models/plan-nutricional-template.model";
+export {
   LandingPlan,
   type LandingPlanDocument,
 } from "./models/landing-plan.model";
@@ -31,6 +35,11 @@ export {
   SiteContent,
   type SiteContentDocument,
 } from "./models/site-content.model";
+export {
+  AppAppearance,
+  APP_APPEARANCE_SINGLETON_KEY,
+  type AppAppearanceDocument,
+} from "./models/app-appearance.model";
 export {
   ChatbotLead,
   type ChatbotLeadDocument,
@@ -64,6 +73,23 @@ export {
   ResumenSemanal,
   type ResumenSemanalDocument,
 } from "./models/resumen-semanal.model";
+export {
+  NotificacionProfe,
+  NOTIFICACION_PROFE_TIPOS,
+  type NotificacionProfeDocument,
+  type NotificacionProfeTipo,
+} from "./models/notificacion-profe.model";
+export {
+  emitNotificacionProfe,
+  notificacionAdmisionNueva,
+  notificacionMensajeAlumna,
+  notificacionSaludPendiente,
+  notificacionEvaluacionCompletada,
+  notificacionCheckinAtencion,
+  notificacionInactividad,
+  notificacionMembresia,
+  type EmitNotificacionProfeInput,
+} from "./notificaciones-profe";
 
 export {
   estadoAdmisionSchema,
@@ -199,6 +225,9 @@ export {
   createPlanNutricionalSchema,
   updatePlanNutricionalSchema,
   generarBorradorPlanSchema,
+  generarComidaPlanSchema,
+  validarPlanNutricionalSchema,
+  estructuraComidaSchema,
   nutricionChatSchema,
   planNutricionalEstadoSchema,
   macrosObjetivoSchema,
@@ -208,6 +237,9 @@ export {
   type CreatePlanNutricionalInput,
   type UpdatePlanNutricionalInput,
   type GenerarBorradorPlanInput,
+  type GenerarComidaPlanInput,
+  type EstructuraComida,
+  type ValidarPlanNutricionalInput,
   type NutricionChatInput,
   type MacrosObjetivo,
   type ComidaPlan,
@@ -215,6 +247,15 @@ export {
   type IngredientePlan,
   type PlanNutricionalEstado,
 } from "./schemas/plan-nutricional.schema";
+
+export {
+  createPlanNutricionalTemplateSchema,
+  updatePlanNutricionalTemplateSchema,
+  aplicarPlantillaNutricionalSchema,
+  type CreatePlanNutricionalTemplateInput,
+  type UpdatePlanNutricionalTemplateInput,
+  type AplicarPlantillaNutricionalInput,
+} from "./schemas/plan-nutricional-template.schema";
 
 export {
   calculateBmrMifflin,

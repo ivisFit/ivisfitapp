@@ -1,0 +1,107 @@
+.profe-notificaciones-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--alumna-topbar-action-height);
+  min-height: var(--alumna-topbar-action-height);
+  padding: 0;
+  color: var(--color-gold);
+  background: rgb(255 255 255 / 6%);
+  border: 1px solid rgb(245 197 24 / 22%);
+  border-radius: 999px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.profe-notificaciones-btn:hover,
+.profe-notificaciones-btn.is-active {
+  background: rgb(245 197 24 / 14%);
+}
+
+.profe-notificaciones-btn:focus-visible {
+  outline: 2px solid var(--color-yellow);
+  outline-offset: 2px;
+}
+
+.profe-notificaciones-btn__badge {
+  position: absolute;
+  top: -0.2rem;
+  right: -0.2rem;
+  min-width: 1.05rem;
+  height: 1.05rem;
+  padding: 0 0.2rem;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.625rem;
+  font-weight: 700;
+  line-height: 1.05rem;
+  text-align: center;
+}
+
+.notificaciones-profe__list {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.notificaciones-profe__item {
+  display: grid;
+  gap: 0.2rem;
+  width: 100%;
+  padding: 0.9rem 1rem;
+  text-align: left;
+  color: inherit;
+  background: rgb(255 255 255 / 4%);
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 0.9rem;
+  cursor: pointer;
+}
+
+.notificaciones-profe__item--unread {
+  border-color: rgb(245 197 24 / 40%);
+  background: rgb(245 197 24 / 8%);
+}
+
+.notificaciones-profe__item:hover {
+  background: rgb(255 255 255 / 8%);
+}
+
+.notificaciones-profe__item:focus-visible {
+  outline: 2px solid var(--color-yellow);
+  outline-offset: 2px;
+}
+
+.notificaciones-profe__title {
+  font-weight: 600;
+  color: var(--color-heading);
+}
+
+.notificaciones-profe__body {
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+}
+
+.notificaciones-profe__item time {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.app-shell--profe[data-color-scheme="light"] .profe-notificaciones-btn {
+  color: #1c1814;
+  background: rgb(255 255 255 / 72%);
+  border-color: rgb(28 24 20 / 12%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .notificaciones-profe__item {
+  background: rgb(255 255 255 / 78%);
+  border-color: rgb(28 24 20 / 10%);
+}
+
+.app-shell--profe[data-color-scheme="light"] .notificaciones-profe__item--unread {
+  background: rgb(245 197 24 / 16%);
+  border-color: rgb(184 148 31 / 45%);
+}

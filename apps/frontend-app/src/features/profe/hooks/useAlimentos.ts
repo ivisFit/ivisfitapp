@@ -35,6 +35,22 @@ export function invalidateAlimentosCatalogCache() {
   catalogPromise = null;
 }
 
+export async function createAlimentoApi(
+  payload: AlimentoPayload,
+): Promise<Alimento> {
+  const created = await apiFetch<AlimentoApiDoc>("/api/alimentos", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+  const mapped = mapAlimentoFromApi(created);
+  if (!mapped) {
+    throw new Error("No se pudo interpretar el alimento creado");
+  }
+  invalidateCache("alimentos");
+  invalidateAlimentosCatalogCache();
+  return mapped;
+}
+
 export async function loadAlimentosCatalog(
   signal?: AbortSignal,
 ): Promise<Alimento[]> {
@@ -148,30 +164,20 @@ export function useAlimentos(enabled = true) {
     setError(null);
 
     try {
-        const created = await apiFetch<AlimentoApiDoc>("/api/alimentos", {
-          method: "POST",
-          body: JSON.stringify(payload),
-        });
-        const mapped = mapAlimentoFromApi(created);
-        if (mapped) {
-          setAlimentos((current) =>
-            [...current, mapped].sort((a, b) =>
-              a.nombre.localeCompare(b.nombre, "es"),
-            ),
-          );
-        } else {
-          void fetchAlimentos();
-        }
-        invalidateCache("alimentos");
-        invalidateAlimentosCatalogCache();
-        return true;
+      const mapped = await createAlimentoApi(payload);
+      setAlimentos((current) =>
+        [...current, mapped].sort((a, b) =>
+          a.nombre.localeCompare(b.nombre, "es"),
+        ),
+      );
+      return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo crear el alimento");
       return false;
     } finally {
       setActionId(null);
     }
-  }, [fetchAlimentos]);
+  }, []);
 
   const updateAlimento = useCallback(
     async (id: string, payload: AlimentoPayload) => {
@@ -248,6 +254,7 @@ export function useAlimentosBusqueda(
   const [catalog, setCatalog] = useState<Alimento[]>([]);
   const [catalogLoading, setCatalogLoading] = useState(false);
   const [catalogLoaded, setCatalogLoaded] = useState(false);
+  const [catalogVersion, setCatalogVersion] = useState(0);
   const [serverHits, setServerHits] = useState<Alimento[]>([]);
   const [serverLoading, setServerLoading] = useState(false);
 
@@ -282,7 +289,12 @@ export function useAlimentosBusqueda(
       });
 
     return () => controller.abort();
-  }, [enabled]);
+  }, [enabled, catalogVersion]);
+
+  const refetchCatalog = useCallback(() => {
+    invalidateAlimentosCatalogCache();
+    setCatalogVersion((v) => v + 1);
+  }, []);
 
   useEffect(() => {
     const trimmed = query.trim();
@@ -350,5 +362,6 @@ export function useAlimentosBusqueda(
     catalogEmpty,
     noMatches,
     catalogLoaded,
+    refetchCatalog,
   };
 }

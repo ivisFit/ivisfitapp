@@ -24,6 +24,8 @@ import { gamificacionRouter } from "./gamificacion.routes.js";
 import { reunionesRouter } from "./reuniones.routes.js";
 import { mensajesRouter } from "./mensajes.routes.js";
 import { automatizacionesRouter } from "./automatizaciones.routes.js";
+import { appAppearanceRouter } from "./app-appearance.routes.js";
+import { notificacionesRouter } from "./notificaciones.routes.js";
 
 export const apiRouter = Router();
 
@@ -34,8 +36,10 @@ apiRouter.use("/admisiones", requireRole("profe"), admisionesRouter);
 apiRouter.use("/usuarios", requireRole("profe"), usuariosRouter);
 apiRouter.use("/ejercicios", ejerciciosRouter);
 apiRouter.use("/panel", requireRole("profe"), panelRouter);
+apiRouter.use("/notificaciones", requireRole("profe"), notificacionesRouter);
 apiRouter.use("/plan-templates", requireRole("profe"), planTemplatesRouter);
 apiRouter.use("/landing-planes", requireRole("profe"), landingPlanesRouter);
+apiRouter.use("/app-appearance", requireRole("profe"), appAppearanceRouter);
 apiRouter.use("/chatbot/leads", requireRole("profe"), chatbotRouter);
 apiRouter.use("/alimentos", requireRole("profe"), alimentosRouter);
 apiRouter.use("/tutoriales", tutorialesRouter);

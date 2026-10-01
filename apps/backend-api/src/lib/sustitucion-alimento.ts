@@ -34,7 +34,7 @@ function kcalEnGramos(item: CatalogAlimentoMacros, gramos: number): number {
   return Math.round(item.macrosPorPorcion.kcal * factor);
 }
 
-function findBestAlimentoMatch(
+export function findBestAlimentoMatch(
   nombre: string,
   catalog: CatalogAlimentoMacros[],
 ): CatalogAlimentoMacros | undefined {
@@ -93,7 +93,7 @@ function resolveOrigenEnCatalogo(
   return findBestAlimentoMatch(alimento, catalogo);
 }
 
-function buildExclusionTokens(
+export function buildExclusionTokens(
   evaluacion?: EvaluacionSustitucionContext,
 ): string[] {
   const tokens: string[] = [];
@@ -110,7 +110,7 @@ function buildExclusionTokens(
   return tokens;
 }
 
-function isExcludedByEvaluacion(
+export function isExcludedByEvaluacion(
   nombre: string,
   exclusionTokens: string[],
 ): boolean {

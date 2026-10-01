@@ -84,6 +84,8 @@ function EditableField({
       )}
       onBlur={onBlur}
       onKeyDown={onKeyDown}
+      onMouseDown={(e) => e.stopPropagation()}
+      onClick={(e) => e.stopPropagation()}
     />
   );
 }

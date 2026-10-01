@@ -1,6 +1,7 @@
 import "server-only";
 
 import { resolveAppRoleForEmail } from "@ivisfit/auth";
+import { connectDB } from "@ivisfit/database";
 import type { CmsConfig } from "@/lib/preview-cms/config/cms.types";
 import { cmsSharedConfig } from "@/config/cms.config.shared";
 
@@ -16,6 +17,7 @@ export const cmsConfig: CmsConfig = {
       if (!session) return null;
 
       const sessionRol = (session.user as { rol?: string }).rol;
+      await connectDB();
       const rol = await resolveAppRoleForEmail(session.user.email, sessionRol);
 
       return {

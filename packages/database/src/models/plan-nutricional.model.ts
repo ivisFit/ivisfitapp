@@ -24,6 +24,15 @@ const macrosObjetivoSchema = new Schema(
   { _id: false },
 );
 
+const estructuraComidaSchema = new Schema(
+  {
+    nombre: { type: String, required: true },
+    horario: { type: String },
+    porcentajeKcal: { type: Number, required: true },
+  },
+  { _id: false },
+);
+
 const comidaPlanSchema = new Schema(
   {
     nombre: { type: String, required: true },
@@ -31,6 +40,7 @@ const comidaPlanSchema = new Schema(
     ingredientes: { type: [ingredientePlanSchema], default: [] },
     notas: { type: String },
     preparacion: { type: String },
+    macrosObjetivo: { type: macrosObjetivoSchema },
     macrosComida: { type: macrosObjetivoSchema },
   },
   { _id: false },
@@ -40,6 +50,22 @@ const diaPlanNutricionalSchema = new Schema(
   {
     nombre: { type: String, required: true },
     comidas: { type: [comidaPlanSchema], default: [] },
+  },
+  { _id: false },
+);
+
+const listaComprasItemSchema = new Schema(
+  {
+    nombre: { type: String, required: true },
+    cantidades: { type: [String], default: [] },
+  },
+  { _id: false },
+);
+
+const listaComprasSemanaSchema = new Schema(
+  {
+    numeroSemana: { type: Number, required: true },
+    items: { type: [listaComprasItemSchema], default: [] },
   },
   { _id: false },
 );
@@ -65,7 +91,9 @@ const planNutricionalSchema = new Schema(
     },
     observacionesProfe: { type: String },
     macrosObjetivo: { type: macrosObjetivoSchema, required: true },
+    estructuraComidas: { type: [estructuraComidaSchema], default: [] },
     dias: { type: [diaPlanNutricionalSchema], required: true },
+    listasComprasSemanas: { type: [listaComprasSemanaSchema], default: [] },
     generadoPorIa: { type: Boolean, default: false },
     publicadoAt: { type: Date },
     notificacionEnviada: { type: Boolean, default: false },

@@ -1,4 +1,4 @@
-.leads-chatbot-filters__grid {
+﻿.leads-chatbot-filters__grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 0.875rem;
@@ -131,3 +131,137 @@
   font-size: 0.85rem;
   color: var(--color-text);
 }
+
+/* ── Pestaña Leads dentro de /web-config ── */
+
+.web-admin-page .page__actions > div {
+  min-width: 0;
+}
+
+.web-admin-page .page__actions p {
+  margin: 0;
+  max-width: 34rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+.web-admin-page #web-panel-chatbot {
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+  padding: 1rem 0.75rem 1.25rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glass-shadow-float), inset 0 1px 0 rgb(255 255 255 / 5%);
+}
+
+.web-admin-page #web-panel-chatbot[hidden] {
+  display: none;
+}
+
+.leads-chatbot-filters {
+  padding: 0.875rem;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  background: rgb(255 255 255 / 3%);
+}
+
+.leads-chatbot-filters__grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+}
+
+.leads-chatbot-filters__grid > * {
+  min-width: 0;
+}
+
+.leads-chatbot-filters .field__input {
+  width: 100%;
+  min-width: 0;
+}
+
+.web-admin-page .leads-chatbot-list {
+  gap: 0.75rem;
+  margin-top: 0;
+}
+
+.leads-chatbot-card.feature-card {
+  display: grid;
+  gap: 0;
+  min-width: 0;
+  margin-top: 0;
+  padding: 1rem;
+  background: rgb(255 255 255 / 3%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  box-shadow: none;
+}
+
+.leads-chatbot-card__header > div:first-child {
+  min-width: 0;
+  flex: 1 1 12rem;
+}
+
+.leads-chatbot-card__header h2,
+.leads-chatbot-card__header p,
+.leads-chatbot-card__summary dd,
+.leads-chatbot-card__details dd {
+  overflow-wrap: anywhere;
+}
+
+.leads-chatbot-card__badge {
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.leads-chatbot-card__summary,
+.leads-chatbot-card__details {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr));
+}
+
+.leads-chatbot-card__summary > div,
+.leads-chatbot-card__details > div {
+  min-width: 0;
+}
+
+.leads-chatbot-card__toggle {
+  justify-self: start;
+  min-height: 2.25rem;
+  font-size: 0.875rem;
+}
+
+@media (max-width: 767px) {
+  .web-admin-page .page__actions {
+    align-items: stretch;
+  }
+
+  .web-admin-page .page__actions .btn,
+  .web-admin-page .page__actions button {
+    width: 100%;
+  }
+
+  .leads-chatbot-card__badges {
+    width: 100%;
+  }
+
+  .leads-chatbot-card__summary,
+  .leads-chatbot-card__details {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .leads-chatbot-card__resumen {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 768px) {
+  .web-admin-page #web-panel-chatbot {
+    padding: 1.25rem 1.4rem 1.5rem;
+    border-top: none;
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+  }
+}
+

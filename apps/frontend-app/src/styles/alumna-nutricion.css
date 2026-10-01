@@ -635,6 +635,20 @@
   margin: 0;
 }
 
+.alimentacion-page:has(> .alimentacion-dashboard--with-plan > .proxima-comida) {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.alimentacion-page:has(> .alimentacion-dashboard--with-plan > .proxima-comida)
+  > .alimentacion-dashboard--with-plan {
+  flex: 1;
+  min-height: 0;
+  gap: 0;
+}
+
 
 .checkin-alimentacion {
   padding: 0.95rem 1rem;
@@ -702,6 +716,25 @@
 @media (max-width: 520px) {
   .plan-nutricional-macros {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Acciones IA dentro de la grilla de macros */
+.plan-nutricional-macros__ia-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  grid-column: 1 / -1;
+  padding-top: 0.25rem;
+}
+
+@media (min-width: 521px) {
+  .plan-nutricional-macros__ia-actions {
+    grid-column: 5;
+    grid-row: 1 / span 4;
+    align-self: start;
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 
@@ -1116,6 +1149,61 @@
   color: var(--color-gold);
 }
 
+/* Check-in en tabs y panel */
+.alimentacion-plan__tab-checkin {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.5rem;
+}
+
+.alimentacion-plan__tab-checkin svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.checkin-icon--cumpli {
+  color: var(--color-online);
+}
+.checkin-icon--parcial {
+  color: var(--color-yellow);
+}
+.checkin-icon--no-pude {
+  color: var(--color-error);
+}
+
+.alimentacion-plan__checkin-banner {
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-md);
+  background: var(--gold-a08);
+  border: 1px solid var(--gold-a22);
+}
+
+.checkin-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.checkin-cumpli {
+  background: rgb(34 197 94 / 15%);
+  border: 1px solid rgb(34 197 94 / 30%);
+  color: var(--color-online);
+}
+.checkin-parcial {
+  background: var(--gold-a15);
+  border: 1px solid var(--gold-a35);
+  color: var(--color-gold);
+}
+.checkin-no_pude {
+  background: rgb(248 113 113 / 15%);
+  border: 1px solid rgb(248 113 113 / 30%);
+  color: var(--color-error);
+}
+
 .alimentacion-plan__panel {
   display: grid;
   gap: 0.85rem;
@@ -1307,6 +1395,69 @@
   margin: 0;
 }
 
+.alimentacion-compras__weeks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.alimentacion-compras__week {
+  min-height: 2.25rem;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.alimentacion-compras__week.is-active {
+  border-color: rgb(199 152 10 / 50%);
+  background: rgb(199 152 10 / 14%);
+  color: var(--color-gold, #c7980a);
+}
+
+.alimentacion-compras__week:focus-visible {
+  outline: 2px solid var(--color-yellow);
+  outline-offset: 2px;
+}
+
+.alimentacion-compras__download {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 2.75rem;
+  margin-top: 0.25rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-gold, #c7980a);
+  border-radius: 0.75rem;
+  background: transparent;
+  color: var(--color-gold, #e6b422);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.alimentacion-compras__download:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.alimentacion-compras__download:not(:disabled):active {
+  background: rgb(199 152 10 / 12%);
+}
+
+.alimentacion-compras__download:focus-visible {
+  outline: 2px solid var(--color-yellow);
+  outline-offset: 2px;
+}
+
 .alimentacion-compras__count {
   display: inline-flex;
   align-items: center;
@@ -1364,6 +1515,46 @@
   .alimentacion-compras__list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
+
+/* Lista de compras categorizada */
+.alimentacion-compras__categorias {
+  display: grid;
+  gap: 1rem;
+}
+
+.alimentacion-compras__categoria {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.alimentacion-compras__categoria-title {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--glass-border-amber);
+}
+
+.alimentacion-compras__categoria .alimentacion-compras__list {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.alimentacion-compras__categoria .alimentacion-compras__list li {
+  padding: 0.4rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+.alimentacion-compras__categoria .alimentacion-compras__list strong {
+  font-size: 0.85rem;
+}
+
+.alimentacion-compras__categoria .alimentacion-compras__list span {
+  font-size: 0.75rem;
 }
 
 /* Asistente nutricional */
@@ -1480,6 +1671,13 @@
     linear-gradient(160deg, rgb(18 14 10), rgb(8 6 7));
 }
 
+@media (max-width: 767px) {
+  .alimentacion-hero-fixed {
+    position: relative !important;
+    min-height: 12rem;
+  }
+}
+
 .alimentacion-hero-fixed__glow {
   position: absolute;
   inset: 0;
@@ -1506,10 +1704,13 @@
   display: grid;
   gap: 1rem;
   padding: 0 1rem 3rem;
-  margin-top: -1.5rem;
 }
 
 @media (min-width: 768px) {
+  .alumna-alimentacion-body {
+    margin-top: -1.5rem;
+  }
+
   .alumna-alimentacion-mobile {
     display: none;
   }
@@ -1546,13 +1747,48 @@
 }
 
 .evaluacion-nutricional-resumen--empty {
-  padding: 0.85rem 1rem;
+  padding: 2rem 1.5rem;
+  text-align: center;
 }
 
-.evaluacion-nutricional-resumen--empty p {
+.evaluacion-nutricional-resumen__empty {
+  display: grid;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.evaluacion-nutricional-resumen__empty-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: var(--gold-a10);
+  color: var(--color-gold);
+  opacity: 0.7;
+}
+
+.evaluacion-nutricional-resumen__empty-title {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.evaluacion-nutricional-resumen__empty-text {
   margin: 0;
   color: var(--color-text-muted);
-  font-size: 0.9rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  max-width: 20rem;
+  margin-inline: auto;
+}
+
+.evaluacion-nutricional-resumen__empty-cta {
+  margin-top: 0.5rem;
 }
 
 .evaluacion-nutricional-resumen__summary,
@@ -1796,7 +2032,7 @@
 .plan-nutricional-builder__toolbar,
 .plan-nutricional-builder__empty {
   display: grid;
-  gap: 0.75rem;
+  gap: 0.5rem;
   min-width: 0;
 }
 
@@ -1804,18 +2040,18 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem 0.75rem;
+  gap: 0.4rem 0.6rem;
 }
 
 .plan-nutricional-builder__plan-badge {
   display: inline-flex;
   align-items: center;
-  padding: 0.2rem 0.6rem;
+  padding: 0.15rem 0.5rem;
   border-radius: 999px;
   border: 1px solid rgb(225 170 67 / 28%);
   background: rgb(225 170 67 / 12%);
   color: var(--color-gold, #e1aa43);
-  font-size: 0.72rem;
+  font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -1825,7 +2061,7 @@
 .plan-nutricional-builder__toolbar-hint {
   margin: 0;
   color: var(--color-text-muted);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
 }
 
 .plan-nutricional-builder__toolbar-hint {
@@ -1834,7 +2070,14 @@
 
 .plan-nutricional-builder__toolbar-grid {
   display: grid;
-  gap: 0.75rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .plan-nutricional-builder__toolbar-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 .plan-nutricional-builder__empty h2 {
@@ -1880,6 +2123,13 @@
   resize: vertical;
 }
 
+.plan-nutricional-builder__textarea--autosize {
+  resize: none;
+  overflow-y: hidden;
+  field-sizing: content;
+  min-height: 3.25rem;
+}
+
 .plan-nutricional-builder__copiloto {
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
@@ -1905,7 +2155,24 @@
   gap: 0.5rem;
   overflow-x: auto;
   padding-bottom: 0.15rem;
+  padding-right: 0.5rem;
   -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+}
+
+/* Indicador de scroll en móvil */
+.plan-nutricional-builder__day-rail::after {
+  content: "";
+  flex: 0 0 1.5rem;
+  width: 1.5rem;
+  background: linear-gradient(90deg, transparent, var(--glass-bg-elevated));
+  pointer-events: none;
+}
+
+@media (min-width: 768px) {
+  .plan-nutricional-builder__day-rail::after {
+    display: none;
+  }
 }
 
 .plan-nutricional-builder__day-rail-item,
@@ -1921,6 +2188,7 @@
   color: var(--color-text);
   text-align: left;
   cursor: pointer;
+  scroll-snap-align: start;
 }
 
 .plan-nutricional-builder__day-rail-item:hover,
@@ -2058,9 +2326,9 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem 1rem;
+  gap: 0.5rem 0.75rem;
   margin-top: 0.5rem;
-  padding: 0.85rem 1rem;
+  padding: 0.6rem 0.85rem;
   border: 1px solid var(--glass-border-amber);
   border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--glass-bg-solid) 94%, transparent);
@@ -2069,7 +2337,7 @@
 
 .plan-nutricional-builder__save-bar-status {
   display: grid;
-  gap: 0.25rem;
+  gap: 0.2rem;
   min-width: 0;
 }
 
@@ -2077,19 +2345,19 @@
 .plan-nutricional-builder__save-bar-synced,
 .plan-nutricional-builder__save-bar-hint {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
 }
 
 .plan-nutricional-builder__save-bar-pending {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.35rem;
   color: var(--color-gold, #e1aa43);
 }
 
 .plan-nutricional-builder__save-bar-dot {
-  width: 0.5rem;
-  height: 0.5rem;
+  width: 0.45rem;
+  height: 0.45rem;
   border-radius: 999px;
   background: var(--color-gold, #e1aa43);
 }
@@ -2100,13 +2368,14 @@
 
 .plan-nutricional-builder__save-bar-hint {
   color: var(--color-text-muted);
+  font-size: 0.75rem;
 }
 
 .plan-nutricional-builder__save-bar-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.35rem;
 }
 
 .plan-nutricional-builder__save-bar .plan-nutricional-builder__dia-menu-panel {
@@ -2513,19 +2782,19 @@
 
 .macros-progress {
   display: grid;
-  gap: 0.5rem;
+  gap: 0.35rem;
 }
 
 .macros-progress__row {
   display: grid;
   grid-template-columns: 5rem 1fr 3.5rem;
   align-items: center;
-  gap: 0.6rem;
-  font-size: 0.82rem;
+  gap: 0.5rem;
+  font-size: 0.78rem;
 }
 
 .macros-progress__track {
-  height: 0.4rem;
+  height: 0.35rem;
   border-radius: 999px;
   background: rgb(255 255 255 / 8%);
   overflow: hidden;
@@ -2619,8 +2888,10 @@
 .alimento-catalog-picker__backdrop {
   position: fixed;
   inset: 0;
-  background: rgb(0 0 0 / 45%);
   z-index: 40;
+  background: rgb(0 0 0 / 55%);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 .alimento-catalog-picker {
@@ -2679,8 +2950,43 @@
   background: rgb(199 152 10 / 14%);
 }
 
+.alimento-catalog-picker__header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: flex-end;
+}
+
 .alimento-catalog-picker__list {
   min-height: 180px;
+}
+
+.alimento-catalog-picker__empty {
+  display: grid;
+  gap: 0.65rem;
+  justify-items: start;
+  padding: 0.5rem 0;
+}
+
+.alimento-catalog-picker__create {
+  padding-top: 0.25rem;
+  border-top: 1px solid var(--glass-border);
+}
+
+.alimento-catalog-picker__create-title {
+  margin: 0 0 0.25rem;
+  font-size: 0.95rem;
+}
+
+.alimento-catalog-picker__footer-note {
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.alimento-catalog-picker__footer-note .ap-link {
+  color: var(--color-accent, #c7980a);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .sustitucion-alimento-flow {
@@ -2717,4 +3023,230 @@
 
 .app-assistant-page__embedded-flow {
   padding: 0.5rem 0.75rem 0.75rem;
+}
+
+/* ── Próxima comida (alumna) ── */
+.proxima-comida {
+  --proxima-comida-chrome: calc(
+    var(--mobile-header-height) + var(--bottom-nav-height) +
+      var(--bottom-nav-inset-bottom) + env(safe-area-inset-bottom) + 1.5rem
+  );
+
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: max(20rem, calc(100dvh - var(--proxima-comida-chrome)));
+  padding: 1.25rem 1rem;
+  border: 1px solid rgb(199 152 10 / 40%);
+  border-radius: 1.25rem;
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgb(199 152 10 / 18%), transparent 60%),
+    var(--glass-bg, rgb(255 255 255 / 4%));
+  box-shadow: 0 10px 30px rgb(0 0 0 / 25%);
+}
+
+.proxima-comida__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 0;
+  overflow: auto;
+}
+
+.proxima-comida__actions {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  margin-top: auto;
+}
+.proxima-comida__steps { display: flex; gap: 0.3rem; }
+.proxima-comida__steps button {
+  flex: 1;
+  height: 0.3rem;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 12%);
+  cursor: default;
+}
+.proxima-comida__steps button.is-done {
+  background: var(--color-gold, #c7980a);
+  cursor: pointer;
+}
+.proxima-comida__steps button.is-current { background: rgb(199 152 10 / 50%); }
+.proxima-comida__steps button.is-locked {
+  background: rgb(255 255 255 / 6%);
+  opacity: 0.65;
+}
+.proxima-comida__hechas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.proxima-comida__hecha {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid rgb(199 152 10 / 35%);
+  border-radius: 999px;
+  background: rgb(199 152 10 / 10%);
+  color: var(--color-text);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.proxima-comida__hecha.is-active {
+  border-color: var(--color-gold, #c7980a);
+  background: rgb(199 152 10 / 22%);
+}
+.proxima-comida__hecha svg { color: var(--color-gold, #c7980a); }
+.proxima-comida__lock-msg {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-text-muted, rgb(255 255 255 / 65%));
+}
+.proxima-comida__cta:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+.proxima-comida__eyebrow {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-gold, #c7980a);
+}
+.proxima-comida h2 { margin: 0; font-size: 1.75rem; line-height: 1.15; }
+.proxima-comida__meta { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.proxima-comida__meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 8%);
+  font-size: 0.85rem;
+}
+.proxima-comida__meta .proxima-comida__rel {
+  background: rgb(199 152 10 / 18%);
+  color: var(--color-gold, #c7980a);
+  font-weight: 600;
+}
+.proxima-comida__links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  margin: 0;
+}
+
+.proxima-comida__link,
+.proxima-comida__cta {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+  min-height: 3.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 1rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.proxima-comida__link {
+  border: 1px solid var(--color-gold, #c7980a);
+  background: transparent;
+  color: var(--color-gold, #e6b422);
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.proxima-comida__link:focus-visible {
+  outline: 2px solid var(--color-yellow);
+  outline-offset: 2px;
+}
+.proxima-comida__link:active {
+  background: rgb(199 152 10 / 12%);
+}
+.alimentacion-subpage__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+  color: var(--color-text-muted, rgb(255 255 255 / 65%));
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+.alimentacion-subpage__back:focus-visible {
+  outline: 2px solid var(--color-yellow);
+  outline-offset: 2px;
+}
+.proxima-comida__cta {
+  border: 0;
+  background: linear-gradient(135deg, #e6b422, #c7980a);
+  color: #1a1400;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgb(199 152 10 / 35%);
+  transition: transform 0.15s ease;
+}
+.proxima-comida__cta:active { transform: scale(0.98); }
+.proxima-comida__cta:focus-visible { outline: 2px solid var(--color-yellow); outline-offset: 3px; }
+.proxima-comida__detail {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 0;
+}
+.proxima-comida__detail ul { margin: 0; padding: 0; list-style: none; }
+.proxima-comida__detail li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid rgb(255 255 255 / 8%);
+}
+.proxima-comida__detail p {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.7rem;
+  border-radius: 0.75rem;
+  background: var(--gold-a08);
+  font-size: 0.9rem;
+}
+.proxima-comida--done .proxima-comida__body {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--color-gold, #c7980a);
+}
+
+.proxima-comida--done p { margin: 0; color: var(--color-text); }
+.alimentacion-plan-details > summary {
+  min-height: 3rem;
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  border: 1px solid var(--glass-border);
+  border-radius: 1rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+.alimentacion-plan-details[open] > summary { margin-bottom: 1rem; }
+@media (min-width: 640px) {
+  .proxima-comida { padding: 1.75rem; }
+  .proxima-comida h2 { font-size: 2.25rem; }
 }

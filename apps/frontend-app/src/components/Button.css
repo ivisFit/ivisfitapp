@@ -42,3 +42,10 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+@media (hover: none) and (pointer: coarse) {
+  .btn:active:not(:disabled) {
+    opacity: var(--touch-active-opacity);
+    transform: scale(0.98);
+  }
+}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useAppDialog } from '@/components/AppDialogProvider';
 import { FaCompress, FaExpand } from 'react-icons/fa';
 import { SkeletonLine } from '@/components/skeletons/AppSkeleton';
 import { cmsConfig } from '../config/cms.config';
@@ -98,6 +99,7 @@ function CmsEditorInner({
   const allowedRoutesRef = useRef(previewRoutes.map((r) => r.href));
   const routeRef = useRef(route);
   const plansRef = useRef(plans);
+  const dialog = useAppDialog();
 
   useEffect(() => {
     setPreviewSrc(`${window.location.origin}${cmsConfig.previewPath}`);
@@ -182,6 +184,12 @@ function CmsEditorInner({
       } else if (message.type === 'array-remove') {
         setDraft((prev) => applyArrayRemove(prev, message.locale, message.path, message.index));
         setDirtyLocales((prev) => new Set(prev).add(message.locale));
+      } else if (message.type === 'array-replace') {
+        setDraft((prev) => ({
+          ...prev,
+          [message.locale]: setByPath(prev[message.locale] ?? {}, message.path, message.value),
+        }));
+        setDirtyLocales((prev) => new Set(prev).add(message.locale));
       } else if (message.type === 'navigate') {
         const mapped = normalizePreviewRoute(message.route, allowedRoutesRef.current);
         if (mapped) setRoute(mapped);
@@ -265,14 +273,20 @@ function CmsEditorInner({
     }
   }, [dirty, dirtyLocales, draft, postState]);
 
-  const discard = useCallback(() => {
+  const discard = useCallback(async () => {
     if (!dirty) return;
-    if (!window.confirm('¿Descartar los cambios sin guardar?')) return;
+    const confirmed = await dialog.confirm({
+      title: 'Descartar cambios',
+      message: '¿Descartar los cambios sin guardar?',
+      tone: 'warning',
+      confirmLabel: 'Descartar',
+    });
+    if (!confirmed) return;
     const restored = structuredClone(baselineRef.current);
     setDraft(restored);
     setDirtyLocales(new Set());
     postState({ draft: restored, full: true });
-  }, [dirty, postState]);
+  }, [dialog, dirty, postState]);
 
   const clearChromeHideTimer = useCallback(() => {
     if (chromeHideTimerRef.current !== null) {

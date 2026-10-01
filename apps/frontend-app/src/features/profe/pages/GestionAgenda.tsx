@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components";
+import { useAppDialog } from "@/components/AppDialogProvider";
 import { ListSkeleton } from "@/components/skeletons/AppSkeleton";
 import { AgendaCalendario } from "@/features/profe/components/agenda/AgendaCalendario";
 import { AgendaDiaDetalle } from "@/features/profe/components/agenda/AgendaDiaDetalle";
@@ -45,6 +46,7 @@ export function GestionAgenda({
     updateReunion,
     deleteReunion,
   } = useReuniones(monthCursor.year, monthCursor.month);
+  const dialog = useAppDialog();
 
   useEffect(() => {
     onRefetchReady?.(refetch);
@@ -117,9 +119,12 @@ export function GestionAgenda({
   }
 
   async function handleDelete(reunion: Reunion) {
-    const confirmed = window.confirm(
-      `¿Eliminar la reunión con ${reunion.alumna?.nombre ?? "la alumna"}?`,
-    );
+    const confirmed = await dialog.confirm({
+      title: "Eliminar reunión",
+      message: `¿Eliminar la reunión con ${reunion.alumna?.nombre ?? "la alumna"}?`,
+      tone: "danger",
+      confirmLabel: "Eliminar",
+    });
     if (!confirmed) return;
 
     await deleteReunion(reunion.id);

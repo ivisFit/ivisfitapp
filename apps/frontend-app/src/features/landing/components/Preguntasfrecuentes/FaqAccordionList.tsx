@@ -12,8 +12,19 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useLandingContent } from "@/features/landing/cms/LandingContentProvider";
 import { DEFAULT_HOME_DICTIONARY, type FaqItem } from "@/features/landing/cms/home-dictionary";
 import { HomeArrayText } from "@/features/landing/cms/HomeCmsFields";
+import {
+  CmsArrayAddButton,
+  CmsArrayRemoveButton,
+} from "@/features/landing/cms/CmsArrayControls";
 import { getByPath } from "@/lib/preview-cms/lib/content-edit/paths";
 import { landingColors } from "@/features/landing/styles/landing-colors";
+
+const FAQ_ITEMS_PATH = "home.faq.items";
+
+const FAQ_ITEM_TEMPLATE: FaqItem = {
+  question: "Nueva pregunta",
+  answer: "Respuesta…",
+};
 
 type FaqAccordionListProps = {
   start?: number;
@@ -22,7 +33,7 @@ type FaqAccordionListProps = {
 };
 
 function getFaqItems(dictionary: Record<string, unknown>): FaqItem[] {
-  const items = getByPath(dictionary, "home.faq.items");
+  const items = getByPath(dictionary, FAQ_ITEMS_PATH);
   if (Array.isArray(items) && items.length > 0) {
     return items as FaqItem[];
   }
@@ -44,7 +55,7 @@ export function FaqAccordionList({ start = 0, end, compact = false }: FaqAccordi
 
   return (
     <Box className="landing-faq-accordion" sx={{ width: "100%", height: "100%" }}>
-      {items.map((accordion, index) => {
+      {items.map((_item, index) => {
         const globalIndex = start + index;
         const panelId = `faq-panel-${globalIndex}`;
 
@@ -83,6 +94,8 @@ export function FaqAccordionList({ start = 0, end, compact = false }: FaqAccordi
                   gap: "10px",
                   minHeight: compact ? "auto" : 48,
                   padding: compact ? 0 : "0.5rem 0",
+                  width: "100%",
+                  pr: 1,
                 }}
               >
                 <Typography
@@ -93,20 +106,38 @@ export function FaqAccordionList({ start = 0, end, compact = false }: FaqAccordi
                     fontWeight: 700,
                     lineHeight: 1.35,
                     margin: 0,
+                    flex: 1,
+                    minWidth: 0,
                   }}
                 >
-                  <HomeArrayText path={`home.faq.items.${globalIndex}.question`} />
+                  <HomeArrayText path={`${FAQ_ITEMS_PATH}.${globalIndex}.question`} />
                 </Typography>
+                <CmsArrayRemoveButton
+                  arrayPath={FAQ_ITEMS_PATH}
+                  index={globalIndex}
+                  arrayLength={allItems.length}
+                  minItems={1}
+                  label="Quitar"
+                />
               </Box>
             </AccordionSummary>
             <AccordionDetails id={`${panelId}-content`} role="region" aria-labelledby={`${panelId}-header`}>
               <Typography component="p" sx={{ margin: 0, lineHeight: 1.65, color: "var(--landing-body-muted)" }}>
-                <HomeArrayText path={`home.faq.items.${globalIndex}.answer`} multiline />
+                <HomeArrayText path={`${FAQ_ITEMS_PATH}.${globalIndex}.answer`} multiline />
               </Typography>
             </AccordionDetails>
           </Accordion>
         );
       })}
+
+      <Box className="cms-array-controls__faq-toolbar">
+        <CmsArrayAddButton
+          arrayPath={FAQ_ITEMS_PATH}
+          template={FAQ_ITEM_TEMPLATE}
+          label="Agregar pregunta"
+          className="cms-array-controls__btn cms-array-controls__btn--add"
+        />
+      </Box>
     </Box>
   );
 }

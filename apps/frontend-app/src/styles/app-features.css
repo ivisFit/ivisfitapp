@@ -19,10 +19,12 @@
 @import "./profe-chrome-tabs.css";
 @import "./profe-pages.css";
 @import "./alumna-detail.css";
+@import "./profe-alimentacion-plan.css";
 @import "./app-assistant.css";
 @import "./onboarding.css";
 @import "./gamificacion.css";
 @import "./automatizaciones.css";
+@import "./notificaciones-profe.css";
 @import "./mensajes-chat.css";
 @import "./offline-banner.css";
 @import "./alumna-light-overrides.css";

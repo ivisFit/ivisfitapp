@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { Button, Input } from "@/components";
+import { useAppDialog } from "@/components/AppDialogProvider";
 import { ListSkeleton } from "@/components/skeletons/AppSkeleton";
 import { TutorialesSortableList } from "@/features/profe/components/tutoriales/TutorialesSortableList";
 import {
@@ -41,6 +42,7 @@ export function GestionTutoriales({
     deleteTutorial,
     reorderTutoriales,
   } = useTutoriales();
+  const dialog = useAppDialog();
   const [form, setForm] = useState<TutorialPayload>(getEmptyForm);
   const [formKey, setFormKey] = useState(0);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -55,6 +57,19 @@ export function GestionTutoriales({
       (tutorial.descripcion ?? "").toLowerCase().includes(q)
     );
   });
+
+  const canReorder = busqueda.trim().length === 0;
+
+  async function handleReorder(visibleOrderedIds: string[]) {
+    const visibleIdSet = new Set(tutorialesFiltrados.map((t) => t.id));
+    const queue = [...visibleOrderedIds];
+    const fullOrderedIds = tutoriales.map((tutorial) => {
+      if (!visibleIdSet.has(tutorial.id)) return tutorial.id;
+      const next = queue.shift();
+      return next ?? tutorial.id;
+    });
+    return reorderTutoriales(fullOrderedIds);
+  }
 
   useEffect(() => {
     onRefetchReady?.(refetch);
@@ -113,9 +128,12 @@ export function GestionTutoriales({
   }
 
   async function handleDelete(tutorial: Tutorial) {
-    const confirmed = window.confirm(
-      `¿Eliminar el tutorial "${tutorial.titulo}"?`,
-    );
+    const confirmed = await dialog.confirm({
+      title: "Eliminar tutorial",
+      message: `¿Eliminar el tutorial "${tutorial.titulo}"?`,
+      tone: "danger",
+      confirmLabel: "Eliminar",
+    });
 
     if (!confirmed || !tutorial.id) return;
     await deleteTutorial(tutorial.id);
@@ -267,9 +285,10 @@ export function GestionTutoriales({
             tutoriales={tutorialesFiltrados}
             actionId={actionId}
             isReordering={isReordering}
+            sortingEnabled={canReorder}
             onEdit={handleEdit}
             onDelete={(tutorial) => void handleDelete(tutorial)}
-            onReorder={reorderTutoriales}
+            onReorder={handleReorder}
           />
         ) : null}
       </section>

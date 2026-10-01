@@ -1,6 +1,8 @@
 import {
   EvaluacionNutricional,
   Usuario,
+  emitNotificacionProfe,
+  notificacionEvaluacionCompletada,
   type CreateEvaluacionNutricionalInput,
 } from "@ivisfit/database";
 import { sendEvaluacionNutricionalProfeEmail } from "@ivisfit/mail";
@@ -61,9 +63,21 @@ export const evaluacionNutricionalService = {
       completada: true,
     });
 
+    const objetivoLabel =
+      OBJETIVO_NUTRICIONAL_LABELS[data.objetivo] ?? data.objetivo;
+
+    await emitNotificacionProfe(
+      notificacionEvaluacionCompletada(
+        String(alumna._id),
+        alumna.nombre,
+        String(evaluacion._id),
+        objetivoLabel,
+      ),
+    );
+
     if (!canSendProfeNotificationEmail()) {
       console.warn(
-        "Evaluación guardada sin notificar a profe: configurá PROFE_NOTIFICATION_EMAIL y Resend.",
+        "Evaluación guardada en la bandeja. El email a profe no se envió: configurá PROFE_NOTIFICATION_EMAIL y Resend.",
       );
       return evaluacion;
     }
@@ -71,9 +85,6 @@ export const evaluacionNutricionalService = {
     try {
       const to = getProfeNotificationEmail();
       if (!to) return evaluacion;
-
-      const objetivoLabel =
-        OBJETIVO_NUTRICIONAL_LABELS[data.objetivo] ?? data.objetivo;
 
       await sendEvaluacionNutricionalProfeEmail({
         to,

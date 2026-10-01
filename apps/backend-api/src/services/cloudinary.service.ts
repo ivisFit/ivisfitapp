@@ -4,6 +4,7 @@ import { AppError } from "../utils/errors.js";
 const CLOUDINARY_UPLOAD_FOLDER_COMPROBANTES = "ivisfit/comprobantes";
 const CLOUDINARY_UPLOAD_FOLDER_AVATARS = "ivisfit/avatars";
 const CLOUDINARY_UPLOAD_FOLDER_LANDING_PLANS = "ivisfit/landing-plans";
+const CLOUDINARY_UPLOAD_FOLDER_AUTH = "ivisfit/auth";
 
 type CloudinaryUploadResponse = {
   secure_url?: string;
@@ -108,7 +109,10 @@ async function uploadToCloudinary({
   return body;
 }
 
-export async function destroyCloudinaryAsset(publicId: string) {
+export async function destroyCloudinaryAsset(
+  publicId: string,
+  resourceType: "image" | "video" = "image",
+) {
   const { cloudName, apiKey, apiSecret } = getCloudinaryConfig();
   const timestamp = Math.floor(Date.now() / 1000).toString();
   const signedParams = {
@@ -123,7 +127,7 @@ export async function destroyCloudinaryAsset(publicId: string) {
   formData.set("signature", signParams(signedParams, apiSecret));
 
   const response = await fetch(
-    `https://api.cloudinary.com/v1_1/${cloudName}/image/destroy`,
+    `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/destroy`,
     {
       method: "POST",
       body: formData,
@@ -234,5 +238,36 @@ export async function uploadLandingPlanCardImage({
     publicId: body.public_id!,
     nombreArchivo: filename,
     uploadedAt: new Date().toISOString(),
+  };
+}
+
+export async function uploadAuthLoginVideo({
+  file,
+  contentType,
+  filename,
+}: {
+  file: Buffer;
+  contentType: string;
+  filename: string;
+}) {
+  const timestamp = Math.floor(Date.now() / 1000).toString();
+  const signedParams = {
+    folder: CLOUDINARY_UPLOAD_FOLDER_AUTH,
+    timestamp,
+  };
+
+  const body = await uploadToCloudinary({
+    file,
+    contentType,
+    folder: CLOUDINARY_UPLOAD_FOLDER_AUTH,
+    signedParams,
+  });
+
+  return {
+    url: body.secure_url!,
+    publicId: body.public_id!,
+    nombreArchivo: filename,
+    uploadedAt: new Date().toISOString(),
+    resourceType: body.resource_type ?? "video",
   };
 }

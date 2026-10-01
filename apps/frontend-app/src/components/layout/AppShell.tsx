@@ -9,6 +9,7 @@ import { AppSidebar } from "./AppSidebar";
 import { PageTransition } from "./PageTransition";
 import { ProtectedBackground } from "./ProtectedBackground";
 import { AlumnaSchemeToggle } from "@/components/layout/AlumnaSchemeToggle";
+import { ProfeNotificacionesButton } from "@/features/profe/components/ProfeNotificacionesButton";
 import { AppAssistantProvider } from "@/features/alumna/components/assistant/AppAssistantProvider";
 import { useAuth } from "@/context/AuthContext";
 import { useColorScheme } from "@/context/ColorSchemeContext";
@@ -145,6 +146,7 @@ export function AppShell({ children }: AppShellProps) {
         {userRole === "profe" ? (
           <div className="app-profe-mobile-scheme">
             <AlumnaSchemeToggle />
+            <ProfeNotificacionesButton />
           </div>
         ) : null}
         <AppSidebar />

@@ -20,6 +20,8 @@ export const alumnaRoutes = {
   home: "/rutina",
   rutina: "/rutina",
   alimentacion: "/alimentacion",
+  alimentacionCompras: "/alimentacion/compras",
+  alimentacionObjetivo: "/alimentacion/objetivo",
   evaluacionNutricional: "/evaluacion-nutricional",
   progreso: "/progreso",
   circunferencias: "/circunferencias",
@@ -53,6 +55,7 @@ export const profeRoutes = {
   leadsChatbot: "/leads-chatbot",
   animaciones: "/animaciones",
   automatizaciones: "/automatizaciones",
+  notificaciones: "/notificaciones",
 } as const;
 
 export function profeAlumnasAdmisionesRoute() {
@@ -121,12 +124,39 @@ export function profeAlumnaPlieguesRoute(id: string) {
   return profeAlumnaDetailTabRoute(id, "pliegues");
 }
 
+export type AlimentacionPlanStep = "perfil" | "objetivos" | "comidas" | "revisar";
+
+export const ALIMENTACION_PLAN_STEPS: AlimentacionPlanStep[] = [
+  "perfil",
+  "objetivos",
+  "comidas",
+  "revisar",
+];
+
 export function profeAlumnaAlimentacionRoute(id: string) {
+  return `/alumnas/${id}/alimentacion`;
+}
+
+export function profeAlumnaAlimentacionStepRoute(
+  id: string,
+  step: AlimentacionPlanStep,
+) {
+  return `${profeAlumnaAlimentacionRoute(id)}/${step}`;
+}
+
+export function profeAlumnaAlimentacionTabRoute(id: string) {
   return profeAlumnaDetailTabRoute(id, "alimentacion");
 }
 
+export function isAlumnaAlimentacionPlanPath(pathname: string, alumnaId: string) {
+  return pathname.startsWith(`${profeAlumnaAlimentacionRoute(alumnaId)}/`) ||
+    pathname === profeAlumnaAlimentacionRoute(alumnaId);
+}
+
 export function isAlumnaDetailPath(pathname: string) {
-  return /^\/alumnas\/[^/]+(\/(seguimiento|pliegues|alimentacion))?$/.test(pathname);
+  return /^\/alumnas\/[^/]+(\/(seguimiento|pliegues|alimentacion)(\/[^/]+)?)?$/.test(
+    pathname,
+  );
 }
 
 export function isPlanTemplateDetailPath(pathname: string) {

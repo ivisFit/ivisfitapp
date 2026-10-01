@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { CardSkeleton, SkeletonStack } from "@/components/skeletons/AppSkeleton";
 import { ProfeChromeTabs } from "@/features/profe/components/ProfeChromeTabs";
-import { AlumnaAlimentacionWorkspace } from "@/features/profe/components/AlumnaAlimentacionWorkspace";
+import { AlimentacionTabSummary } from "@/features/profe/components/alimentacion-plan/AlimentacionTabSummary";
+import { ListaComprasSemanasCard } from "@/features/profe/components/alimentacion-plan/ListaComprasSemanasCard";
 import {
   AlumnaProfileSections,
 } from "@/features/profe/components/AlumnaDetailSections";
@@ -152,12 +153,13 @@ export function AlumnaDetailTabbedContent({
             role="tabpanel"
             aria-labelledby="alumna-detail-tab-alimentacion"
           >
-            <AlumnaAlimentacionWorkspace
-              alumnaId={alumna.id}
-              alumnaNombre={alumna.nombre}
-              alumnaEmail={alumna.email}
-              onDirtyChange={(dirty) => reportSectionDirty("alimentacion", dirty)}
-            />
+            <div className="alimentacion-tab-stack">
+              <AlimentacionTabSummary
+                alumnaId={alumna.id}
+                alumnaNombre={alumna.nombre}
+              />
+              <ListaComprasSemanasCard alumnaId={alumna.id} />
+            </div>
           </div>
         );
       case "pliegues":

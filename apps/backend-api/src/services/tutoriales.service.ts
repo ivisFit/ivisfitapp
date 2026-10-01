@@ -93,8 +93,17 @@ export const tutorialesService = {
       throw new AppError(400, "Uno o más tutoriales no existen");
     }
 
+    const orderedSet = new Set(uniqueIds);
+    const rest = await Tutorial.find({ _id: { $nin: uniqueIds } })
+      .sort({ orden: 1, createdAt: 1 })
+      .select("_id");
+    const finalIds = [
+      ...uniqueIds,
+      ...rest.map((doc) => String(doc._id)),
+    ];
+
     await Tutorial.bulkWrite(
-      uniqueIds.map((id, index) => ({
+      finalIds.map((id, index) => ({
         updateOne: {
           filter: { _id: id },
           update: { $set: { orden: index } },

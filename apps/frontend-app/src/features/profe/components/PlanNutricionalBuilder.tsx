@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState, type MouseEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { Button, Input, InfoTooltip } from "@/components";
+import { useAppDialog } from "@/components/AppDialogProvider";
 import { FormSkeleton, ListSkeleton } from "@/components/skeletons/AppSkeleton";
 import { apiFetch } from "@/lib/api";
+import { RotateCcw, RotateCw } from "lucide-react";
 import type {
   ComidaPlan,
   DiaPlanNutricional,
@@ -17,6 +19,70 @@ import { calcularMacrosPorCantidad, type Alimento } from "@/features/profe/types
 import { MacrosProgressBar } from "./MacrosProgressBar";
 import { NutricionChatPanel } from "./NutricionChatPanel";
 import { PlanNutricionalComidaCard } from "./PlanNutricionalComidaCard";
+
+const MAX_HISTORY = 50;
+
+function useUndoRedo<T>(initialValue: T) {
+  const [past, setPast] = useState<T[]>([]);
+  const [present, setPresent] = useState<T>(initialValue);
+  const [future, setFuture] = useState<T[]>([]);
+  const isRestoring = useRef(false);
+
+  const canUndo = past.length > 0;
+  const canRedo = future.length > 0;
+
+  const pushHistory = useCallback((newPresent: T) => {
+    if (isRestoring.current) return;
+    setPast((prev) => {
+      const next = [...prev, present];
+      return next.length > MAX_HISTORY ? next.slice(-MAX_HISTORY) : next;
+    });
+    setPresent(newPresent);
+    setFuture([]);
+  }, [present]);
+
+  const undo = useCallback(() => {
+    if (!canUndo) return;
+    isRestoring.current = true;
+    setPast((prev) => {
+      const previous = prev[prev.length - 1];
+      const newPast = prev.slice(0, -1);
+      setFuture((f) => [present, ...f]);
+      setPresent(previous);
+      setTimeout(() => { isRestoring.current = false; }, 0);
+      return newPast;
+    });
+  }, [canUndo, present]);
+
+  const redo = useCallback(() => {
+    if (!canRedo) return;
+    isRestoring.current = true;
+    setFuture((f) => {
+      const next = f[0];
+      const newFuture = f.slice(1);
+      setPast((p) => [...p, present]);
+      setPresent(next);
+      setTimeout(() => { isRestoring.current = false; }, 0);
+      return newFuture;
+    });
+  }, [canRedo, present]);
+
+  const reset = useCallback((newValue: T) => {
+    setPast([]);
+    setPresent(newValue);
+    setFuture([]);
+  }, []);
+
+  return {
+    state: present,
+    setState: pushHistory,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+    reset,
+  };
+}
 
 function createEmptyIngrediente(): IngredientePlan {
   return { nombre: "", cantidad: 100, unidad: "g" };
@@ -44,7 +110,7 @@ const ESTADO_LABEL: Record<PlanNutricionalEstado | "none", string> = {
   archivado: "Archivado",
 };
 
-async function pollDraftResult(jobId: string): Promise<PlanNutricionalApiDoc> {
+async function pollDraftResult(jobId: string, signal?: AbortSignal): Promise<PlanNutricionalApiDoc> {
   const startedAt = Date.now();
 
   for (;;) {
@@ -52,10 +118,21 @@ async function pollDraftResult(jobId: string): Promise<PlanNutricionalApiDoc> {
       throw new Error("La generación tardó demasiado. Intentá de nuevo.");
     }
 
-    await new Promise((resolve) => setTimeout(resolve, DRAFT_POLL_INTERVAL_MS));
+    if (signal?.aborted) {
+      throw new DOMException("Cancelled", "AbortError");
+    }
+
+    await new Promise((resolve, reject) => {
+      const timeout = setTimeout(resolve, DRAFT_POLL_INTERVAL_MS);
+      signal?.addEventListener("abort", () => {
+        clearTimeout(timeout);
+        reject(new DOMException("Cancelled", "AbortError"));
+      });
+    });
 
     const status = await apiFetch<GenerateDraftStatusResponse>(
       `/api/plan-nutricional/generar-borrador/estado/${jobId}`,
+      { signal },
     );
 
     if (status.status === "done" && status.plan) return status.plan;
@@ -178,6 +255,79 @@ function buildDiasPlantilla(diasPlan: DiaPlanNutricional[]) {
   }));
 }
 
+// --- Validación pre-publicación ---
+function validatePlanForPublish(params: {
+  macrosObjetivo: MacrosObjetivo;
+  dias: DiaPlanNutricional[];
+}): { ok: boolean; message?: string } {
+  const { macrosObjetivo, dias } = params;
+
+  if (!macrosObjetivo.kcal || macrosObjetivo.kcal < 800) {
+    return { ok: false, message: "El plan debe tener al menos 800 kcal diarias." };
+  }
+  if (!macrosObjetivo.proteinaG || macrosObjetivo.proteinaG <= 0) {
+    return { ok: false, message: "La proteína diaria debe ser mayor a 0g." };
+  }
+  if (!macrosObjetivo.carbohidratosG || macrosObjetivo.carbohidratosG <= 0) {
+    return { ok: false, message: "Los carbohidratos diarios deben ser mayores a 0g." };
+  }
+  if (!macrosObjetivo.grasasG || macrosObjetivo.grasasG <= 0) {
+    return { ok: false, message: "Las grasas diarias deben ser mayores a 0g." };
+  }
+
+  const hasAnyContent = dias.some((dia) =>
+    dia.comidas.some(
+      (comida) =>
+        Boolean(comida.nombre.trim()) ||
+        Boolean(comida.horario?.trim()) ||
+        comida.ingredientes.some(
+          (ing) => ing.nombre.trim() !== "" || ing.kcal != null || Boolean(ing.alimentoId),
+        ),
+    ),
+  );
+
+  if (!hasAnyContent) {
+    return { ok: false, message: "El plan debe tener al menos una comida con contenido." };
+  }
+
+  const diasConComidasVacias = dias.filter((dia) =>
+    dia.comidas.every(
+      (comida) =>
+        !comida.nombre.trim() &&
+        !comida.horario?.trim() &&
+        comida.ingredientes.every(
+          (ing) => ing.nombre.trim() === "" && ing.kcal == null && !ing.alimentoId,
+        ),
+    ),
+  );
+
+  if (diasConComidasVacias.length > 0) {
+    return {
+      ok: false,
+      message: `${diasConComidasVacias.length} día(s) están completamente vacíos. Eliminá los días vacíos o agregá contenido.`,
+    };
+  }
+
+  return { ok: true };
+}
+
+// --- Sanitizar ingredientes: asegurar macros numéricos ---
+function sanitizeDiasForSave(dias: DiaPlanNutricional[]): DiaPlanNutricional[] {
+  return dias.map((dia) => ({
+    ...dia,
+    comidas: dia.comidas.map((comida) => ({
+      ...comida,
+      ingredientes: comida.ingredientes.map((ing) => ({
+        ...ing,
+        kcal: ing.kcal ?? 0,
+        proteinaG: ing.proteinaG ?? 0,
+        carbohidratosG: ing.carbohidratosG ?? 0,
+        grasasG: ing.grasasG ?? 0,
+      })),
+    })),
+  }));
+}
+
 export function PlanNutricionalBuilder({
   alumnaId,
   alumnaNombre,
@@ -189,6 +339,7 @@ export function PlanNutricionalBuilder({
   onSaved,
   onDirtyChange,
 }: PlanNutricionalBuilderProps) {
+  const dialog = useAppDialog();
   const [titulo, setTitulo] = useState("Plan nutricional");
   const [observacionesProfe, setObservacionesProfe] = useState("");
   const [macrosObjetivo, setMacrosObjetivo] = useState<MacrosObjetivo>(DEFAULT_MACROS);
@@ -197,6 +348,7 @@ export function PlanNutricionalBuilder({
   const [manualStarted, setManualStarted] = useState(false);
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [generatingAbortController, setGeneratingAbortController] = useState<AbortController | null>(null);
   const [publishing, setPublishing] = useState(false);
   const [archiving, setArchiving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -204,6 +356,53 @@ export function PlanNutricionalBuilder({
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [savedSnapshot, setSavedSnapshot] = useState<string | null>(null);
+
+  // --- Undo/Redo para dias ---
+  const diasHistoryRef = useRef<DiaPlanNutricional[][]>([]);
+  const diasHistoryIndexRef = useRef(-1);
+  const MAX_HISTORY = 50;
+
+  function pushDiasHistory(newDias: DiaPlanNutricional[]) {
+    // No registrar si estamos restaurando
+    if (diasHistoryIndexRef.current === -1 && diasHistoryRef.current.length === 0) {
+      // Primera vez: inicializar con estado actual
+      diasHistoryRef.current = [dias];
+      diasHistoryIndexRef.current = 0;
+    }
+    const truncated = diasHistoryRef.current.slice(0, diasHistoryIndexRef.current + 1);
+    const next = [...truncated, newDias].slice(-MAX_HISTORY);
+    diasHistoryRef.current = next;
+    diasHistoryIndexRef.current = next.length - 1;
+  }
+
+  function setDiasWithHistory(newDias: DiaPlanNutricional[] | ((prev: DiaPlanNutricional[]) => DiaPlanNutricional[])) {
+    const resolved = typeof newDias === "function" ? newDias(dias) : newDias;
+    pushDiasHistory(resolved);
+    setDias(resolved);
+  }
+
+  function undoDias() {
+    if (diasHistoryIndexRef.current <= 0) return;
+    diasHistoryIndexRef.current -= 1;
+    const previous = diasHistoryRef.current[diasHistoryIndexRef.current];
+    setDias(previous);
+  }
+
+  function redoDias() {
+    if (diasHistoryIndexRef.current >= diasHistoryRef.current.length - 1) return;
+    diasHistoryIndexRef.current += 1;
+    const next = diasHistoryRef.current[diasHistoryIndexRef.current];
+    setDias(next);
+  }
+
+  const canUndoDias = diasHistoryIndexRef.current > 0;
+  const canRedoDias = diasHistoryIndexRef.current < diasHistoryRef.current.length - 1;
+
+  function resetDiasHistory(newDias: DiaPlanNutricional[]) {
+    diasHistoryRef.current = [newDias];
+    diasHistoryIndexRef.current = 0;
+    setDias(newDias);
+  }
 
   const isPublicado = plan?.estado === "publicado";
   const isBusy =
@@ -227,7 +426,7 @@ export function PlanNutricionalBuilder({
       setTitulo("Plan nutricional");
       setObservacionesProfe("");
       setMacrosObjetivo(DEFAULT_MACROS);
-      setDias([createEmptyDia()]);
+      resetDiasHistory([createEmptyDia()]);
       setSelectedDiaIndex(0);
       setManualStarted(false);
       setSavedSnapshot(null);
@@ -236,15 +435,16 @@ export function PlanNutricionalBuilder({
     }
 
     const draft = applyPlanToDraft(plan);
+    const diasSanitizados = sanitizeDiasForSave(draft.dias);
     setTitulo(draft.titulo);
     setObservacionesProfe(draft.observacionesProfe);
     setMacrosObjetivo(draft.macrosObjetivo);
-    setDias(draft.dias);
+    resetDiasHistory(diasSanitizados);
     setSelectedDiaIndex((current) =>
-      current < draft.dias.length ? current : 0,
+      current < diasSanitizados.length ? current : 0,
     );
     setManualStarted(true);
-    setSavedSnapshot(serializePlanDraft(draft));
+    setSavedSnapshot(serializePlanDraft({ ...draft, dias: diasSanitizados }));
     // Hydrate only when the persisted plan identity/revision changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [planKey]);
@@ -259,30 +459,64 @@ export function PlanNutricionalBuilder({
     setSelectedDiaIndex(Math.max(0, dias.length - 1));
   }, [dias.length, selectedDiaIndex]);
 
+  // Cleanup: cancel IA generation on unmount
+  useEffect(() => {
+    return () => {
+      generatingAbortController?.abort();
+    };
+  }, [generatingAbortController]);
+
+  // Keyboard shortcuts: Undo (Ctrl+Z) / Redo (Ctrl+Shift+Z)
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      // Ignorar si el foco está en un input/textarea
+      const target = event.target as HTMLElement;
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
+        return;
+      }
+      if ((event.metaKey || event.ctrlKey) && event.key === "z") {
+        event.preventDefault();
+        if (event.shiftKey) {
+          redoDias();
+        } else {
+          undoDias();
+        }
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [canUndoDias, canRedoDias]);
+
   function markCurrentAsSaved(nextSnapshot = currentSnapshot) {
     setSavedSnapshot(nextSnapshot);
   }
 
   function applyGeneratedPlan(data: PlanNutricionalApiDoc) {
     const draft = applyPlanToDraft(data);
+    const diasSanitizados = sanitizeDiasForSave(draft.dias);
     setTitulo(draft.titulo);
     setObservacionesProfe(draft.observacionesProfe);
     setMacrosObjetivo(draft.macrosObjetivo);
-    setDias(draft.dias);
+    resetDiasHistory(diasSanitizados);
     setSelectedDiaIndex(0);
     setManualStarted(true);
-    markCurrentAsSaved(serializePlanDraft(draft));
+    markCurrentAsSaved(serializePlanDraft({ ...draft, dias: diasSanitizados }));
   }
 
   async function handleGenerateDraft() {
     const debeConfirmar = dias.length > 1 || planDiasTienenContenido(dias);
     if (debeConfirmar) {
-      const confirmed = window.confirm(
-        `La IA va a completar las comidas en tus ${dias.length} día(s), manteniendo los nombres. Se reemplazará el contenido actual de cada comida. ¿Continuar?`,
-      );
+      const confirmed = await dialog.confirm({
+        title: "Completar con IA",
+        message: `La IA va a completar las comidas en tus ${dias.length} día(s), manteniendo los nombres. Se reemplazará el contenido actual de cada comida. ¿Continuar?`,
+        tone: "warning",
+        confirmLabel: "Continuar",
+      });
       if (!confirmed) return;
     }
 
+    const abortController = new AbortController();
+    setGeneratingAbortController(abortController);
     setGenerating(true);
     setError(null);
     setMessage(null);
@@ -300,7 +534,7 @@ export function PlanNutricionalBuilder({
         },
       );
 
-      const data = await pollDraftResult(jobId);
+      const data = await pollDraftResult(jobId, abortController.signal);
       applyGeneratedPlan(data);
       const sinCatalogo = data.dias?.some((dia) =>
         dia.comidas.some((comida) =>
@@ -316,26 +550,37 @@ export function PlanNutricionalBuilder({
       );
       onSaved();
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? `${err.message} Si tardó demasiado, intentá generar el borrador de nuevo.`
-          : "No se pudo generar el borrador",
-      );
+      if (err instanceof DOMException && err.name === "AbortError") {
+        setMessage("Generación cancelada.");
+      } else {
+        setError(
+          err instanceof Error
+            ? `${err.message} Si tardó demasiado, intentá generar el borrador de nuevo.`
+            : "No se pudo generar el borrador",
+        );
+      }
     } finally {
       setGenerating(false);
+      setGeneratingAbortController(null);
     }
   }
 
   async function handleSave() {
+    // Validación de advertencia (no bloqueante)
+    const validation = validatePlanForPublish({ macrosObjetivo, dias });
+    const showWarning = !validation.ok;
+
     setSaving(true);
     setError(null);
     setMessage(null);
+
+    const diasSanitizados = sanitizeDiasForSave(dias);
 
     const payload: UpdatePlanNutricionalPayload = {
       titulo,
       observacionesProfe,
       macrosObjetivo,
-      dias,
+      dias: diasSanitizados,
     };
 
     try {
@@ -354,7 +599,8 @@ export function PlanNutricionalBuilder({
         });
       }
 
-      setMessage("Plan guardado como borrador.");
+      const baseMessage = "Plan guardado como borrador.";
+      setMessage(showWarning ? `${baseMessage} ⚠️ ${validation.message}` : baseMessage);
       markCurrentAsSaved();
       onSaved();
     } catch (err) {
@@ -365,9 +611,17 @@ export function PlanNutricionalBuilder({
   }
 
   async function handlePublish() {
+    const validation = validatePlanForPublish({ macrosObjetivo, dias });
+    if (!validation.ok) {
+      setError(validation.message ?? "Plan inválido para publicar.");
+      return;
+    }
+
     setPublishing(true);
     setError(null);
     setMessage(null);
+
+    const diasSanitizados = sanitizeDiasForSave(dias);
 
     try {
       let idToPublish = planId;
@@ -382,7 +636,7 @@ export function PlanNutricionalBuilder({
               titulo,
               observacionesProfe,
               macrosObjetivo,
-              dias,
+              dias: diasSanitizados,
             }),
           },
         );
@@ -394,7 +648,7 @@ export function PlanNutricionalBuilder({
             titulo,
             observacionesProfe,
             macrosObjetivo,
-            dias,
+            dias: diasSanitizados,
           }),
         });
       }
@@ -421,7 +675,12 @@ export function PlanNutricionalBuilder({
 
   async function handleArchive() {
     if (!planId) return;
-    const confirmed = window.confirm("¿Archivar este plan? Dejará de estar activo.");
+    const confirmed = await dialog.confirm({
+      title: "Archivar plan",
+      message: "¿Archivar este plan? Dejará de estar activo.",
+      tone: "warning",
+      confirmLabel: "Archivar",
+    });
     if (!confirmed) return;
 
     setArchiving(true);
@@ -441,7 +700,12 @@ export function PlanNutricionalBuilder({
 
   async function handleDelete() {
     if (!planId) return;
-    const confirmed = window.confirm("¿Eliminar este borrador? Esta acción no se puede deshacer.");
+    const confirmed = await dialog.confirm({
+      title: "Eliminar borrador",
+      message: "¿Eliminar este borrador? Esta acción no se puede deshacer.",
+      tone: "danger",
+      confirmLabel: "Eliminar",
+    });
     if (!confirmed) return;
 
     setDeleting(true);
@@ -503,18 +767,18 @@ export function PlanNutricionalBuilder({
   }
 
   function updateDia(diaIndex: number, patch: Partial<DiaPlanNutricional>) {
-    setDias((current) =>
+    setDiasWithHistory((current) =>
       current.map((dia, index) => (index === diaIndex ? { ...dia, ...patch } : dia)),
     );
   }
 
   function addDia() {
-    setDias((current) => [...current, createEmptyDia(`Día ${current.length + 1}`)]);
+    setDiasWithHistory((current) => [...current, createEmptyDia(`Día ${current.length + 1}`)]);
     setSelectedDiaIndex(dias.length);
   }
 
   function duplicateDia(diaIndex: number) {
-    setDias((current) => {
+    setDiasWithHistory((current) => {
       const source = current[diaIndex];
       if (!source) return current;
       const next = [...current];
@@ -525,7 +789,7 @@ export function PlanNutricionalBuilder({
   }
 
   function removeDia(diaIndex: number) {
-    setDias((current) => {
+    setDiasWithHistory((current) => {
       if (current.length <= 1) return current;
       return current.filter((_, index) => index !== diaIndex);
     });
@@ -536,7 +800,7 @@ export function PlanNutricionalBuilder({
     comidaIndex: number,
     patch: Partial<ComidaPlan>,
   ) {
-    setDias((current) =>
+    setDiasWithHistory((current) =>
       current.map((dia, dIndex) =>
         dIndex !== diaIndex
           ? dia
@@ -556,7 +820,7 @@ export function PlanNutricionalBuilder({
     ingredienteIndex: number,
     patch: Partial<IngredientePlan>,
   ) {
-    setDias((current) =>
+    setDiasWithHistory((current) =>
       current.map((dia, dIndex) => {
         if (dIndex !== diaIndex) return dia;
         return {
@@ -617,7 +881,7 @@ export function PlanNutricionalBuilder({
   }
 
   function addIngrediente(diaIndex: number, comidaIndex: number) {
-    setDias((current) =>
+    setDiasWithHistory((current) =>
       current.map((dia, dIndex) => {
         if (dIndex !== diaIndex) return dia;
         return {
@@ -640,7 +904,7 @@ export function PlanNutricionalBuilder({
     comidaIndex: number,
     ingredienteIndex: number,
   ) {
-    setDias((current) =>
+    setDiasWithHistory((current) =>
       current.map((dia, dIndex) => {
         if (dIndex !== diaIndex) return dia;
         return {
@@ -662,7 +926,7 @@ export function PlanNutricionalBuilder({
   }
 
   function addComida(diaIndex: number) {
-    setDias((current) =>
+    setDiasWithHistory((current) =>
       current.map((dia, dIndex) =>
         dIndex !== diaIndex
           ? dia
@@ -675,7 +939,7 @@ export function PlanNutricionalBuilder({
   }
 
   function removeComida(diaIndex: number, comidaIndex: number) {
-    setDias((current) =>
+    setDiasWithHistory((current) =>
       current.map((dia, dIndex) => {
         if (dIndex !== diaIndex || dia.comidas.length <= 1) return dia;
         return {
@@ -836,20 +1100,21 @@ export function PlanNutricionalBuilder({
               disabled={isPublicado}
             />
           ))}
+          {macrosSugeridos ? (
+            <div className="plan-nutricional-macros__ia-actions">
+              <Button
+                type="button"
+                variant="ghost"
+                className="ap-btn-sm"
+                onClick={() => setMacrosObjetivo(macrosSugeridos)}
+                disabled={isPublicado}
+              >
+                Usar macros IA
+              </Button>
+              <InfoTooltip text="La IA calcula las calorías y macros según la evaluación, el objetivo y el nivel de actividad de la alumna. Podés usarlos como base y ajustarlos." />
+            </div>
+          ) : null}
         </div>
-        {macrosSugeridos ? (
-          <div className="plan-nutricional-builder__ia-row">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => setMacrosObjetivo(macrosSugeridos)}
-              disabled={isPublicado}
-            >
-              Usar macros sugeridos por IA
-            </Button>
-            <InfoTooltip text="La IA calcula las calorías y macros según la evaluación, el objetivo y el nivel de actividad de la alumna. Podés usarlos como base y ajustarlos." />
-          </div>
-        ) : null}
       </section>
 
       <details className="plan-nutricional-builder__copiloto">
@@ -1054,6 +1319,28 @@ export function PlanNutricionalBuilder({
           ) : null}
         </div>
         <div className="plan-nutricional-builder__save-bar-actions">
+          <Button
+            type="button"
+            variant="ghost"
+            className="btn--icon"
+            onClick={undoDias}
+            disabled={isBusy || isPublicado || !canUndoDias}
+            aria-label="Deshacer"
+            title="Deshacer (Ctrl+Z)"
+          >
+            <RotateCcw size={18} />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            className="btn--icon"
+            onClick={redoDias}
+            disabled={isBusy || isPublicado || !canRedoDias}
+            aria-label="Rehacer"
+            title="Rehacer (Ctrl+Shift+Z)"
+          >
+            <RotateCw size={18} />
+          </Button>
           {isPublicado ? (
             <Button
               type="button"

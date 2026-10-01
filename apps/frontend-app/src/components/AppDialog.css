@@ -1,0 +1,113 @@
+html[data-profe-color-scheme="light"] .app-dialog,
+html[data-color-scheme="light"] .app-dialog {
+  color-scheme: light;
+  --color-text: #1c1814;
+  --color-text-muted: #5c5348;
+  --color-border: rgb(28 23 18 / 10%);
+  --color-surface-elevated: #fff;
+  --glass-bg: rgb(255 255 255 / 82%);
+  --glass-border-amber: rgb(184 148 31 / 28%);
+  --color-yellow-muted: rgb(245 197 24 / 18%);
+  --color-gold: #785c18;
+  --color-error: #dc2626;
+  --glass-coral-muted: rgb(220 38 38 / 18%);
+}
+
+html[data-profe-color-scheme="light"] .app-dialog .field__input,
+html[data-color-scheme="light"] .app-dialog .field__input {
+  color-scheme: light;
+  background: rgb(255 252 247 / 96%);
+  border-color: rgb(28 23 18 / 10%);
+  color: #1c1814;
+}
+
+.app-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background: rgb(0 0 0 / 72%);
+  backdrop-filter: blur(6px);
+}
+
+.app-dialog {
+  width: min(100%, 24rem);
+  padding: 1.75rem 1.5rem 1.5rem;
+  text-align: center;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  color: var(--color-text);
+}
+
+.app-dialog__icon {
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+}
+
+.app-dialog__icon--danger {
+  color: var(--color-error);
+  background: var(--glass-coral-muted);
+}
+
+.app-dialog__icon--warning,
+.app-dialog__icon--prompt {
+  color: var(--color-gold, #e1aa43);
+  background: var(--color-yellow-muted);
+}
+
+.app-dialog__title {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.app-dialog__message {
+  margin: 0 0 1.25rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+.app-dialog__form {
+  display: grid;
+  gap: 0.625rem;
+}
+
+.app-dialog__field {
+  margin: 0 0 0.625rem;
+  text-align: left;
+}
+
+.app-dialog__actions {
+  display: grid;
+  gap: 0.625rem;
+}
+
+.app-dialog__actions .btn {
+  width: 100%;
+}
+
+.app-dialog__confirm {
+  width: 100%;
+}
+
+.app-dialog .btn.app-dialog__confirm--danger {
+  background: var(--color-error);
+  color: var(--color-black);
+  box-shadow: none;
+}
+
+.app-dialog .btn.app-dialog__confirm--danger:hover:not(:disabled) {
+  background: var(--color-error);
+  filter: brightness(0.92);
+  box-shadow: none;
+}

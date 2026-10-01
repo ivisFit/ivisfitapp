@@ -11,10 +11,23 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Check } from "lucide-react";
 import type { Plan } from "../../data/plans";
+import {
+  CmsArrayAddButton,
+  CmsArrayControlsRow,
+  CmsArrayRemoveButton,
+} from "@/features/landing/cms/CmsArrayControls";
+import { CmsIncluyenPlanRemoveButton } from "@/features/landing/cms/CmsIncluyenPlanesPlanControls";
+import { T } from "@/lib/preview-cms/lib/content-edit/T";
 
 type TrainingAccordionGroupProps = {
   plans: Plan[];
 };
+
+const EXTRA_ITEM_TEMPLATE = "Nuevo beneficio";
+
+function planPath(planId: string, field: string) {
+  return `planes.bySlug.${planId}.${field}`;
+}
 
 const TrainingAccordionGroup = ({ plans }: TrainingAccordionGroupProps) => {
   const [expanded, setExpanded] = useState<string | false>(false);
@@ -29,10 +42,12 @@ const TrainingAccordionGroup = ({ plans }: TrainingAccordionGroupProps) => {
       {plans.map((plan, index) => {
         const panelId = `panel${index + 1}`;
         const isOpen = expanded === panelId;
+        const extrasPath = planPath(plan.id, "extras");
+        const extras = plan.extras ?? [];
         const meta = [
-          { label: "Duraci\u00f3n", value: plan.duration },
-          { label: "Formato", value: plan.format },
-          { label: "Inversi\u00f3n", value: plan.investment },
+          { label: "Duraci\u00f3n", path: planPath(plan.id, "duration") },
+          { label: "Formato", path: planPath(plan.id, "format") },
+          { label: "Inversi\u00f3n", path: planPath(plan.id, "investment") },
         ];
 
         return (
@@ -90,8 +105,9 @@ const TrainingAccordionGroup = ({ plans }: TrainingAccordionGroupProps) => {
                 >
                   {String(index + 1).padStart(2, "0")}
                 </Box>
-                <Box sx={{ display: "flex", flexDirection: "column" }}>
+                <Box sx={{ display: "flex", flexDirection: "column", minWidth: 0, flex: 1 }}>
                   <Typography
+                    component="div"
                     sx={{
                       color: "white",
                       fontWeight: 700,
@@ -99,9 +115,10 @@ const TrainingAccordionGroup = ({ plans }: TrainingAccordionGroupProps) => {
                       lineHeight: 1.2,
                     }}
                   >
-                    {plan.title}
+                    <T path={planPath(plan.id, "title")} />
                   </Typography>
                   <Typography
+                    component="div"
                     sx={{
                       color: "var(--brand-gold-soft)",
                       fontSize: "0.78rem",
@@ -109,9 +126,10 @@ const TrainingAccordionGroup = ({ plans }: TrainingAccordionGroupProps) => {
                       mt: "2px",
                     }}
                   >
-                    {plan.duration}
+                    <T path={planPath(plan.id, "duration")} />
                   </Typography>
                 </Box>
+                <CmsIncluyenPlanRemoveButton index={index} />
               </Box>
             </AccordionSummary>
 
@@ -124,6 +142,7 @@ const TrainingAccordionGroup = ({ plans }: TrainingAccordionGroupProps) => {
               }}
             >
               <Typography
+                component="div"
                 sx={{
                   color: "rgba(255,255,255,0.78)",
                   fontSize: "0.92rem",
@@ -131,7 +150,7 @@ const TrainingAccordionGroup = ({ plans }: TrainingAccordionGroupProps) => {
                   mt: "1rem",
                 }}
               >
-                {plan.intro}
+                <T path={planPath(plan.id, "intro")} multiline />
               </Typography>
 
               <Box
@@ -166,8 +185,11 @@ const TrainingAccordionGroup = ({ plans }: TrainingAccordionGroupProps) => {
                     >
                       {item.label}
                     </Typography>
-                    <Typography sx={{ color: "var(--brand-gold-soft)", fontWeight: 700, fontSize: "0.88rem" }}>
-                      {item.value}
+                    <Typography
+                      component="div"
+                      sx={{ color: "var(--brand-gold-soft)", fontWeight: 700, fontSize: "0.88rem" }}
+                    >
+                      <T path={item.path} />
                     </Typography>
                   </Box>
                 ))}
@@ -183,19 +205,36 @@ const TrainingAccordionGroup = ({ plans }: TrainingAccordionGroupProps) => {
                   gap: "0.6rem",
                 }}
               >
-                {plan.extras.map((extra) => (
+                {extras.map((extra, extraIndex) => (
                   <Box
                     component="li"
-                    key={extra}
+                    key={`${plan.id}-extra-${extraIndex}-${extra.slice(0, 12)}`}
                     sx={{ display: "flex", alignItems: "flex-start", gap: "0.6rem" }}
                   >
                     <Check size={18} color="var(--brand-gold-soft)" style={{ marginTop: "2px", flexShrink: 0 }} />
-                    <Typography sx={{ color: "rgba(255,255,255,0.82)", fontSize: "0.9rem", lineHeight: 1.5 }}>
-                      {extra}
-                    </Typography>
+                    <CmsArrayControlsRow>
+                      <Typography
+                        component="div"
+                        sx={{ color: "rgba(255,255,255,0.82)", fontSize: "0.9rem", lineHeight: 1.5 }}
+                      >
+                        <T path={`${extrasPath}.${extraIndex}`} />
+                      </Typography>
+                      <CmsArrayRemoveButton
+                        arrayPath={extrasPath}
+                        index={extraIndex}
+                        arrayLength={extras.length}
+                        minItems={0}
+                      />
+                    </CmsArrayControlsRow>
                   </Box>
                 ))}
               </Box>
+
+              <CmsArrayAddButton
+                arrayPath={extrasPath}
+                template={EXTRA_ITEM_TEMPLATE}
+                label="Agregar beneficio"
+              />
             </AccordionDetails>
           </Accordion>
         );

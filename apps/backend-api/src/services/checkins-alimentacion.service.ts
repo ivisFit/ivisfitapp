@@ -1,4 +1,10 @@
-import { CheckinAlimentacion, type UpsertCheckinAlimentacionInput } from "@ivisfit/database";
+import {
+  CheckinAlimentacion,
+  Usuario,
+  emitNotificacionProfe,
+  notificacionCheckinAtencion,
+  type UpsertCheckinAlimentacionInput,
+} from "@ivisfit/database";
 
 const TIME_ZONE = "America/Montevideo";
 
@@ -44,10 +50,24 @@ export const checkinsAlimentacionService = {
 
   async upsert(alumnaId: string, data: UpsertCheckinAlimentacionInput) {
     const dateKey = data.dateKey ?? getTodayDateKey();
-    return CheckinAlimentacion.findOneAndUpdate(
+    const checkin = await CheckinAlimentacion.findOneAndUpdate(
       { alumnaId, dateKey },
       { $set: { estado: data.estado } },
       { upsert: true, new: true, runValidators: true },
     );
+
+    if (checkin && (checkin.estado === "parcial" || checkin.estado === "no_pude")) {
+      const alumna = await Usuario.findById(alumnaId).select("nombre");
+      await emitNotificacionProfe(
+        notificacionCheckinAtencion(
+          alumnaId,
+          alumna?.nombre ?? "Una alumna",
+          dateKey,
+          checkin.estado,
+        ),
+      );
+    }
+
+    return checkin;
   },
 };

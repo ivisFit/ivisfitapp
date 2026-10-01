@@ -331,3 +331,148 @@ html.cms-preview-embed body {
     display: none;
   }
 }
+
+/* Controles agregar/quitar ítems en preview (acordeones, FAQ, extras) */
+
+.cms-array-controls__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.cms-array-controls__row > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.cms-array-controls__btn {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0.35rem 0.65rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(253 201 21 / 35%);
+  background: rgb(253 201 21 / 12%);
+  color: rgb(253 201 21 / 95%);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.cms-array-controls__btn:hover {
+  background: rgb(253 201 21 / 22%);
+  border-color: rgb(253 201 21 / 55%);
+}
+
+.cms-array-controls__btn--add {
+  margin-top: 0.75rem;
+  width: 100%;
+  max-width: 100%;
+}
+
+.cms-array-controls__btn--remove {
+  margin-top: 0.15rem;
+  padding: 0.3rem 0.5rem;
+  border-color: rgb(248 113 113 / 35%);
+  background: rgb(248 113 113 / 10%);
+  color: rgb(252 165 165 / 95%);
+}
+
+.cms-array-controls__btn--remove:hover {
+  background: rgb(248 113 113 / 18%);
+  border-color: rgb(248 113 113 / 50%);
+}
+
+.cms-array-controls__btn:focus-visible {
+  outline: 2px solid rgb(253 201 21 / 70%);
+  outline-offset: 2px;
+}
+
+.cms-array-controls__faq-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 480px) {
+  .cms-array-controls__btn--add {
+    font-size: 0.6875rem;
+  }
+}
+
+.cms-incluyen-planes__add-panel {
+  margin-top: 1rem;
+  padding: 0.85rem;
+  border: 1px dashed rgb(253 201 21 / 35%);
+  border-radius: 0.65rem;
+  background: rgb(253 201 21 / 6%);
+}
+
+.cms-incluyen-planes__add-label {
+  margin: 0 0 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(253 201 21 / 85%);
+}
+
+.cms-incluyen-planes__add-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cms-incluyen-planes__add-plan {
+  width: auto;
+  max-width: 100%;
+  margin-top: 0;
+}
+
+.cms-incluyen-planes__remove-plan {
+  margin-top: 0;
+  align-self: center;
+}
+
+.cms-hero-video-edit {
+  position: absolute;
+  right: 1rem;
+  bottom: 1.25rem;
+  z-index: 3;
+  margin: 0;
+  padding: 0.55rem 1rem;
+  border-radius: 0.55rem;
+  border: 1px dashed rgb(96 165 250 / 55%);
+  background: rgb(9 7 8 / 82%);
+  color: rgb(255 255 255 / 92%);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.cms-hero-video-edit:hover:not(:disabled) {
+  background: rgb(9 7 8 / 92%);
+  border-color: rgb(96 165 250 / 75%);
+}
+
+.cms-hero-video-edit:disabled {
+  cursor: wait;
+  opacity: 0.85;
+}
+
+@media (max-width: 480px) {
+  .cms-hero-video-edit {
+    right: 0.75rem;
+    left: 0.75rem;
+    text-align: center;
+  }
+}

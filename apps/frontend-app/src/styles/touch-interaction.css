@@ -1,0 +1,82 @@
+/* Mobile tap: no browser flash; iOS-like press dim on coarse pointers. */
+
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:where(
+  button,
+  a,
+  [role="button"],
+  [role="tab"],
+  [role="menuitem"],
+  summary,
+  .btn,
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  .MuiButtonBase-root
+) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:where(
+  button,
+  a,
+  [role="button"],
+  [role="tab"],
+  [role="menuitem"],
+  summary,
+  .btn,
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  .MuiButtonBase-root
+):focus:not(:focus-visible) {
+  outline: none;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  :where(
+    button:not(:disabled),
+    a[href],
+    [role="button"],
+    [role="tab"],
+    [role="menuitem"],
+    summary,
+    .btn,
+    input[type="button"]:not(:disabled),
+    input[type="submit"]:not(:disabled),
+    input[type="reset"]:not(:disabled),
+    .MuiButtonBase-root
+  ):active {
+    opacity: var(--touch-active-opacity);
+    transition: opacity var(--touch-active-duration) ease;
+  }
+
+  :where(
+    input:not([type="button"]):not([type="submit"]):not([type="reset"]),
+    textarea,
+    select
+  ):active {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(
+    button:not(:disabled),
+    a[href],
+    [role="button"],
+    [role="tab"],
+    [role="menuitem"],
+    summary,
+    .btn,
+    input[type="button"]:not(:disabled),
+    input[type="submit"]:not(:disabled),
+    input[type="reset"]:not(:disabled),
+    .MuiButtonBase-root
+  ):active {
+    transition: none;
+  }
+}

@@ -12,7 +12,10 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { ConfirmLeaveModal } from "@/components/ConfirmLeaveModal";
-import { isSameAlumnaDetailPath } from "@/routes/paths";
+import {
+  isAlumnaAlimentacionPlanPath,
+  isSameAlumnaDetailPath,
+} from "@/routes/paths";
 
 export type AlumnaDirtySection = "rutina" | "alimentacion" | "pliegues";
 
@@ -146,6 +149,12 @@ export function AlumnaUnsavedChangesProvider({
 
       if (url.origin !== window.location.origin) return;
       if (isSameAlumnaDetailPath(url.pathname, alumnaId)) return;
+      if (
+        isAlumnaAlimentacionPlanPath(window.location.pathname, alumnaId) &&
+        isAlumnaAlimentacionPlanPath(url.pathname, alumnaId)
+      ) {
+        return;
+      }
 
       event.preventDefault();
       event.stopPropagation();

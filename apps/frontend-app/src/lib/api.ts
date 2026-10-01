@@ -90,18 +90,26 @@ function applyTimeout(
   };
 }
 
+export type ApiFetchOptions = RequestInit & {
+  timeoutMs?: number;
+};
+
 export async function apiFetch<T>(
   path: string,
-  init?: RequestInit,
+  init?: ApiFetchOptions,
 ): Promise<T> {
   const url = `${getApiBaseUrl()}${path.startsWith("/") ? path : `/${path}`}`;
+  const { timeoutMs, ...requestInit } = init ?? {};
 
-  const headers = new Headers(init?.headers);
-  if (init?.body && !headers.has("Content-Type")) {
+  const headers = new Headers(requestInit.headers);
+  if (requestInit.body && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
 
-  const { init: initWithTimeout, cleanup } = applyTimeout(init, DEFAULT_TIMEOUT_MS);
+  const { init: initWithTimeout, cleanup } = applyTimeout(
+    requestInit,
+    timeoutMs ?? DEFAULT_TIMEOUT_MS,
+  );
 
   let response: Response;
   try {

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { Button, Input, Pagination } from "@/components";
+import { useAppDialog } from "@/components/AppDialogProvider";
 import { ListSkeleton } from "@/components/skeletons/AppSkeleton";
 import { useUrlPagination } from "@/hooks/useUrlPagination";
 import { YoutubePreview } from "@/features/profe/components/YoutubePreview";
@@ -37,6 +38,7 @@ export function BancoEjercicios({
     updateEjercicio,
     deleteEjercicio,
   } = useBancoEjercicios();
+  const dialog = useAppDialog();
   const [form, setForm] = useState(getEmptyForm);
   const [formKey, setFormKey] = useState(0);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -127,9 +129,12 @@ export function BancoEjercicios({
   }
 
   async function handleDelete(ejercicio: BancoEjercicio) {
-    const confirmed = window.confirm(
-      `¿Eliminar "${ejercicio.nombre}" del banco de ejercicios?`,
-    );
+    const confirmed = await dialog.confirm({
+      title: "Eliminar ejercicio",
+      message: `¿Eliminar "${ejercicio.nombre}" del banco de ejercicios?`,
+      tone: "danger",
+      confirmLabel: "Eliminar",
+    });
 
     if (!confirmed || !ejercicio.id) return;
     await deleteEjercicio(ejercicio.id);

@@ -275,12 +275,13 @@ export function LandingHomePage({ plans, previewSection }: LandingHomePageProps)
           <Box sx={{
             position: "relative",
             width: "100%",
-            minHeight: { xs: "auto", sm: "calc(100dvh - 120px)" },
+            minHeight: "calc(100dvh - 120px)",
+            backgroundColor: "#090708",
           }}>
             <VideoFondo variant={isPreview ? "preview" : "default"} />
             
             <Box sx={{ 
-              minHeight: { xs: "auto", sm: "calc(100dvh - 120px)" },
+              minHeight: "calc(100dvh - 120px)",
               position: "absolute", 
               top: "0", 
               zIndex: "1", 

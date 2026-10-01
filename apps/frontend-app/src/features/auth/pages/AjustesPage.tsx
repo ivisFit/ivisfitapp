@@ -7,6 +7,7 @@ import { Button, PasswordInput } from "@/components";
 import { SettingsSkeleton } from "@/components/skeletons/AppSkeleton";
 import { useAuth } from "@/context/AuthContext";
 import { PwaInstallSettingsCard } from "@/components/pwa/PwaInstallButton";
+import { LoginVideoSettings } from "@/features/auth/components/LoginVideoSettings";
 import { ProfilePhotoSettings } from "@/features/auth/components/ProfilePhotoSettings";
 import { authClient } from "@/lib/auth-client";
 import { alumnaRoutes, publicRoutes } from "@/routes/paths";
@@ -140,6 +141,8 @@ export function AjustesPage() {
       <PwaInstallSettingsCard />
 
       <ProfilePhotoSettings />
+
+      {user?.role === "profe" ? <LoginVideoSettings /> : null}
 
       {user?.role === "alumna" ? (
         <div className="feature-card">

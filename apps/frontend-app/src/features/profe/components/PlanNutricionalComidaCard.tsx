@@ -1,14 +1,18 @@
 "use client";
 
+import { useRef, type ReactNode } from "react";
 import { Button, Input, Select } from "@/components";
+import { useAutosizeTextarea } from "@/hooks/useAutosizeTextarea";
 import type {
   ComidaPlan,
   IngredientePlan,
   IngredientePlanUnidad,
 } from "@/features/alumna/types/plan-nutricional";
 import { type Alimento } from "@/features/profe/types/alimento";
+import type { SugerenciaIngrediente } from "@/features/profe/lib/sugerencia-ingredientes";
 import { AlimentoAutocomplete } from "./AlimentoAutocomplete";
 import { AlimentoCatalogPicker } from "./AlimentoCatalogPicker";
+import { IngredienteSugerenciaBubble } from "./IngredienteSugerenciaBubble";
 
 function sumComidaKcal(comida: ComidaPlan): number {
   return comida.ingredientes.reduce(
@@ -23,6 +27,11 @@ type PlanNutricionalComidaCardProps = {
   comidaIndex: number;
   disabled?: boolean;
   canRemove: boolean;
+  /** Oculta nombre/horario (definidos en Objetivos / cabecera del bloque). */
+  lockMealMeta?: boolean;
+  sugerencias?: SugerenciaIngrediente[];
+  onAcceptSugerencia?: (sugerencia: SugerenciaIngrediente) => void;
+  onRejectSugerencia?: (sugerencia: SugerenciaIngrediente) => void;
   onUpdate: (patch: Partial<ComidaPlan>) => void;
   onSelectAlimento: (ingredienteIndex: number, alimento: Alimento) => void;
   onCantidadChange: (ingredienteIndex: number, ingrediente: IngredientePlan, cantidad: number) => void;
@@ -32,12 +41,48 @@ type PlanNutricionalComidaCardProps = {
   onRemoveComida: () => void;
 };
 
+function IngredienteRowWithSugerencia({
+  sugerencia,
+  onAcceptSugerencia,
+  onRejectSugerencia,
+  rowClassName,
+  children,
+}: {
+  sugerencia?: SugerenciaIngrediente;
+  onAcceptSugerencia?: (sugerencia: SugerenciaIngrediente) => void;
+  onRejectSugerencia?: (sugerencia: SugerenciaIngrediente) => void;
+  rowClassName: string;
+  children: ReactNode;
+}) {
+  const showBubble =
+    sugerencia && onAcceptSugerencia && onRejectSugerencia;
+
+  if (!showBubble) {
+    return <div className={rowClassName}>{children}</div>;
+  }
+
+  return (
+    <div className="plan-nutricional-ingredientes__sugerencia-slot">
+      <IngredienteSugerenciaBubble
+        sugerencia={sugerencia}
+        onAccept={() => onAcceptSugerencia(sugerencia)}
+        onReject={() => onRejectSugerencia(sugerencia)}
+      />
+      <div className={rowClassName}>{children}</div>
+    </div>
+  );
+}
+
 export function PlanNutricionalComidaCard({
   comida,
   diaIndex,
   comidaIndex,
   disabled,
   canRemove,
+  lockMealMeta,
+  sugerencias,
+  onAcceptSugerencia,
+  onRejectSugerencia,
   onUpdate,
   onSelectAlimento,
   onCantidadChange,
@@ -48,52 +93,83 @@ export function PlanNutricionalComidaCard({
 }: PlanNutricionalComidaCardProps) {
   const kcal = sumComidaKcal(comida);
   const fieldPrefix = `dia-${diaIndex}-comida-${comidaIndex}`;
+  const preparacionRef = useRef<HTMLTextAreaElement>(null);
+  useAutosizeTextarea(preparacionRef, comida.preparacion ?? "");
+  const sugerenciasPorIndice = new Map<number, SugerenciaIngrediente>();
+  const sugerenciasAgregar: SugerenciaIngrediente[] = [];
+  for (const sugerencia of sugerencias ?? []) {
+    if (sugerencia.kind === "add" || sugerencia.currentIndex == null) {
+      sugerenciasAgregar.push(sugerencia);
+    } else {
+      sugerenciasPorIndice.set(sugerencia.currentIndex, sugerencia);
+    }
+  }
 
   return (
     <article className="plan-nutricional-comida">
-      <div className="plan-nutricional-comida__header">
-        <Input
-          label="Comida"
-          name={`${fieldPrefix}-nombre`}
-          value={comida.nombre}
-          onChange={(event) => onUpdate({ nombre: event.target.value })}
-          disabled={disabled}
-        />
-        <Input
-          label="Horario"
-          name={`${fieldPrefix}-horario`}
-          value={comida.horario ?? ""}
-          placeholder="Ej. 08:00"
-          onChange={(event) => onUpdate({ horario: event.target.value })}
-          disabled={disabled}
-        />
+      <div
+        className={
+          lockMealMeta
+            ? "plan-nutricional-comida__header plan-nutricional-comida__header--meta-locked"
+            : "plan-nutricional-comida__header"
+        }
+      >
+        {!lockMealMeta ? (
+          <>
+            <Input
+              label="Comida"
+              name={`${fieldPrefix}-nombre`}
+              value={comida.nombre}
+              onChange={(event) => onUpdate({ nombre: event.target.value })}
+              disabled={disabled}
+            />
+            <Input
+              label="Horario"
+              name={`${fieldPrefix}-horario`}
+              value={comida.horario ?? ""}
+              placeholder="Ej. 08:00"
+              onChange={(event) => onUpdate({ horario: event.target.value })}
+              disabled={disabled}
+            />
+          </>
+        ) : null}
         <div className="plan-nutricional-comida__kcal">
           <span>Kcal</span>
           <strong>{kcal || "—"}</strong>
         </div>
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={onRemoveComida}
-          disabled={disabled || !canRemove}
-          aria-label={`Quitar ${comida.nombre || "comida"}`}
-        >
-          Quitar
-        </Button>
+        {!lockMealMeta ? (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onRemoveComida}
+            disabled={disabled || !canRemove}
+            aria-label={`Quitar ${comida.nombre || "comida"}`}
+          >
+            Quitar
+          </Button>
+        ) : null}
       </div>
 
       <div className="plan-nutricional-ingredientes">
         {comida.ingredientes.map((ingrediente, ingredienteIndex) => {
           const sinCatalogo =
             Boolean(ingrediente.nombre.trim()) && !ingrediente.alimentoId;
+          const sugerencia = sugerenciasPorIndice.get(ingredienteIndex);
 
           return (
-          <div
+          <IngredienteRowWithSugerencia
             key={`${fieldPrefix}-ing-${ingredienteIndex}`}
-            className={
-              sinCatalogo
-                ? "plan-nutricional-ingredientes__row plan-nutricional-ingredientes__row--sin-catalogo"
-                : "plan-nutricional-ingredientes__row"
+            sugerencia={sugerencia}
+            onAcceptSugerencia={onAcceptSugerencia}
+            onRejectSugerencia={onRejectSugerencia}
+            rowClassName={
+              [
+                "plan-nutricional-ingredientes__row",
+                sinCatalogo ? "plan-nutricional-ingredientes__row--sin-catalogo" : "",
+                sugerencia ? "plan-nutricional-ingredientes__row--sugerencia" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")
             }
           >
             <div className="plan-nutricional-ingredientes__alimento">
@@ -167,7 +243,47 @@ export function PlanNutricionalComidaCard({
             >
               Quitar
             </Button>
-          </div>
+          </IngredienteRowWithSugerencia>
+          );
+        })}
+        {sugerenciasAgregar.map((sugerencia) => {
+          const propuesto = sugerencia.after;
+          if (!propuesto || !onAcceptSugerencia || !onRejectSugerencia) return null;
+          return (
+            <IngredienteRowWithSugerencia
+              key={sugerencia.id}
+              sugerencia={sugerencia}
+              onAcceptSugerencia={onAcceptSugerencia}
+              onRejectSugerencia={onRejectSugerencia}
+              rowClassName="plan-nutricional-ingredientes__row plan-nutricional-ingredientes__row--sugerencia plan-nutricional-ingredientes__row--fantasma"
+            >
+              <div className="plan-nutricional-ingredientes__alimento">
+                <Input
+                  label="Alimento"
+                  name={`${fieldPrefix}-${sugerencia.id}-nombre`}
+                  value={propuesto.nombre}
+                  disabled
+                  readOnly
+                />
+              </div>
+              <Input
+                label="Cantidad"
+                name={`${fieldPrefix}-${sugerencia.id}-cantidad`}
+                value={propuesto.cantidad}
+                disabled
+                readOnly
+              />
+              <Input
+                label="Unidad"
+                name={`${fieldPrefix}-${sugerencia.id}-unidad`}
+                value={propuesto.unidad}
+                disabled
+                readOnly
+              />
+              <span className="plan-nutricional-ingredientes__kcal">
+                {propuesto.kcal != null ? `${propuesto.kcal} kcal` : "—"}
+              </span>
+            </IngredienteRowWithSugerencia>
           );
         })}
         <Button
@@ -183,8 +299,9 @@ export function PlanNutricionalComidaCard({
       <label className="plan-nutricional-builder__field" htmlFor={`${fieldPrefix}-prep`}>
         <span>Preparación</span>
         <textarea
+          ref={preparacionRef}
           id={`${fieldPrefix}-prep`}
-          className="plan-nutricional-builder__textarea"
+          className="plan-nutricional-builder__textarea plan-nutricional-builder__textarea--autosize"
           value={comida.preparacion ?? ""}
           onChange={(event) => onUpdate({ preparacion: event.target.value })}
           placeholder="Ej: hervir 15 minutos, condimentar y servir con ensalada."

@@ -7,6 +7,9 @@ import {
   Rutina,
   RutinaProgreso,
   Usuario,
+  emitNotificacionProfe,
+  notificacionInactividad,
+  notificacionMembresia,
 } from "@ivisfit/database";
 import {
   sendRecordatorioEntrenamientoEmail,
@@ -165,6 +168,14 @@ async function runInactividad() {
       accionSugerida: "Abrí Mi rutina",
       perfil: "motivacion",
     });
+
+    await emitNotificacionProfe(
+      notificacionInactividad(
+        String(alumna._id),
+        alumna.nombre,
+        dateKey.slice(0, 7),
+      ),
+    );
   }
 }
 
@@ -272,7 +283,7 @@ async function runMembresias() {
   const alumnas = await Usuario.find({
     rol: "alumna",
     "membresia.fechaVencimiento": { $exists: true, $ne: null },
-  }).select("membresia");
+  }).select("nombre membresia");
 
   for (const alumna of alumnas) {
     const fecha = alumna.membresia?.fechaVencimiento;
@@ -288,6 +299,23 @@ async function runMembresias() {
         fechaVencimiento: fecha,
       };
       await alumna.save();
+
+      if (estado === "por_vencer" || estado === "vencida") {
+        const fechaKey = new Intl.DateTimeFormat("en-CA", {
+          timeZone: TIMEZONE,
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        }).format(fecha);
+        await emitNotificacionProfe(
+          notificacionMembresia(
+            String(alumna._id),
+            alumna.nombre,
+            estado,
+            fechaKey,
+          ),
+        );
+      }
     }
   }
 }

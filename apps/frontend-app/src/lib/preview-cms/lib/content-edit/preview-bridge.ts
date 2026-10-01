@@ -54,6 +54,13 @@ export type PreviewOutbound =
       path: string;
       index: number;
     }
+  | {
+      source: string;
+      type: 'array-replace';
+      locale: SiteContentLocaleDto;
+      path: string;
+      value: unknown[];
+    }
   | { source: string; type: 'navigate'; route: string }
   | { source: string; type: 'pointer'; clientY: number };
 

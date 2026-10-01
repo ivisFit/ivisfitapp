@@ -55,6 +55,21 @@
   flex-shrink: 0;
 }
 
+@media (max-width: 767px) {
+  /* Hero en flujo: la foto sube con el scroll (no queda pegada al viewport). */
+  .alumna-detail-hero-fixed {
+    position: relative;
+    top: auto;
+    right: auto;
+    left: auto;
+  }
+
+  .alumna-detail-hero-spacer {
+    display: none;
+    height: 0;
+  }
+}
+
 .alumna-detail-hero__nav {
   position: fixed;
   top: 0;

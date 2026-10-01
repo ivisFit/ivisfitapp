@@ -1,16 +1,17 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-
-// Boomerang clip: already contains forward + reverse, so a native loop
-// produces a seamless back-and-forth playback.
-const AUTH_VIDEO_SRC = "/auth/fondovideo.mp4";
+import { DEFAULT_AUTH_VIDEO_SRC } from "@/lib/auth-login-video.constants";
 
 type AuthVideoBackgroundProps = {
   className?: string;
+  src?: string;
 };
 
-export function AuthVideoBackground({ className }: AuthVideoBackgroundProps) {
+export function AuthVideoBackground({
+  className,
+  src = DEFAULT_AUTH_VIDEO_SRC,
+}: AuthVideoBackgroundProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -60,7 +61,7 @@ export function AuthVideoBackground({ className }: AuthVideoBackgroundProps) {
       video.removeEventListener("stalled", resume);
       video.removeEventListener("loadeddata", tryPlay);
     };
-  }, []);
+  }, [src]);
 
   const classes = ["auth-screen__video", className].filter(Boolean).join(" ");
 
@@ -68,7 +69,7 @@ export function AuthVideoBackground({ className }: AuthVideoBackgroundProps) {
     <video
       ref={videoRef}
       className={classes}
-      src={AUTH_VIDEO_SRC}
+      src={src}
       muted
       playsInline
       autoPlay

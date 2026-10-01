@@ -1,10 +1,15 @@
 import { Router } from "express";
 import {
+  aplicarPlantillaNutricionalSchema,
   createPlanNutricionalSchema,
+  createPlanNutricionalTemplateSchema,
   generarBorradorPlanSchema,
+  generarComidaPlanSchema,
   nutricionChatSchema,
   updatePlanNutricionalSchema,
+  validarPlanNutricionalSchema,
 } from "@ivisfit/database";
+import { planNutricionalTemplateController } from "../controllers/plan-nutricional-template.controller.js";
 import { planNutricionalController } from "../controllers/plan-nutricional.controller.js";
 import { requireRole } from "../middleware/requireRole.js";
 import { validateBody } from "../middleware/validate.js";
@@ -37,6 +42,54 @@ planNutricionalRouter.get(
   asyncHandler(planNutricionalController.getBriefing),
 );
 planNutricionalRouter.get(
+  "/planes",
+  requireRole("profe"),
+  asyncHandler(planNutricionalController.listPlanes),
+);
+planNutricionalRouter.post(
+  "/validar",
+  requireRole("profe"),
+  validateBody(validarPlanNutricionalSchema),
+  asyncHandler(planNutricionalController.validatePlan),
+);
+planNutricionalRouter.post(
+  "/clonar",
+  requireRole("profe"),
+  asyncHandler(planNutricionalController.clonePlan),
+);
+planNutricionalRouter.get(
+  "/plantillas",
+  requireRole("profe"),
+  asyncHandler(planNutricionalTemplateController.list),
+);
+planNutricionalRouter.post(
+  "/plantillas",
+  requireRole("profe"),
+  validateBody(createPlanNutricionalTemplateSchema),
+  asyncHandler(planNutricionalTemplateController.create),
+);
+planNutricionalRouter.post(
+  "/plantillas/desde-plan",
+  requireRole("profe"),
+  asyncHandler(planNutricionalTemplateController.createFromPlan),
+);
+planNutricionalRouter.post(
+  "/plantillas/aplicar",
+  requireRole("profe"),
+  validateBody(aplicarPlantillaNutricionalSchema),
+  asyncHandler(planNutricionalTemplateController.apply),
+);
+planNutricionalRouter.patch(
+  "/plantillas/:id",
+  requireRole("profe"),
+  asyncHandler(planNutricionalTemplateController.update),
+);
+planNutricionalRouter.delete(
+  "/plantillas/:id",
+  requireRole("profe"),
+  asyncHandler(planNutricionalTemplateController.remove),
+);
+planNutricionalRouter.get(
   "/generar-borrador/estado/:jobId",
   requireRole("profe"),
   asyncHandler(planNutricionalController.generateDraftStatus),
@@ -60,6 +113,17 @@ planNutricionalRouter.post(
   requireRole("profe"),
   validateBody(generarBorradorPlanSchema),
   asyncHandler(planNutricionalController.generateDraft),
+);
+planNutricionalRouter.post(
+  "/generar-comida",
+  requireRole("profe"),
+  validateBody(generarComidaPlanSchema),
+  asyncHandler(planNutricionalController.generateComida),
+);
+planNutricionalRouter.get(
+  "/generar-comida/estado/:jobId",
+  requireRole("profe"),
+  asyncHandler(planNutricionalController.generateComidaStatus),
 );
 planNutricionalRouter.post(
   "/chat",

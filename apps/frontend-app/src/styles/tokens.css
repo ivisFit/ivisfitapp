@@ -105,6 +105,8 @@
     inset 0 1px 0 rgb(255 255 255 / 6%);
   --glow-amber: 0 0 24px rgb(253 201 21 / 25%);
   --glow-amber-text: 0 0 20px rgb(253 201 21 / 35%);
+  --touch-active-opacity: 0.88;
+  --touch-active-duration: 80ms;
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;

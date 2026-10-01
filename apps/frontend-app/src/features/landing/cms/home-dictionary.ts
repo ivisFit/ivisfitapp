@@ -21,6 +21,8 @@ export type HomeDictionary = {
       ctaPrimary: string;
       ctaSecondary: string;
       appPreviewImage: string;
+      videoMp4: string;
+      videoWebm: string;
     };
     presentacion: {
       greeting: string;
@@ -72,6 +74,7 @@ export type HomeDictionary = {
       subtitle: string;
       imageDesktop: string;
       imageMobile: string;
+      planSlugs?: string[];
     };
     planTotal: {
       backgroundImage: string;
@@ -104,6 +107,8 @@ export const DEFAULT_HOME_DICTIONARY: HomeDictionary = {
       ctaPrimary: "Ver planes",
       ctaSecondary: "Conóceme",
       appPreviewImage: "/imgs/app-rutina-preview.png",
+      videoMp4: "/videos/video-inicio.mp4",
+      videoWebm: "/videos/video-inicio.webm",
     },
     presentacion: {
       greeting: "HOLA",

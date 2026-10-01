@@ -1,4 +1,8 @@
-import { Usuario } from "@ivisfit/database";
+import {
+  Usuario,
+  emitNotificacionProfe,
+  notificacionAdmisionNueva,
+} from "@ivisfit/database";
 
 type AuthUser = {
   id: string;
@@ -43,7 +47,7 @@ export async function syncUsuarioAfterCreate(user: AuthUser) {
     : undefined;
   const alturaCm = user.alturaCm ? Number(user.alturaCm) : undefined;
 
-  await Usuario.findOneAndUpdate(
+  const usuario = await Usuario.findOneAndUpdate(
     { correo: user.email },
     {
       nombre: user.name,
@@ -72,4 +76,10 @@ export async function syncUsuarioAfterCreate(user: AuthUser) {
     },
     { upsert: true, new: true },
   );
+
+  if (rol === "alumna" && usuario) {
+    await emitNotificacionProfe(
+      notificacionAdmisionNueva(String(usuario._id), usuario.nombre),
+    );
+  }
 }

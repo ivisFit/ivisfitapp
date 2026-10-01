@@ -136,6 +136,7 @@ export default function PlanesPreviewClient() {
     const IMAGE_EDIT = "[data-preview-image-edit]";
     const CARD_CHROME = "[data-preview-card-chrome]";
     const NAV_LINK = "[data-preview-nav]";
+    const ACCORDION_SUMMARY = ".MuiAccordionSummary-root";
 
     const isInteractive = (target: EventTarget | null): boolean =>
       target instanceof Element && target.closest(INTERACTIVE) !== null;
@@ -145,6 +146,15 @@ export default function PlanesPreviewClient() {
       target instanceof Element && target.closest(CARD_CHROME) !== null;
     const isNavLink = (target: EventTarget | null): boolean =>
       target instanceof Element && target.closest(NAV_LINK) !== null;
+    const isAccordionSummary = (target: EventTarget | null): boolean =>
+      target instanceof Element && target.closest(ACCORDION_SUMMARY) !== null;
+    const isContentEditable = (target: EventTarget | null): boolean =>
+      target instanceof Element && target.closest('[contenteditable="true"]') !== null;
+
+    const allowAccordionInteraction = (target: EventTarget | null) => {
+      if (!isAccordionSummary(target)) return false;
+      return true;
+    };
 
     const onClick = (e: MouseEvent) => {
       const target = e.target;
@@ -153,6 +163,8 @@ export default function PlanesPreviewClient() {
       if (isImageEdit(target)) return;
       if (isCardChrome(target)) return;
       if (isNavLink(target)) return;
+
+      if (allowAccordionInteraction(target)) return;
 
       const anchor = target.closest("a[href]");
       if (anchor instanceof HTMLAnchorElement) {
@@ -197,7 +209,8 @@ export default function PlanesPreviewClient() {
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
-      if (e.target instanceof Element && e.target.closest('[contenteditable="true"]')) return;
+      if (isContentEditable(e.target)) return;
+      if (allowAccordionInteraction(e.target)) return;
       if (!isInteractive(e.target)) return;
       if (isImageEdit(e.target)) return;
       if (isCardChrome(e.target)) return;
@@ -231,6 +244,14 @@ export default function PlanesPreviewClient() {
       setDraft((prev) => ({ ...prev, [loc]: setByPath(prev[loc] ?? {}, path, value) }));
       if (typeof value === "string" || typeof value === "boolean") {
         post({ source: PREVIEW_SOURCE, type: "edit", locale: loc, path, value });
+      } else if (Array.isArray(value)) {
+        post({
+          source: PREVIEW_SOURCE,
+          type: "array-replace",
+          locale: loc,
+          path,
+          value,
+        });
       }
     },
     [post],

@@ -11,7 +11,7 @@ import {
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const ALLOWED_TYPES = new Set([
+const ALLOWED_IMAGE_TYPES = new Set([
   "image/jpeg",
   "image/png",
   "image/webp",
@@ -19,8 +19,19 @@ const ALLOWED_TYPES = new Set([
   "image/avif",
 ]);
 
-function maxBytes(): number {
+const ALLOWED_VIDEO_TYPES = new Set([
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+]);
+
+function maxImageBytes(): number {
   const mb = Number(process.env.CMS_UPLOAD_MAX_MB ?? "5");
+  return mb * 1024 * 1024;
+}
+
+function maxVideoBytes(): number {
+  const mb = Number(process.env.CMS_VIDEO_UPLOAD_MAX_MB ?? "80");
   return mb * 1024 * 1024;
 }
 
@@ -43,14 +54,15 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!ALLOWED_TYPES.has(file.type)) {
+    if (!ALLOWED_IMAGE_TYPES.has(file.type) && !ALLOWED_VIDEO_TYPES.has(file.type)) {
       return NextResponse.json(
         { message: "Tipo de archivo inválido", code: "BAD_REQUEST" },
         { status: 400 },
       );
     }
 
-    if (file.size > maxBytes()) {
+    const maxSize = ALLOWED_VIDEO_TYPES.has(file.type) ? maxVideoBytes() : maxImageBytes();
+    if (file.size > maxSize) {
       return NextResponse.json(
         { message: "Archivo demasiado grande", code: "BAD_REQUEST" },
         { status: 400 },
@@ -69,7 +81,7 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("[site-content/upload POST]", error);
     return NextResponse.json(
-      { message: "No se pudo subir la imagen", code: "INTERNAL_ERROR" },
+      { message: "No se pudo subir el archivo", code: "INTERNAL_ERROR" },
       { status: 500 },
     );
   }
