@@ -3,6 +3,12 @@
   "version": "0.0.0",
   "private": true,
   "license": "MIT",
+  "exports": {
+    "./base.json": "./base.json",
+    "./node.json": "./node.json",
+    "./nextjs.json": "./nextjs.json",
+    "./vite-react.json": "./vite-react.json"
+  },
   "publishConfig": {
     "access": "public"
   }

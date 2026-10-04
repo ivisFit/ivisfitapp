@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { Button, Input, Select } from "@/components";
 import { useAutosizeTextarea } from "@/hooks/useAutosizeTextarea";
 import type {
@@ -93,7 +93,17 @@ export function PlanNutricionalComidaCard({
 }: PlanNutricionalComidaCardProps) {
   const kcal = sumComidaKcal(comida);
   const fieldPrefix = `dia-${diaIndex}-comida-${comidaIndex}`;
+  const [cantidadEdits, setCantidadEdits] = useState<Record<string, string>>({});
   const preparacionRef = useRef<HTMLTextAreaElement>(null);
+
+  function cantidadFieldKey(ingredienteIndex: number) {
+    return `${fieldPrefix}-ing-${ingredienteIndex}-cantidad`;
+  }
+
+  function defaultCantidadFallback(ingrediente: IngredientePlan): number {
+    if (ingrediente.cantidad > 0) return ingrediente.cantidad;
+    return ingrediente.unidad === "g" || ingrediente.unidad === "ml" ? 100 : 1;
+  }
   useAutosizeTextarea(preparacionRef, comida.preparacion ?? "");
   const sugerenciasPorIndice = new Map<number, SugerenciaIngrediente>();
   const sugerenciasAgregar: SugerenciaIngrediente[] = [];
@@ -206,14 +216,37 @@ export function PlanNutricionalComidaCard({
               type="number"
               min={0}
               step="any"
-              value={ingrediente.cantidad}
-              onChange={(event) =>
-                onCantidadChange(
-                  ingredienteIndex,
-                  ingrediente,
-                  Number(event.target.value) || 0,
-                )
+              value={
+                cantidadFieldKey(ingredienteIndex) in cantidadEdits
+                  ? cantidadEdits[cantidadFieldKey(ingredienteIndex)]
+                  : String(ingrediente.cantidad)
               }
+              onChange={(event) => {
+                const key = cantidadFieldKey(ingredienteIndex);
+                const raw = event.target.value;
+                setCantidadEdits((prev) => ({ ...prev, [key]: raw }));
+                if (raw === "") return;
+                const parsed = Number(raw);
+                if (Number.isFinite(parsed) && parsed >= 0) {
+                  onCantidadChange(ingredienteIndex, ingrediente, parsed);
+                }
+              }}
+              onBlur={() => {
+                const key = cantidadFieldKey(ingredienteIndex);
+                const raw = cantidadEdits[key];
+                if (raw === "") {
+                  onCantidadChange(
+                    ingredienteIndex,
+                    ingrediente,
+                    defaultCantidadFallback(ingrediente),
+                  );
+                }
+                setCantidadEdits((prev) => {
+                  const next = { ...prev };
+                  delete next[key];
+                  return next;
+                });
+              }}
               disabled={disabled}
             />
             <Select

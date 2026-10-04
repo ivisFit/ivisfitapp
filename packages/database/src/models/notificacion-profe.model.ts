@@ -1,4 +1,11 @@
-import { Schema, model, models, type InferSchemaType, type Types } from "mongoose";
+import {
+  Schema,
+  model,
+  models,
+  type InferSchemaType,
+  type Model,
+  type Types,
+} from "mongoose";
 
 export const NOTIFICACION_PROFE_TIPOS = [
   "admision_nueva",
@@ -41,6 +48,6 @@ export type NotificacionProfeDocument = InferSchemaType<typeof notificacionProfe
   updatedAt: Date;
 };
 
-export const NotificacionProfe =
-  models.NotificacionProfe ??
+export const NotificacionProfe: Model<NotificacionProfeDocument> =
+  (models.NotificacionProfe as Model<NotificacionProfeDocument> | undefined) ??
   model<NotificacionProfeDocument>("NotificacionProfe", notificacionProfeSchema);
