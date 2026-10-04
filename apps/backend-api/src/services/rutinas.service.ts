@@ -18,6 +18,7 @@ type SemanaPlain = {
   numeroSemana: number;
   dias: {
     nombreDia: string;
+    comentario?: string;
     ejercicios: {
       ejercicioId: unknown;
       series: number;
@@ -155,6 +156,9 @@ export const rutinasService = {
 
     const diasClonados = semanaOrigen.dias.map((dia) => ({
       nombreDia: dia.nombreDia,
+      ...(dia.comentario?.trim()
+        ? { comentario: dia.comentario.trim() }
+        : {}),
       ejercicios: dia.ejercicios.map((ej) => ({
         ejercicioId: ej.ejercicioId,
         series: ej.series,

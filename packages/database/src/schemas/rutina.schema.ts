@@ -18,6 +18,7 @@ const ejercicioRutinaSchema = z.object({
 
 const diaRutinaSchema = z.object({
   nombreDia: z.string().min(1),
+  comentario: z.string().trim().max(500).optional(),
   ejercicios: z.array(ejercicioRutinaSchema).min(1),
 });
 

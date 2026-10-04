@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   CircleCheck,
   ClipboardCheck,
@@ -19,7 +19,7 @@ import {
 import { useAlimentacionPlan } from "@/features/profe/context/AlimentacionPlanProvider";
 import { PlanNutricionalDashboard } from "@/features/alumna/components/alimentacion/PlanNutricionalDashboard";
 import { profeAlumnaAlimentacionStepRoute, profeAlumnaAlimentacionTabRoute } from "@/routes/paths";
-import { ApiError, apiFetch, formatValidationErrorMessage } from "@/lib/api";
+import { ApiError, apiFetch, formatApiError } from "@/lib/api";
 import type {
   PlanNutricionalApiDoc,
   PlanValidacionResponse,
@@ -44,6 +44,7 @@ export function AlimentacionRevisarStep() {
     saveDraft,
     refetch,
     isPublicado,
+    error: draftError,
   } = useAlimentacionPlan();
 
   const [validacion, setValidacion] = useState<PlanValidacionResponse | null>(null);
@@ -52,6 +53,9 @@ export function AlimentacionRevisarStep() {
   const [error, setError] = useState<string | null>(null);
   const [acceptedWarnings, setAcceptedWarnings] = useState(false);
   const [validationFetchError, setValidationFetchError] = useState<string | null>(null);
+  const [validationErrorStatus, setValidationErrorStatus] = useState<number | null>(
+    null,
+  );
 
   const previewPlan: PlanNutricionalApiDoc = {
     _id: plan?._id,
@@ -64,38 +68,42 @@ export function AlimentacionRevisarStep() {
     dias: prepareDiasForPlanApi(dias),
   };
 
-  useEffect(() => {
+  const runValidation = useCallback(async () => {
     setLoadingVal(true);
     setValidationFetchError(null);
-    void apiFetch<PlanValidacionResponse>("/api/plan-nutricional/validar", {
-      method: "POST",
-      body: JSON.stringify({
-        alumnaId,
-        plan: {
-          titulo,
-          observacionesProfe,
-          macrosObjetivo,
-          estructuraComidas,
-          dias: prepareDiasForPlanApi(dias),
+    setValidationErrorStatus(null);
+    try {
+      const result = await apiFetch<PlanValidacionResponse>(
+        "/api/plan-nutricional/validar",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            alumnaId,
+            plan: {
+              titulo,
+              observacionesProfe,
+              macrosObjetivo,
+              estructuraComidas,
+              dias: prepareDiasForPlanApi(dias),
+            },
+          }),
         },
-      }),
-    })
-      .then((result) => {
-        setValidacion(result);
-        setValidationFetchError(null);
-      })
-      .catch((err) => {
-        setValidacion(null);
-        const message =
-          err instanceof ApiError
-            ? formatValidationErrorMessage(err.message, err.details) ?? err.message
-            : err instanceof Error
-              ? err.message
-              : "No se pudo validar el plan";
-        setValidationFetchError(message);
-      })
-      .finally(() => setLoadingVal(false));
+      );
+      setValidacion(result);
+      setValidationFetchError(null);
+      setValidationErrorStatus(null);
+    } catch (err) {
+      setValidacion(null);
+      setValidationFetchError(formatApiError(err));
+      setValidationErrorStatus(err instanceof ApiError ? err.status : null);
+    } finally {
+      setLoadingVal(false);
+    }
   }, [alumnaId, titulo, observacionesProfe, macrosObjetivo, estructuraComidas, dias]);
+
+  useEffect(() => {
+    void runValidation();
+  }, [runValidation]);
 
   const warnings =
     validacion?.items.filter((item) => item.nivel === "warning") ?? [];
@@ -108,7 +116,9 @@ export function AlimentacionRevisarStep() {
 
   const blockingHint =
     validationFetchError
-      ? "No se pudo validar el plan. Revisá los datos o guardá el borrador de nuevo."
+      ? validationErrorStatus
+        ? `No se pudo completar la validación (código ${validationErrorStatus}). Reintentá o guardá el borrador de nuevo.`
+        : "No se pudo validar el plan. Reintentá o guardá el borrador de nuevo."
       : errors.length > 0
         ? isPublicado
           ? "Corregí los errores antes de guardar."
@@ -127,7 +137,7 @@ export function AlimentacionRevisarStep() {
       const saved = await saveDraft();
       if (isPublicado) {
         if (!saved) {
-          setError("No se pudo guardar el plan");
+          setError(draftError ?? "No se pudo guardar el plan");
           return;
         }
         router.push(profeAlumnaAlimentacionTabRoute(alumnaId));
@@ -156,7 +166,7 @@ export function AlimentacionRevisarStep() {
       refetch();
       router.push(profeAlumnaAlimentacionTabRoute(alumnaId));
     } catch (err) {
-      setError(err instanceof Error ? err.message : isPublicado ? "No se pudo guardar" : "No se pudo publicar");
+      setError(formatApiError(err));
     } finally {
       setPublishing(false);
     }
@@ -205,6 +215,8 @@ export function AlimentacionRevisarStep() {
                 <LoaderCircle size={13} className="ap-spin" aria-hidden="true" />
                 Validando…
               </span>
+            ) : validationFetchError ? (
+              <span className="ap-badge ap-badge--danger">No se pudo validar</span>
             ) : errors.length > 0 ? (
               <span className="ap-badge ap-badge--danger">
                 {errors.length} {errors.length === 1 ? "error" : "errores"}
@@ -240,9 +252,23 @@ export function AlimentacionRevisarStep() {
             ))}
           </ul>
         ) : validationFetchError ? (
-          <p className="auth-error" role="alert">
-            {validationFetchError}
-          </p>
+          <div className="alimentacion-revisar-validation-error">
+            <p className="auth-error" role="alert">
+              {validationFetchError}
+            </p>
+            <p className="ap-inline-note">{blockingHint}</p>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={loadingVal}
+              onClick={() => void runValidation()}
+            >
+              {loadingVal ? (
+                <LoaderCircle size={16} className="ap-spin" aria-hidden="true" />
+              ) : null}
+              Reintentar validación
+            </Button>
+          </div>
         ) : validacion ? (
           <p className="ap-inline-note ap-inline-note--success">
             <CircleCheck size={16} aria-hidden="true" />

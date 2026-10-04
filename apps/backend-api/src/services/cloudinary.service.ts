@@ -187,11 +187,9 @@ export async function uploadFotoPerfil({
   filename: string;
 }) {
   const timestamp = Math.floor(Date.now() / 1000).toString();
-  const transformation = "c_fill,w_400,h_400";
   const signedParams = {
     folder: CLOUDINARY_UPLOAD_FOLDER_AVATARS,
     timestamp,
-    transformation,
   };
 
   const body = await uploadToCloudinary({

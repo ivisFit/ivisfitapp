@@ -70,6 +70,22 @@ export function RutinaDiaCard({
             value={dia.nombreDia}
             onChange={(event) => onUpdateDia({ nombreDia: event.target.value })}
           />
+          <label className="field">
+            <span className="field__label">
+              Comentario para la alumna (opcional)
+            </span>
+            <textarea
+              className="field__input field__textarea"
+              name={`comentario-${dia.localId}`}
+              rows={3}
+              maxLength={500}
+              placeholder="Ej: En las búlgaras son 10 repeticiones por lado."
+              value={dia.comentario}
+              onChange={(event) =>
+                onUpdateDia({ comentario: event.target.value })
+              }
+            />
+          </label>
         </div>
         {isAlumnaMode ? (
           <details className="rutina-builder__dia-menu">

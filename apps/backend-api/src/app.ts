@@ -3,6 +3,7 @@ import { toNodeHandler } from "better-auth/node";
 import cors from "cors";
 import express from "express";
 import { getCorsAllowedOrigins } from "./config/cors.js";
+import { JSON_BODY_LIMIT } from "./config/http-limits.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { requireAuth } from "./middleware/requireAuth.js";
 import { comprobantesRouter } from "./routes/comprobantes.routes.js";
@@ -33,7 +34,7 @@ export function createApp() {
   app.use("/api/chatbot", chatbotPublicRouter);
   app.use("/api/landing-planes", landingPlanesPublicRouter);
 
-  app.use(express.json());
+  app.use(express.json({ limit: JSON_BODY_LIMIT }));
 
   app.get("/health", (_req, res) => {
     res.json({ status: "ok" });

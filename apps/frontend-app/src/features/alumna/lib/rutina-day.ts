@@ -98,6 +98,7 @@ export type ChallengeDay = {
   state: ChallengeDayState;
   isToday: boolean;
   nombreDia?: string;
+  comentario?: string;
   numeroSemana?: number;
   ejercicios: RutinaDia["ejercicios"];
   media?: RutinaMediaAsset;
@@ -528,6 +529,9 @@ export function buildPlanDays(
       state,
       isToday: dayNumber === currentDayNumber,
       nombreDia: routineDay.dia.nombreDia,
+      ...(routineDay.dia.comentario?.trim()
+        ? { comentario: routineDay.dia.comentario.trim() }
+        : {}),
       numeroSemana: routineDay.numeroSemana,
       ejercicios: routineDay.dia.ejercicios,
       media,
@@ -582,6 +586,9 @@ export function buildChallenge28Days(
       state,
       isToday: dayNumber === currentDayNumber,
       nombreDia,
+      ...(routineDay?.dia.comentario?.trim()
+        ? { comentario: routineDay.dia.comentario.trim() }
+        : {}),
       numeroSemana: routineDay?.numeroSemana,
       ejercicios: routineDay?.dia.ejercicios ?? [],
       media,

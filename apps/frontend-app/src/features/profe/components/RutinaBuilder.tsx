@@ -116,6 +116,7 @@ function cloneDiaForDuplicate(dia: DiaPlanDraft): DiaPlanDraft {
   return {
     localId: createLocalId(),
     nombreDia: `${dia.nombreDia} (copia)`,
+    comentario: dia.comentario,
     drafts: dia.drafts.map((draft) => ({
       ...draft,
       localId: createLocalId(),
@@ -127,6 +128,7 @@ function cloneDiaContent(source: DiaPlanDraft, target: DiaPlanDraft): DiaPlanDra
   return {
     ...target,
     nombreDia: source.nombreDia,
+    comentario: source.comentario,
     drafts: source.drafts.map((draft) => ({
       ...draft,
       localId: createLocalId(),

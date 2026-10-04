@@ -46,6 +46,7 @@ const ejercicioRutinaBlueprintSchema = new Schema(
 const diaRutinaBlueprintSchema = new Schema(
   {
     nombreDia: { type: String, required: true },
+    comentario: { type: String, maxlength: 500 },
     ejercicios: { type: [ejercicioRutinaBlueprintSchema], required: true },
   },
   { _id: false },

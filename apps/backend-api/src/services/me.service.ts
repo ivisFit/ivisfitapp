@@ -247,18 +247,35 @@ export async function setFotoPerfil(
   const usuario = await findUsuarioBySession(req);
   const previousPublicId = usuario.fotoPerfil?.publicId;
 
-  const uploaded = await uploadFotoPerfil({
-    file,
-    contentType,
-    filename,
-  });
+  let uploaded;
+  try {
+    uploaded = await uploadFotoPerfil({
+      file,
+      contentType,
+      filename,
+    });
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    console.error("[setFotoPerfil] cloudinary", {
+      contentType,
+      bytes: file.length,
+      error,
+    });
+    throw new AppError(502, "No se pudo subir la foto. Reintentá en unos segundos.");
+  }
 
   usuario.fotoPerfil = {
     url: uploaded.url,
     publicId: uploaded.publicId,
     uploadedAt: new Date(uploaded.uploadedAt),
   };
-  await usuario.save();
+
+  try {
+    await usuario.save();
+  } catch (error) {
+    console.error("[setFotoPerfil] save", { usuarioId: usuario._id, error });
+    throw new AppError(500, "No se pudo guardar la foto de perfil.");
+  }
 
   if (previousPublicId && previousPublicId !== uploaded.publicId) {
     try {

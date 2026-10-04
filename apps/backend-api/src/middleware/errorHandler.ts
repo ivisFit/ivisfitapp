@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
+import { JSON_BODY_LIMIT_LABEL } from "../config/http-limits.js";
 import { AppError } from "../utils/errors.js";
 
 export function errorHandler(
@@ -14,7 +15,7 @@ export function errorHandler(
     (error as { type?: string }).type === "entity.too.large"
   ) {
     return res.status(413).json({
-      error: "El comprobante no puede superar 5 MB",
+      error: `La solicitud es demasiado grande (máximo ${JSON_BODY_LIMIT_LABEL} para datos JSON). Si es un plan nutricional, probá guardar por partes o contactá soporte.`,
     });
   }
 

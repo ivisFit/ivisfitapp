@@ -38,6 +38,7 @@ type EjercicioRutinaApi = {
 
 type RutinaDiaApi = {
   nombreDia: string;
+  comentario?: string;
   ejercicios: EjercicioRutinaApi[];
 };
 
@@ -160,6 +161,7 @@ function mapSemana(semana: RutinaSemanaApi): RutinaSemana {
     numeroSemana: semana.numeroSemana,
     dias: semana.dias.map((dia) => ({
       nombreDia: dia.nombreDia,
+      ...(dia.comentario?.trim() ? { comentario: dia.comentario.trim() } : {}),
       ejercicios: dia.ejercicios.map(mapEjercicio),
     })),
   };

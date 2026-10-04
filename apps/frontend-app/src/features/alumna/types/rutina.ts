@@ -50,6 +50,7 @@ export type RutinaEjercicio = {
 
 export type RutinaDia = {
   nombreDia: string;
+  comentario?: string;
   ejercicios: RutinaEjercicio[];
 };
 

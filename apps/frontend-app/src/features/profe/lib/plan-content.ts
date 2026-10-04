@@ -8,6 +8,7 @@ type SemanaPlanDraftLike = {
   numeroSemana: number;
   dias: {
     nombreDia: string;
+    comentario?: string;
     drafts: {
       ejercicioId: string;
       series: number;
@@ -387,6 +388,9 @@ export function draftSemanasToRutinaSemanas(
     numeroSemana: sem.numeroSemana,
     dias: sem.dias.map((dia) => ({
       nombreDia: dia.nombreDia.trim() || "Día",
+      ...(dia.comentario?.trim()
+        ? { comentario: dia.comentario.trim() }
+        : {}),
       ejercicios: dia.drafts
         .filter((draft) => draft.ejercicioId)
         .map((draft) => {

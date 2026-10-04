@@ -236,6 +236,15 @@ export function ChallengeDaySheet({
               ))}
             </div>
 
+            {day.comentario ? (
+              <div className="challenge-sheet__day-note">
+                <p className="challenge-sheet__day-note-label">
+                  Indicaciones del día
+                </p>
+                <p className="challenge-sheet__day-note-text">{day.comentario}</p>
+              </div>
+            ) : null}
+
             {day.ejercicios.length > 0 ? (
               <ul className="challenge-sheet__exercises">
                 {day.ejercicios.map((ejercicio, index) => {

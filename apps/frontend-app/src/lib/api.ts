@@ -30,12 +30,48 @@ export type ZodFlattenedError = {
   fieldErrors?: Record<string, string[]>;
 };
 
+const INVALID_DATA_FALLBACK =
+  "Los datos del plan no son válidos. Guardá el borrador y revisá comidas e ingredientes.";
+
+const GENERIC_API_MESSAGES = new Set([
+  "Error al comunicarse con el servidor",
+  "Error interno del servidor",
+  "No se pudo reenviar la solicitud al servidor. Reintentá en unos segundos.",
+]);
+
+function describeHttpStatus(status: number): string {
+  switch (status) {
+    case 401:
+      return "Tu sesión expiró o no estás autenticado. Volvé a iniciar sesión.";
+    case 403:
+      return "No tenés permiso para esta acción.";
+    case 404:
+      return "No se encontró el recurso solicitado (por ejemplo, la evaluación nutricional).";
+    case 413:
+      return "La solicitud es demasiado grande.";
+    case 502:
+      return "No se pudo conectar con el servidor de la API. Si administrás el sitio, revisá que API_URL esté configurado y el backend en marcha.";
+    case 500:
+      return "Hubo un fallo interno al procesar la solicitud. Reintentá en unos segundos; si persiste, contactá soporte.";
+    case 504:
+      return "La solicitud tardó demasiado. Intentá de nuevo.";
+    default:
+      if (status >= 500) {
+        return `Error del servidor (código ${status}). Reintentá más tarde.`;
+      }
+      if (status >= 400) {
+        return `Solicitud rechazada (código ${status}).`;
+      }
+      return "No se pudo completar la solicitud.";
+  }
+}
+
 export function formatValidationErrorMessage(
   fallback: string,
   details?: unknown,
 ): string | null {
   if (!details || typeof details !== "object") {
-    return fallback === "Datos inválidos" ? null : fallback;
+    return fallback === "Datos inválidos" ? INVALID_DATA_FALLBACK : fallback;
   }
 
   const flattened = details as ZodFlattenedError;
@@ -54,10 +90,38 @@ export function formatValidationErrorMessage(
   }
 
   if (parts.length === 0) {
-    return fallback === "Datos inválidos" ? null : fallback;
+    return fallback === "Datos inválidos" ? INVALID_DATA_FALLBACK : fallback;
   }
 
   return parts.join(". ");
+}
+
+export function formatApiError(error: unknown): string {
+  if (error instanceof ApiError) {
+    const detailed =
+      formatValidationErrorMessage(error.message, error.details) ?? error.message;
+    if (GENERIC_API_MESSAGES.has(detailed) || GENERIC_API_MESSAGES.has(error.message)) {
+      return describeHttpStatus(error.status);
+    }
+    return detailed;
+  }
+
+  if (error instanceof TypeError) {
+    const msg = error.message.toLowerCase();
+    if (msg.includes("fetch") || msg.includes("network")) {
+      return "No hay conexión con el servidor. Revisá tu internet e intentá de nuevo.";
+    }
+  }
+
+  if (error instanceof DOMException && error.name === "AbortError") {
+    return "La solicitud tardó demasiado. Intentá de nuevo.";
+  }
+
+  if (error instanceof Error && error.message.trim()) {
+    return error.message;
+  }
+
+  return "No se pudo completar la solicitud.";
 }
 
 export class ApiError extends Error {
@@ -131,9 +195,9 @@ export async function apiFetch<T>(
   if (!response.ok) {
     let message = "Error al comunicarse con el servidor";
     let details: unknown;
-    try {
-      const text = await response.text();
-      if (text.trim()) {
+    const text = await response.text();
+    if (text.trim()) {
+      try {
         const body = JSON.parse(text) as {
           error?: string;
           message?: string;
@@ -141,9 +205,12 @@ export async function apiFetch<T>(
         };
         message = body.error ?? body.message ?? message;
         details = body.details;
+      } catch {
+        const snippet = text.replace(/\s+/g, " ").trim().slice(0, 120);
+        message = snippet
+          ? `Respuesta no JSON del servidor (código ${response.status}): ${snippet}`
+          : `Respuesta no JSON del servidor (código ${response.status}).`;
       }
-    } catch {
-      // ignore parse errors
     }
     throw new ApiError(message, response.status, details);
   }

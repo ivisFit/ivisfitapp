@@ -11,7 +11,7 @@ import {
   type ReactNode,
   type SetStateAction,
 } from "react";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, formatApiError } from "@/lib/api";
 import { usePlanNutricionalProfe } from "@/features/profe/hooks/useGestionAlimentacion";
 import type {
   DiaPlanNutricional,
@@ -239,7 +239,7 @@ export function AlimentacionPlanProvider({
       refetch();
       return saved;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo guardar");
+      setError(formatApiError(err));
       return null;
     } finally {
       setSaving(false);

@@ -25,6 +25,7 @@ export type EjercicioRutinaDraft = {
 export type DiaPlanDraft = {
   localId: string;
   nombreDia: string;
+  comentario: string;
   drafts: EjercicioRutinaDraft[];
 };
 
@@ -44,6 +45,7 @@ export type PlanTemplateBlueprint = {
     numeroSemana: number;
     dias: {
       nombreDia: string;
+      comentario?: string;
       ejercicios: {
         ejercicioId: string;
         series: number;
@@ -100,6 +102,7 @@ export function createDiaPlanDraft(
   return {
     localId: createLocalId(),
     nombreDia: `Día ${dayIndex}`,
+    comentario: "",
     drafts: [createDraftEjercicio(defaultEjercicioId)],
   };
 }
@@ -155,6 +158,7 @@ function semanasFromBlueprint(
     dias: sem.dias.map((dia, index) => ({
       localId: createLocalId(),
       nombreDia: dia.nombreDia,
+      comentario: dia.comentario ?? "",
       drafts: dia.ejercicios.map((ej) => ({
         localId: createLocalId(),
         ejercicioId: resolveEjercicioId(ej.ejercicioId),
@@ -227,6 +231,7 @@ export function rutinaDocToFormState(
       numeroSemana: number;
       dias: {
         nombreDia: string;
+        comentario?: string;
         ejercicios: {
           id?: string;
           series: number;
@@ -249,6 +254,7 @@ export function rutinaDocToFormState(
     dias: sem.dias.map((dia, index) => ({
       localId: createLocalId(),
       nombreDia: dia.nombreDia,
+      comentario: dia.comentario ?? "",
       drafts: dia.ejercicios.map((ej) => ({
         localId: createLocalId(),
         ejercicioId: ej.id ?? defaultEjercicioId,
@@ -381,7 +387,12 @@ function diaDraftToBlueprint(dia: DiaPlanDraft): BlueprintDia | undefined {
     });
 
   if (!nombreDia || ejercicios.length === 0) return undefined;
-  return { nombreDia, ejercicios };
+  const comentario = trimToUndefined(dia.comentario ?? "");
+  return {
+    nombreDia,
+    ...(comentario ? { comentario } : {}),
+    ejercicios,
+  };
 }
 
 function resolveBlueprintDia(

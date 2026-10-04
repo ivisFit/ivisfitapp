@@ -39,8 +39,10 @@ async function proxy(
   request: NextRequest,
   context: { params: Promise<{ path: string[] }> },
 ) {
+  let pathSegments: string[] = [];
   try {
     const { path } = await context.params;
+    pathSegments = path;
     const targetUrl = `${getBackendOrigin()}/api/${path.join("/")}${request.nextUrl.search}`;
 
     const headers = new Headers(request.headers);
@@ -63,7 +65,11 @@ async function proxy(
       upstream = await fetch(targetUrl, init);
     } catch {
       return NextResponse.json(
-        { error: "No se pudo conectar con el servidor" },
+        {
+          error: "No se pudo conectar con el servidor de la API",
+          code: "API_UNREACHABLE",
+          path: pathSegments,
+        },
         { status: 502 },
       );
     }
@@ -84,7 +90,12 @@ async function proxy(
   } catch (error) {
     console.error("[api proxy]", error);
     return NextResponse.json(
-      { error: "Error al comunicarse con el servidor" },
+      {
+        error:
+          "No se pudo reenviar la solicitud al servidor. Reintentá en unos segundos.",
+        code: "PROXY_ERROR",
+        path: pathSegments,
+      },
       { status: 500 },
     );
   }

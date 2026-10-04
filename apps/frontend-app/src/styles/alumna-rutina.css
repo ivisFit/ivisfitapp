@@ -1196,6 +1196,30 @@
   gap: 1rem;
 }
 
+.challenge-sheet__day-note {
+  padding: 0.85rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(253 201 21 / 22%);
+  background: rgb(253 201 21 / 8%);
+}
+
+.challenge-sheet__day-note-label {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgb(253 201 21 / 86%);
+}
+
+.challenge-sheet__day-note-text {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: rgb(255 255 255 / 92%);
+  white-space: pre-wrap;
+}
+
 .challenge-sheet__header {
   position: relative;
   z-index: 1;
