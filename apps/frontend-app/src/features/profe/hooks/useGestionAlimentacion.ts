@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch, ApiError } from "@/lib/api";
+import { usePlanNutricionalWorkspaceContext } from "@/features/profe/context/PlanNutricionalWorkspaceProvider";
 import type {
   PlanNutricionalApiDoc,
   PlanNutricionalProfeWorkspace,
@@ -54,7 +55,7 @@ export function usePlanNutricionalAlumna() {
   return { plan, loading, error, refetch };
 }
 
-export function usePlanNutricionalProfe(alumnaId?: string) {
+function usePlanNutricionalProfeLocal(alumnaId?: string) {
   const [workspace, setWorkspace] = useState<PlanNutricionalProfeWorkspace>({
     editing: null,
     borrador: null,
@@ -110,8 +111,8 @@ export function usePlanNutricionalProfe(alumnaId?: string) {
     return () => controller.abort();
   }, [fetchPlan]);
 
-  const refetch = useCallback(() => {
-    void fetchPlan();
+  const refetch = useCallback(async () => {
+    await fetchPlan();
   }, [fetchPlan]);
 
   return {
@@ -122,4 +123,24 @@ export function usePlanNutricionalProfe(alumnaId?: string) {
     error,
     refetch,
   };
+}
+
+export function usePlanNutricionalProfe(alumnaId?: string) {
+  const shared = usePlanNutricionalWorkspaceContext();
+  const local = usePlanNutricionalProfeLocal(
+    shared && shared.alumnaId === alumnaId ? undefined : alumnaId,
+  );
+
+  if (shared && alumnaId && shared.alumnaId === alumnaId) {
+    return {
+      plan: shared.plan,
+      planBorrador: shared.planBorrador,
+      planPublicado: shared.planPublicado,
+      loading: shared.loading,
+      error: shared.error,
+      refetch: shared.refetch,
+    };
+  }
+
+  return local;
 }

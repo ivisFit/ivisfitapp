@@ -1927,6 +1927,12 @@
   background: var(--ap-tint);
 }
 
+.alimentacion-revisar-discard {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
 /* ---------- Barra inferior de navegación entre pasos ---------- */
 
 .ap-footer {

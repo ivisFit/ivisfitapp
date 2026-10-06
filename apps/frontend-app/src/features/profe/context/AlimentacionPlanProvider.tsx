@@ -6,18 +6,20 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type Dispatch,
   type ReactNode,
   type SetStateAction,
 } from "react";
-import { apiFetch, formatApiError } from "@/lib/api";
+import { apiFetch, ApiError, formatApiError } from "@/lib/api";
 import { usePlanNutricionalProfe } from "@/features/profe/hooks/useGestionAlimentacion";
 import type {
   DiaPlanNutricional,
   EstructuraComida,
   MacrosObjetivo,
   PlanNutricionalApiDoc,
+  PlanNutricionalProfeWorkspace,
   UpdatePlanNutricionalPayload,
 } from "@/features/alumna/types/plan-nutricional";
 import {
@@ -59,7 +61,8 @@ type AlimentacionPlanContextValue = {
   saveDraft: (
     overrides?: SaveDraftOverrides,
   ) => Promise<PlanNutricionalApiDoc | null>;
-  refetch: () => void;
+  refetch: () => Promise<void>;
+  reloadFromServer: () => Promise<void>;
   isPublicado: boolean;
 };
 
@@ -85,6 +88,70 @@ function serializeDraft(input: {
   return JSON.stringify(input);
 }
 
+export function planDocId(
+  doc: PlanNutricionalApiDoc | null | undefined,
+): string | undefined {
+  const id = doc?._id ?? doc?.id;
+  return id ? String(id) : undefined;
+}
+
+async function fetchWorkspace(
+  alumnaId: string,
+): Promise<PlanNutricionalProfeWorkspace> {
+  return apiFetch<PlanNutricionalProfeWorkspace>(
+    `/api/plan-nutricional/workspace?alumnaId=${encodeURIComponent(alumnaId)}`,
+  );
+}
+
+async function fetchWorkspaceDraftId(alumnaId: string): Promise<string | undefined> {
+  const workspace = await fetchWorkspace(alumnaId);
+  return planDocId(workspace.borrador);
+}
+
+function localStateFromPlanDoc(plan: PlanNutricionalApiDoc) {
+  const nextEstructura =
+    plan.estructuraComidas?.length
+      ? plan.estructuraComidas
+      : buildDefaultEstructura(4);
+  let nextDias =
+    plan.dias?.length
+      ? plan.dias
+      : defaultWeekDayNames().map((nombre) => ({ nombre, comidas: [] }));
+
+  if (nextEstructura.length > 0 && planDiasTienenEstructura(nextDias)) {
+    nextDias = syncDiasConEstructura(
+      nextDias,
+      nextEstructura,
+      plan.macrosObjetivo,
+    );
+  }
+
+  return {
+    titulo: plan.titulo,
+    observacionesProfe: plan.observacionesProfe ?? "",
+    macrosObjetivo: plan.macrosObjetivo,
+    estructuraComidas: nextEstructura,
+    dias: nextDias,
+  };
+}
+
+function snapshotFromLocalState(input: {
+  titulo: string;
+  observacionesProfe: string;
+  macrosObjetivo: MacrosObjetivo;
+  estructuraComidas: EstructuraComida[];
+  dias: DiaPlanNutricional[];
+}) {
+  return serializeDraft(input);
+}
+
+function editingDocForHydration(
+  plan: PlanNutricionalApiDoc | null,
+  planBorrador: PlanNutricionalApiDoc | null,
+): PlanNutricionalApiDoc | null {
+  return planBorrador ?? (plan?.estado === "borrador" ? plan : null) ?? plan;
+}
+
 type AlimentacionPlanProviderProps = {
   alumnaId: string;
   onDirtyChange?: (dirty: boolean) => void;
@@ -96,69 +163,87 @@ export function AlimentacionPlanProvider({
   onDirtyChange,
   children,
 }: AlimentacionPlanProviderProps) {
-  const { plan, planBorrador, planPublicado, loading, refetch } =
-    usePlanNutricionalProfe(alumnaId);
+  const {
+    plan,
+    planBorrador,
+    planPublicado,
+    loading,
+    refetch: refetchWorkspace,
+  } = usePlanNutricionalProfe(alumnaId);
 
   const [titulo, setTitulo] = useState("Plan nutricional");
   const [observacionesProfe, setObservacionesProfe] = useState("");
   const [macrosObjetivo, setMacrosObjetivo] = useState<MacrosObjetivo>(DEFAULT_MACROS);
   const [estructuraComidas, setEstructuraComidas] = useState<EstructuraComida[]>([]);
   const [dias, setDias] = useState<DiaPlanNutricional[]>([]);
+  const diasRef = useRef(dias);
+  diasRef.current = dias;
   const [macrosSugeridos, setMacrosSugeridos] = useState<MacrosObjetivo | null>(null);
   const [savedSnapshot, setSavedSnapshot] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const hasUnsavedChangesRef = useRef(false);
+  const hydratedPlanIdRef = useRef<string | null>(null);
 
   const planKey = `${plan?._id ?? plan?.id ?? "none"}:${plan?.estado ?? "none"}:${plan?.updatedAt ?? ""}`;
-  const isPublicado = plan?.estado === "publicado";
+  const borradorKey = `${planBorrador?._id ?? planBorrador?.id ?? "none"}:${planBorrador?.updatedAt ?? ""}`;
+  const isPublicado = plan?.estado === "publicado" && !planBorrador;
+
+  const applyPlanToEditor = useCallback((planDoc: PlanNutricionalApiDoc) => {
+    const local = localStateFromPlanDoc(planDoc);
+    setTitulo(local.titulo);
+    setObservacionesProfe(local.observacionesProfe);
+    setMacrosObjetivo(local.macrosObjetivo);
+    setEstructuraComidas(local.estructuraComidas);
+    setDias(local.dias);
+    setSavedSnapshot(snapshotFromLocalState(local));
+    hydratedPlanIdRef.current = planDocId(planDoc) ?? null;
+  }, []);
+
+  const reloadFromServer = useCallback(async () => {
+    await refetchWorkspace();
+    const workspace = await fetchWorkspace(alumnaId);
+    const doc = editingDocForHydration(
+      workspace.editing,
+      workspace.borrador,
+    );
+    if (doc) {
+      applyPlanToEditor(doc);
+    }
+    setError(null);
+  }, [alumnaId, refetchWorkspace, applyPlanToEditor]);
 
   useEffect(() => {
-    if (!plan) {
-      setTitulo("Plan nutricional");
-      setObservacionesProfe("");
-      setMacrosObjetivo(macrosSugeridos ?? DEFAULT_MACROS);
-      setEstructuraComidas([]);
-      setDias([]);
-      setSavedSnapshot(null);
+    if (loading) return;
+
+    const doc = editingDocForHydration(plan, planBorrador);
+
+    if (!doc) {
+      hydratedPlanIdRef.current = null;
+      if (!planPublicado && !planBorrador) {
+        setTitulo("Plan nutricional");
+        setObservacionesProfe("");
+        setMacrosObjetivo(macrosSugeridos ?? DEFAULT_MACROS);
+        setEstructuraComidas([]);
+        setDias([]);
+        setSavedSnapshot(null);
+      }
       return;
     }
 
-    const nextEstructura =
-      plan.estructuraComidas?.length
-        ? plan.estructuraComidas
-        : buildDefaultEstructura(4);
-    let nextDias =
-      plan.dias?.length
-        ? plan.dias
-        : defaultWeekDayNames().map((nombre) => ({ nombre, comidas: [] }));
+    const id = planDocId(doc);
+    const idChanged = id !== hydratedPlanIdRef.current;
 
-    if (
-      nextEstructura.length > 0 &&
-      planDiasTienenEstructura(nextDias)
-    ) {
-      nextDias = syncDiasConEstructura(
-        nextDias,
-        nextEstructura,
-        plan.macrosObjetivo,
-      );
+    if (idChanged) {
+      applyPlanToEditor(doc);
+      return;
     }
 
-    setTitulo(plan.titulo);
-    setObservacionesProfe(plan.observacionesProfe ?? "");
-    setMacrosObjetivo(plan.macrosObjetivo);
-    setEstructuraComidas(nextEstructura);
-    setDias(nextDias);
-    setSavedSnapshot(
-      serializeDraft({
-        titulo: plan.titulo,
-        observacionesProfe: plan.observacionesProfe ?? "",
-        macrosObjetivo: plan.macrosObjetivo,
-        estructuraComidas: nextEstructura,
-        dias: nextDias,
-      }),
-    );
+    if (!hasUnsavedChangesRef.current && savedSnapshot === null) {
+      applyPlanToEditor(doc);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [planKey]);
+  }, [loading, planKey, borradorKey, planPublicado]);
 
   const currentSnapshot = useMemo(
     () =>
@@ -175,9 +260,23 @@ export function AlimentacionPlanProvider({
   const hasUnsavedChanges =
     savedSnapshot !== null && currentSnapshot !== savedSnapshot;
 
+  hasUnsavedChangesRef.current = hasUnsavedChanges;
+
   useEffect(() => {
     onDirtyChange?.(hasUnsavedChanges);
   }, [hasUnsavedChanges, onDirtyChange]);
+
+  const resolvePersistPlanId = useCallback(async (): Promise<string | undefined> => {
+    let draftId = planDocId(planBorrador);
+    if (!draftId) {
+      draftId = await fetchWorkspaceDraftId(alumnaId);
+    }
+    if (draftId) return draftId;
+    if (plan?.estado === "borrador") {
+      return planDocId(plan);
+    }
+    return undefined;
+  }, [alumnaId, plan, planBorrador]);
 
   const saveDraft = useCallback(async (overrides?: SaveDraftOverrides) => {
     setSaving(true);
@@ -187,7 +286,7 @@ export function AlimentacionPlanProvider({
     const nextObservaciones = overrides?.observacionesProfe ?? observacionesProfe;
     const nextMacros = overrides?.macrosObjetivo ?? macrosObjetivo;
     const nextEstructura = overrides?.estructuraComidas ?? estructuraComidas;
-    let nextDiasRaw = overrides?.dias ?? dias;
+    let nextDiasRaw = overrides?.dias ?? diasRef.current;
     if (nextEstructura.length > 0 && planDiasTienenEstructura(nextDiasRaw)) {
       nextDiasRaw = syncDiasConEstructura(
         nextDiasRaw,
@@ -205,38 +304,38 @@ export function AlimentacionPlanProvider({
     };
 
     try {
-      const planId = plan?._id ?? plan?.id;
-      let saved: PlanNutricionalApiDoc;
-      if (planId) {
-        saved = await apiFetch<PlanNutricionalApiDoc>(
-          `/api/plan-nutricional/${planId}`,
-          { method: "PATCH", body: JSON.stringify(payload) },
-        );
-      } else {
-        saved = await apiFetch<PlanNutricionalApiDoc>("/api/plan-nutricional", {
+      const persistPlan = async (targetId?: string) => {
+        if (targetId) {
+          return apiFetch<PlanNutricionalApiDoc>(
+            `/api/plan-nutricional/${targetId}`,
+            { method: "PATCH", body: JSON.stringify(payload) },
+          );
+        }
+        return apiFetch<PlanNutricionalApiDoc>("/api/plan-nutricional", {
           method: "POST",
           body: JSON.stringify({ alumnaId, ...payload }),
         });
+      };
+
+      const planId = await resolvePersistPlanId();
+
+      let saved: PlanNutricionalApiDoc;
+      try {
+        saved = await persistPlan(planId);
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 409) {
+          await refetchWorkspace();
+          const retryId = await fetchWorkspaceDraftId(alumnaId);
+          if (!retryId) throw err;
+          saved = await persistPlan(retryId);
+        } else {
+          throw err;
+        }
       }
-      setSavedSnapshot(
-        serializeDraft({
-          titulo: nextTitulo,
-          observacionesProfe: nextObservaciones,
-          macrosObjetivo: nextMacros,
-          estructuraComidas: nextEstructura,
-          dias: nextDiasRaw,
-        }),
-      );
-      if (overrides?.titulo !== undefined) setTitulo(nextTitulo);
-      if (overrides?.observacionesProfe !== undefined) {
-        setObservacionesProfe(nextObservaciones);
-      }
-      if (overrides?.macrosObjetivo !== undefined) setMacrosObjetivo(nextMacros);
-      if (overrides?.estructuraComidas !== undefined) {
-        setEstructuraComidas(nextEstructura);
-      }
-      setDias(nextDiasRaw);
-      refetch();
+
+      applyPlanToEditor(saved);
+      await refetchWorkspace();
+
       return saved;
     } catch (err) {
       setError(formatApiError(err));
@@ -246,13 +345,13 @@ export function AlimentacionPlanProvider({
     }
   }, [
     alumnaId,
-    dias,
     estructuraComidas,
     macrosObjetivo,
     observacionesProfe,
-    plan,
-    refetch,
+    refetchWorkspace,
+    resolvePersistPlanId,
     titulo,
+    applyPlanToEditor,
   ]);
 
   const value = useMemo(
@@ -278,7 +377,8 @@ export function AlimentacionPlanProvider({
       setDias,
       setMacrosSugeridos,
       saveDraft,
-      refetch,
+      refetch: refetchWorkspace,
+      reloadFromServer,
       isPublicado,
     }),
     [
@@ -297,7 +397,8 @@ export function AlimentacionPlanProvider({
       macrosSugeridos,
       hasUnsavedChanges,
       saveDraft,
-      refetch,
+      refetchWorkspace,
+      reloadFromServer,
       isPublicado,
     ],
   );

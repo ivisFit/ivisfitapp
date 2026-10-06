@@ -8,15 +8,18 @@ export function useAlimentacionStepSave() {
   const router = useRouter();
   const { hasUnsavedChanges, saveDraft } = useAlimentacionPlan();
 
-  const saveIfNeeded = useCallback(async () => {
-    if (!hasUnsavedChanges) return;
-    await saveDraft();
+  const saveIfNeeded = useCallback(async (): Promise<boolean> => {
+    if (!hasUnsavedChanges) return true;
+    const saved = await saveDraft();
+    return saved !== null;
   }, [hasUnsavedChanges, saveDraft]);
 
   const navigateWithSave = useCallback(
-    async (href: string) => {
-      await saveIfNeeded();
+    async (href: string): Promise<boolean> => {
+      const ok = await saveIfNeeded();
+      if (!ok) return false;
       router.push(href);
+      return true;
     },
     [router, saveIfNeeded],
   );

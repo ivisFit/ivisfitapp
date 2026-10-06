@@ -247,6 +247,30 @@ function tituloNuevaVersion(titulo: string): string {
   return `${trimmed} (v2)`;
 }
 
+async function findDraftForAlumna(alumnaId: string) {
+  return PlanNutricional.findOne({ alumnaId, estado: "borrador" }).sort({
+    updatedAt: -1,
+  });
+}
+
+async function dedupeDraftsForAlumna(alumnaId: string) {
+  const drafts = await PlanNutricional.find({
+    alumnaId,
+    estado: "borrador",
+  }).sort({ updatedAt: -1 });
+
+  if (drafts.length <= 1) {
+    return drafts[0] ?? null;
+  }
+
+  const [keeper, ...rest] = drafts;
+  for (const draft of rest) {
+    draft.estado = "archivado";
+    await draft.save();
+  }
+  return keeper;
+}
+
 export type PlanNutricionalProfeWorkspace = {
   editing: Awaited<ReturnType<typeof PlanNutricional.findOne>>;
   publicado: Awaited<ReturnType<typeof PlanNutricional.findOne>>;
@@ -319,10 +343,7 @@ export const planNutricionalService = {
 
   async getByAlumnaId(alumnaId: string, options?: { includeDraft?: boolean }) {
     if (options?.includeDraft) {
-      const borrador = await PlanNutricional.findOne({
-        alumnaId,
-        estado: "borrador",
-      }).sort({ updatedAt: -1 });
+      const borrador = await findDraftForAlumna(alumnaId);
       if (borrador) return borrador;
 
       return PlanNutricional.findOne({ alumnaId, estado: "publicado" }).sort({
@@ -336,14 +357,13 @@ export const planNutricionalService = {
   },
 
   async getProfeWorkspace(alumnaId: string) {
-    const [borrador, publicado] = await Promise.all([
-      PlanNutricional.findOne({ alumnaId, estado: "borrador" }).sort({
-        updatedAt: -1,
-      }),
-      PlanNutricional.findOne({ alumnaId, estado: "publicado" }).sort({
-        publicadoAt: -1,
-      }),
-    ]);
+    const borrador = await dedupeDraftsForAlumna(alumnaId);
+    const publicado = await PlanNutricional.findOne({
+      alumnaId,
+      estado: "publicado",
+    }).sort({
+      publicadoAt: -1,
+    });
 
     return {
       borrador,
@@ -363,15 +383,9 @@ export const planNutricionalService = {
       );
     }
 
-    const existingDraft = await PlanNutricional.findOne({
-      alumnaId: source.alumnaId,
-      estado: "borrador",
-    });
+    const existingDraft = await findDraftForAlumna(String(source.alumnaId));
     if (existingDraft) {
-      throw new AppError(
-        409,
-        "Ya hay un borrador pendiente. Continuá editándolo o descartalo antes de crear otra versión.",
-      );
+      return existingDraft;
     }
 
     const diasMatched = await matchIngredientesConCatalogo(clonePlanDias(source.dias));
@@ -410,15 +424,15 @@ export const planNutricionalService = {
       );
     }
 
-    const existingDraft = await PlanNutricional.findOne({
-      alumnaId: data.alumnaId,
-      estado: "borrador",
-    });
+    const existingDraft = await findDraftForAlumna(data.alumnaId);
     if (existingDraft) {
-      throw new AppError(
-        409,
-        "Ya existe un borrador. Editá el plan existente o publicalo antes de crear otro.",
-      );
+      return this.update(String(existingDraft._id), {
+        titulo: data.titulo,
+        observacionesProfe: data.observacionesProfe,
+        macrosObjetivo: data.macrosObjetivo,
+        estructuraComidas: data.estructuraComidas,
+        dias: data.dias,
+      });
     }
 
     const dias = stripEmptyIngredientesFromDias(data.dias);
@@ -451,6 +465,12 @@ export const planNutricionalService = {
       ? await enrichDiasConMacros(stripEmptyIngredientesFromDias(diasRaw))
       : undefined;
     Object.assign(plan, data, dias ? { dias } : {});
+    if (dias) {
+      plan.markModified("dias");
+    }
+    if (data.estructuraComidas !== undefined) {
+      plan.markModified("estructuraComidas");
+    }
     if (data.listasComprasSemanas !== undefined) {
       plan.markModified("listasComprasSemanas");
     }
@@ -646,10 +666,7 @@ export const planNutricionalService = {
       return planFromDb;
     }
 
-    const existingDraft = await PlanNutricional.findOne({
-      alumnaId,
-      estado: "borrador",
-    });
+    const existingDraft = await findDraftForAlumna(alumnaId);
     if (existingDraft) {
       Object.assign(existingDraft, toSave, { generadoPorIa: true });
       await existingDraft.save();
@@ -772,10 +789,7 @@ export const planNutricionalService = {
       return target;
     }
 
-    const existingDraft = await PlanNutricional.findOne({
-      alumnaId,
-      estado: "borrador",
-    });
+    const existingDraft = await findDraftForAlumna(alumnaId);
     if (existingDraft) {
       Object.assign(existingDraft, payload);
       await existingDraft.save();

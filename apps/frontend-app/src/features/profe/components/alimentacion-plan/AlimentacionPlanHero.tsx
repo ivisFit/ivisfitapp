@@ -17,13 +17,24 @@ export function AlimentacionPlanHero({
   alumnaId,
   alumnaNombre,
 }: AlimentacionPlanHeroProps) {
-  const { saving, hasUnsavedChanges, isPublicado } = useAlimentacionPlan();
+  const { saving, hasUnsavedChanges, isPublicado, loading, plan, planBorrador } =
+    useAlimentacionPlan();
 
   const saveState = saving
     ? { tone: "saving", label: "Guardando…" }
     : hasUnsavedChanges
       ? { tone: "dirty", label: "Cambios sin guardar" }
       : { tone: "saved", label: "Todo guardado" };
+
+  const planStatus = loading
+    ? { label: "Cargando…", badgeClass: "ap-badge--muted" }
+    : isPublicado
+      ? { label: "Publicado", badgeClass: "ap-badge--success" }
+      : planBorrador || plan?.estado === "borrador"
+        ? { label: "Borrador", badgeClass: "ap-badge--gold" }
+        : !plan
+          ? { label: "Sin plan", badgeClass: "ap-badge--muted" }
+          : { label: "Borrador", badgeClass: "ap-badge--gold" };
 
   return (
     <>
@@ -45,9 +56,9 @@ export function AlimentacionPlanHero({
         </div>
         <div className="ap-hero__status" aria-live="polite">
           <span
-            className={`ap-badge ${isPublicado ? "ap-badge--success" : "ap-badge--gold"}`}
+            className={`ap-badge ${planStatus.badgeClass}`}
           >
-            {isPublicado ? "Publicado" : "Borrador"}
+            {planStatus.label}
           </span>
           <span className={`ap-save-state ap-save-state--${saveState.tone}`}>
             {saveState.tone === "saving" ? (

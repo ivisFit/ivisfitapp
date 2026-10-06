@@ -9,9 +9,11 @@ import {
   LoaderCircle,
   OctagonAlert,
   Send,
+  Trash2,
   TriangleAlert,
 } from "lucide-react";
 import { Button, Input } from "@/components";
+import { useAppDialog } from "@/components/AppDialogProvider";
 import {
   AlimentacionStepFooter,
   AlimentacionStepHeader,
@@ -30,10 +32,13 @@ import { useRouter } from "next/navigation";
 
 export function AlimentacionRevisarStep() {
   const router = useRouter();
+  const dialog = useAppDialog();
   const { handleStepLinkClick } = useAlimentacionStepSave();
   const {
     alumnaId,
     plan,
+    planBorrador,
+    planPublicado,
     titulo,
     setTitulo,
     observacionesProfe,
@@ -56,6 +61,7 @@ export function AlimentacionRevisarStep() {
   const [validationErrorStatus, setValidationErrorStatus] = useState<number | null>(
     null,
   );
+  const [discarding, setDiscarding] = useState(false);
 
   const previewPlan: PlanNutricionalApiDoc = {
     _id: plan?._id,
@@ -129,6 +135,33 @@ export function AlimentacionRevisarStep() {
             : "Aceptá las advertencias para poder publicar."
           : null;
   const publishHint = blockingHint ?? (isPublicado ? "La alumna ve el plan actualizado al guardar." : null);
+
+  async function handleDiscardDraft() {
+    const draftId = planBorrador?._id ?? planBorrador?.id;
+    if (!draftId) return;
+
+    const confirmed = await dialog.confirm({
+      title: "Eliminar borrador",
+      message: planPublicado
+        ? "¿Eliminar este borrador? La alumna sigue viendo el plan publicado."
+        : "¿Eliminar este borrador? Esta acción no se puede deshacer.",
+      tone: "danger",
+      confirmLabel: "Eliminar",
+    });
+    if (!confirmed) return;
+
+    setDiscarding(true);
+    setError(null);
+    try {
+      await apiFetch(`/api/plan-nutricional/${draftId}`, { method: "DELETE" });
+      refetch();
+      router.push(profeAlumnaAlimentacionStepRoute(alumnaId, "objetivos"));
+    } catch (err) {
+      setError(formatApiError(err));
+    } finally {
+      setDiscarding(false);
+    }
+  }
 
   async function handlePublish() {
     setPublishing(true);
@@ -302,6 +335,25 @@ export function AlimentacionRevisarStep() {
         <p className="auth-error" role="alert">
           {error}
         </p>
+      ) : null}
+
+      {planBorrador ? (
+        <div className="alimentacion-revisar-discard">
+          <Button
+            type="button"
+            variant="ghost"
+            className="ap-btn-sm"
+            disabled={discarding || publishing}
+            onClick={() => void handleDiscardDraft()}
+          >
+            {discarding ? (
+              <LoaderCircle size={15} className="ap-spin" aria-hidden="true" />
+            ) : (
+              <Trash2 size={15} aria-hidden="true" />
+            )}
+            {discarding ? "Descartando…" : "Descartar borrador"}
+          </Button>
+        </div>
       ) : null}
 
       <AlimentacionStepFooter

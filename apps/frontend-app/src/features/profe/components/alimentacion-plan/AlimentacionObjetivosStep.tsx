@@ -8,6 +8,7 @@ import {
   Droplets,
   Drumstick,
   Flame,
+  RefreshCw,
   Scale,
   Sparkles,
   Target,
@@ -42,9 +43,17 @@ const MACRO_FIELDS = [
   { key: "grasasG", label: "Grasas (g)", tone: "grasas", icon: Droplets },
 ] as const;
 
+function isDraftConflictError(message: string | null): boolean {
+  if (!message) return false;
+  const lower = message.toLowerCase();
+  return lower.includes("borrador") || lower.includes("409");
+}
+
 export function AlimentacionObjetivosStep() {
   const {
     alumnaId,
+    plan,
+    planBorrador,
     macrosObjetivo,
     setMacrosObjetivo,
     estructuraComidas,
@@ -54,7 +63,10 @@ export function AlimentacionObjetivosStep() {
     macrosSugeridos,
     saveDraft,
     saving,
+    loading,
     error,
+    reloadFromServer,
+    hasUnsavedChanges,
   } = useAlimentacionPlan();
   const { handleStepLinkClick } = useAlimentacionStepSave();
   const router = useRouter();
@@ -62,19 +74,30 @@ export function AlimentacionObjetivosStep() {
   const [cantidadComidas, setCantidadComidas] = useState(4);
   const [continueBlocked, setContinueBlocked] = useState(false);
   const [continuing, setContinuing] = useState(false);
+  const [reloading, setReloading] = useState(false);
+
+  const persistedDoc = planBorrador ?? (plan?.estado === "borrador" ? plan : null);
+  const showDraftReloadHint =
+    Boolean(planBorrador) && !loading && hasUnsavedChanges && persistedDoc;
 
   useEffect(() => {
+    if (loading) return;
+
     void apiFetch<EvaluacionNutricionalApiDoc[]>(
       `/api/evaluacion-nutricional?alumnaId=${encodeURIComponent(alumnaId)}`,
     ).then((items) => {
       const ev = items[0];
       if (ev?.cantidadComidas) setCantidadComidas(ev.cantidadComidas);
-      if (!estructuraComidas.length && ev) {
+
+      const hasPersistedEstructura = Boolean(
+        persistedDoc?.estructuraComidas?.length || estructuraComidas.length,
+      );
+      if (!hasPersistedEstructura && ev) {
         setEstructuraComidas(buildDefaultEstructura(ev.cantidadComidas));
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [alumnaId]);
+  }, [alumnaId, loading, planBorrador?.updatedAt, plan?.updatedAt]);
 
   function updateEstructura(index: number, patch: Partial<EstructuraComida>) {
     setEstructuraComidas(
@@ -146,6 +169,15 @@ export function AlimentacionObjetivosStep() {
     }
   }
 
+  async function handleReloadDraft() {
+    setReloading(true);
+    try {
+      await reloadFromServer();
+    } finally {
+      setReloading(false);
+    }
+  }
+
   const perfilHref = profeAlumnaAlimentacionStepRoute(alumnaId, "perfil");
   const comidasHref = profeAlumnaAlimentacionStepRoute(alumnaId, "comidas");
 
@@ -158,6 +190,33 @@ export function AlimentacionObjetivosStep() {
 
   return (
     <div className="alimentacion-plan-step">
+      {planBorrador && !loading ? (
+        <p className="ap-inline-note" role="status">
+          Borrador guardado: <strong>{planBorrador.titulo}</strong>
+          {showDraftReloadHint ? (
+            <>
+              {" "}
+              · Tenés cambios locales que pueden no coincidir con lo guardado.
+            </>
+          ) : null}
+        </p>
+      ) : null}
+
+      {showDraftReloadHint ? (
+        <div className="ap-inline-note">
+          <Button
+            type="button"
+            variant="ghost"
+            className="ap-btn-sm"
+            disabled={reloading || saving}
+            onClick={() => void handleReloadDraft()}
+          >
+            <RefreshCw size={15} aria-hidden="true" />
+            {reloading ? "Recargando…" : "Recargar borrador guardado"}
+          </Button>
+        </div>
+      ) : null}
+
       <section className="ap-card">
         <AlimentacionStepHeader
           icon={<Target size={20} />}
@@ -333,20 +392,35 @@ export function AlimentacionObjetivosStep() {
       </section>
 
       {error ? (
-        <p className="auth-error" role="alert">
-          {error}
-        </p>
+        <div role="alert">
+          <p className="auth-error">{error}</p>
+          {isDraftConflictError(error) ? (
+            <Button
+              type="button"
+              variant="ghost"
+              className="ap-btn-sm"
+              disabled={reloading || saving}
+              onClick={() => void handleReloadDraft()}
+            >
+              Ir al borrador existente
+            </Button>
+          ) : null}
+        </div>
       ) : null}
 
       <AlimentacionStepFooter
         backHref={perfilHref}
         onBackClick={handleStepLinkClick(perfilHref)}
-        hint="Vas a armar la semana con esta estructura."
+        hint={
+          loading
+            ? "Cargando el plan guardado…"
+            : "Vas a armar la semana con esta estructura."
+        }
       >
         <button
           type="button"
           className="btn btn--primary ap-footer__cta"
-          disabled={continuing || saving}
+          disabled={continuing || saving || loading}
           onClick={() => void handleContinueToComidas()}
         >
           <span>Continuar a comidas</span>

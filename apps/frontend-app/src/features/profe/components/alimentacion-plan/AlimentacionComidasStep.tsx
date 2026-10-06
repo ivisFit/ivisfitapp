@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { flushSync } from "react-dom";
 import {
   ArrowRight,
   Bookmark,
@@ -96,12 +97,47 @@ export function AlimentacionComidasStep() {
     macrosObjetivo,
     estructuraComidas,
     isPublicado,
+    saving,
+    error: draftError,
     saveDraft,
     refetch,
   } = useAlimentacionPlan();
   const dialog = useAppDialog();
 
-  const { navigateWithSave, handleStepLinkClick } = useAlimentacionStepSave();
+  const stepSave = useAlimentacionStepSave();
+  const comidaFlushHandlersRef = useRef(new Set<() => void>());
+
+  const registerComidaFlush = useCallback((flush: () => void) => {
+    comidaFlushHandlersRef.current.add(flush);
+    return () => {
+      comidaFlushHandlersRef.current.delete(flush);
+    };
+  }, []);
+
+  const flushAllComidaEditors = useCallback(() => {
+    flushSync(() => {
+      comidaFlushHandlersRef.current.forEach((flush) => flush());
+    });
+  }, []);
+
+  const handleStepLinkClick = useCallback(
+    (href: string) => (event: React.MouseEvent<HTMLAnchorElement>) => {
+      if (
+        event.defaultPrevented ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      ) {
+        return;
+      }
+      event.preventDefault();
+      flushAllComidaEditors();
+      void stepSave.navigateWithSave(href);
+    },
+    [flushAllComidaEditors, stepSave],
+  );
 
   useEffect(() => {
     if (!estructuraComidas.length || !planDiasTienenEstructura(dias)) return;
@@ -126,6 +162,15 @@ export function AlimentacionComidasStep() {
   const selectedDia = dias[selectedDiaIndex] ?? dias[0];
   const selectedDiaMacros = selectedDia ? sumDiaMacros(selectedDia) : null;
   const diasConContenido = dias.filter((dia) => sumDiaMacros(dia).kcal > 0).length;
+
+  async function handleSaveDraft() {
+    setMessage(null);
+    flushAllComidaEditors();
+    const saved = await saveDraft();
+    if (saved) {
+      setMessage(isPublicado ? "Cambios guardados." : "Borrador guardado.");
+    }
+  }
 
   async function openOrigenGate() {
     if (planDiasTienenContenido(dias)) {
@@ -457,10 +502,15 @@ export function AlimentacionComidasStep() {
                 type="button"
                 variant="ghost"
                 className="ap-btn-sm"
-                onClick={() => void saveDraft()}
+                disabled={saving}
+                onClick={() => void handleSaveDraft()}
               >
                 <Save size={15} aria-hidden="true" />
-                {isPublicado ? "Guardar cambios" : "Guardar borrador"}
+                {saving
+                  ? "Guardando…"
+                  : isPublicado
+                    ? "Guardar cambios"
+                    : "Guardar borrador"}
               </Button>
               <Button
                 type="button"
@@ -650,6 +700,7 @@ export function AlimentacionComidasStep() {
               comidaIndex={comidaIndex}
               canRemove={false}
               lockMealMeta
+              registerFlush={registerComidaFlush}
               sugerencias={
                 revision &&
                 revision.diaIndex === selectedDiaIndex &&
@@ -735,6 +786,11 @@ export function AlimentacionComidasStep() {
         );
       })}
 
+      {draftError ? (
+        <p className="auth-error" role="alert">
+          {draftError}
+        </p>
+      ) : null}
       {error ? (
         <p className="auth-error" role="alert">
           {error}
@@ -763,9 +819,12 @@ export function AlimentacionComidasStep() {
         <button
           type="button"
           className="btn btn--primary ap-footer__cta"
-          onClick={() =>
-            void navigateWithSave(profeAlumnaAlimentacionStepRoute(alumnaId, "revisar"))
-          }
+          onClick={() => {
+            flushAllComidaEditors();
+            void stepSave.navigateWithSave(
+              profeAlumnaAlimentacionStepRoute(alumnaId, "revisar"),
+            );
+          }}
         >
           <span>Ir a revisar</span>
           <ArrowRight size={16} aria-hidden="true" />

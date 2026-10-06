@@ -405,11 +405,8 @@ export function RutinaBuilder({
       startDate,
     );
     applyFormState(state, formSetters);
-    const today = resolveRutinaDay(existingRutina);
-    pendingTodayRef.current = today
-      ? { week: today.numeroSemana, dayIndex: today.dayIndex }
-      : null;
-    setNumeroSemana(today?.numeroSemana ?? 1);
+    pendingTodayRef.current = { week: 1, dayIndex: 0 };
+    setNumeroSemana(1);
     setAlumnaEditorReady(true);
     hydratedRutinaRef.current = existingRutina.id;
     setSavedAlumnaJson(

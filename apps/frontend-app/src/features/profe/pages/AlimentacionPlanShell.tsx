@@ -4,6 +4,8 @@ import { useParams } from "next/navigation";
 import { PageHeaderSkeleton } from "@/components/skeletons/AppSkeleton";
 import { useAlumna } from "@/features/profe/hooks/useAlumna";
 import { AlimentacionPlanProvider } from "@/features/profe/context/AlimentacionPlanProvider";
+import { PlanNutricionalWorkspaceProvider } from "@/features/profe/context/PlanNutricionalWorkspaceProvider";
+import { AlimentacionBorradorBanner } from "@/features/profe/components/alimentacion-plan/AlimentacionBorradorBanner";
 import { AlimentacionAlertRail } from "@/features/profe/components/alimentacion-plan/AlimentacionAlertRail";
 import { AlimentacionStepperNav } from "@/features/profe/components/alimentacion-plan/AlimentacionStepperNav";
 import { AlumnaUnsavedChangesProvider } from "@/features/profe/context/AlumnaUnsavedChangesProvider";
@@ -31,19 +33,22 @@ function AlimentacionPlanChrome({ children }: { children: React.ReactNode }) {
   const nombre = alumna?.nombre ?? "Alumna";
 
   return (
-    <AlimentacionPlanProvider
-      alumnaId={id}
-      onDirtyChange={(dirty) => reportSectionDirty("alimentacion", dirty)}
-    >
-      <div className="alimentacion-plan-shell page">
-        <AlimentacionPlanHero alumnaId={id} alumnaNombre={nombre} />
-        <AlimentacionStepperNav alumnaId={id} />
-        <div className="alimentacion-plan-shell__body">
-          <AlimentacionAlertRail alumnaId={id} />
-          <div className="alimentacion-plan-shell__main">{children}</div>
+    <PlanNutricionalWorkspaceProvider alumnaId={id}>
+      <AlimentacionPlanProvider
+        alumnaId={id}
+        onDirtyChange={(dirty) => reportSectionDirty("alimentacion", dirty)}
+      >
+        <div className="alimentacion-plan-shell page">
+          <AlimentacionPlanHero alumnaId={id} alumnaNombre={nombre} />
+          <AlimentacionBorradorBanner />
+          <AlimentacionStepperNav alumnaId={id} />
+          <div className="alimentacion-plan-shell__body">
+            <AlimentacionAlertRail alumnaId={id} />
+            <div className="alimentacion-plan-shell__main">{children}</div>
+          </div>
         </div>
-      </div>
-    </AlimentacionPlanProvider>
+      </AlimentacionPlanProvider>
+    </PlanNutricionalWorkspaceProvider>
   );
 }
 

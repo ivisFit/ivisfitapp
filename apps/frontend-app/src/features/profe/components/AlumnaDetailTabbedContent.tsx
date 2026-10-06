@@ -7,6 +7,7 @@ import { CardSkeleton, SkeletonStack } from "@/components/skeletons/AppSkeleton"
 import { ProfeChromeTabs } from "@/features/profe/components/ProfeChromeTabs";
 import { AlimentacionTabSummary } from "@/features/profe/components/alimentacion-plan/AlimentacionTabSummary";
 import { ListaComprasSemanasCard } from "@/features/profe/components/alimentacion-plan/ListaComprasSemanasCard";
+import { PlanNutricionalWorkspaceProvider } from "@/features/profe/context/PlanNutricionalWorkspaceProvider";
 import {
   AlumnaProfileSections,
 } from "@/features/profe/components/AlumnaDetailSections";
@@ -153,13 +154,15 @@ export function AlumnaDetailTabbedContent({
             role="tabpanel"
             aria-labelledby="alumna-detail-tab-alimentacion"
           >
-            <div className="alimentacion-tab-stack">
-              <AlimentacionTabSummary
-                alumnaId={alumna.id}
-                alumnaNombre={alumna.nombre}
-              />
-              <ListaComprasSemanasCard alumnaId={alumna.id} />
-            </div>
+            <PlanNutricionalWorkspaceProvider alumnaId={alumna.id}>
+              <div className="alimentacion-tab-stack">
+                <AlimentacionTabSummary
+                  alumnaId={alumna.id}
+                  alumnaNombre={alumna.nombre}
+                />
+                <ListaComprasSemanasCard alumnaId={alumna.id} />
+              </div>
+            </PlanNutricionalWorkspaceProvider>
           </div>
         );
       case "pliegues":

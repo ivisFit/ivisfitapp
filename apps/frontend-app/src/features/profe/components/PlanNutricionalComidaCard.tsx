@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Button, Input, Select } from "@/components";
 import { useAutosizeTextarea } from "@/hooks/useAutosizeTextarea";
 import type {
@@ -39,6 +39,8 @@ type PlanNutricionalComidaCardProps = {
   onAddIngrediente: () => void;
   onRemoveIngrediente: (ingredienteIndex: number) => void;
   onRemoveComida: () => void;
+  /** Registra commit de cantidades pendientes antes de guardar el plan. */
+  registerFlush?: (flush: () => void) => () => void;
 };
 
 function IngredienteRowWithSugerencia({
@@ -90,10 +92,13 @@ export function PlanNutricionalComidaCard({
   onAddIngrediente,
   onRemoveIngrediente,
   onRemoveComida,
+  registerFlush,
 }: PlanNutricionalComidaCardProps) {
   const kcal = sumComidaKcal(comida);
   const fieldPrefix = `dia-${diaIndex}-comida-${comidaIndex}`;
   const [cantidadEdits, setCantidadEdits] = useState<Record<string, string>>({});
+  const cantidadEditsRef = useRef(cantidadEdits);
+  cantidadEditsRef.current = cantidadEdits;
   const preparacionRef = useRef<HTMLTextAreaElement>(null);
 
   function cantidadFieldKey(ingredienteIndex: number) {
@@ -104,6 +109,39 @@ export function PlanNutricionalComidaCard({
     if (ingrediente.cantidad > 0) return ingrediente.cantidad;
     return ingrediente.unidad === "g" || ingrediente.unidad === "ml" ? 100 : 1;
   }
+
+  const flushPendingEdits = useCallback(() => {
+    const pending = cantidadEditsRef.current;
+    if (!Object.keys(pending).length) return;
+
+    for (const [key, raw] of Object.entries(pending)) {
+      const match = key.match(/-ing-(\d+)-cantidad$/);
+      if (!match) continue;
+      const ingredienteIndex = Number(match[1]);
+      const ingrediente = comida.ingredientes[ingredienteIndex];
+      if (!ingrediente) continue;
+
+      if (raw === "") {
+        onCantidadChange(
+          ingredienteIndex,
+          ingrediente,
+          defaultCantidadFallback(ingrediente),
+        );
+      } else {
+        const parsed = Number(raw);
+        if (Number.isFinite(parsed) && parsed >= 0) {
+          onCantidadChange(ingredienteIndex, ingrediente, parsed);
+        }
+      }
+    }
+    setCantidadEdits({});
+  }, [comida.ingredientes, onCantidadChange]);
+
+  useEffect(() => {
+    if (!registerFlush) return;
+    return registerFlush(flushPendingEdits);
+  }, [registerFlush, flushPendingEdits]);
+
   useAutosizeTextarea(preparacionRef, comida.preparacion ?? "");
   const sugerenciasPorIndice = new Map<number, SugerenciaIngrediente>();
   const sugerenciasAgregar: SugerenciaIngrediente[] = [];
