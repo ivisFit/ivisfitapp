@@ -6,6 +6,7 @@ export type RutinaProgresoRecord = {
   nombreDia: string;
   ejerciciosCompletados: string[];
   diaCompletado: boolean;
+  diaOmitido: boolean;
   fechaCompletado?: string;
   updatedAt?: string;
 };
@@ -17,6 +18,7 @@ export type UpsertRutinaProgresoPayload = {
   nombreDia: string;
   ejerciciosCompletados: string[];
   diaCompletado: boolean;
+  diaOmitido?: boolean;
 };
 
 export type RutinaProgresoApiDoc = {
@@ -28,6 +30,7 @@ export type RutinaProgresoApiDoc = {
   nombreDia: string;
   ejerciciosCompletados?: string[];
   diaCompletado?: boolean;
+  diaOmitido?: boolean;
   fechaCompletado?: string;
   updatedAt?: string | Date;
 };
@@ -43,6 +46,7 @@ export function mapRutinaProgresoRecord(
     nombreDia: doc.nombreDia,
     ejerciciosCompletados: doc.ejerciciosCompletados ?? [],
     diaCompletado: doc.diaCompletado ?? false,
+    diaOmitido: doc.diaOmitido ?? false,
     fechaCompletado: doc.fechaCompletado,
     updatedAt:
       doc.updatedAt instanceof Date

@@ -124,6 +124,7 @@ export const generarBorradorPlanSchema = z.object({
   diasPlantilla: z.array(diaPlantillaPlanSchema).min(1).max(14).optional(),
   estructuraComidas: z.array(estructuraComidaSchema).optional(),
   macrosObjetivo: macrosObjetivoSchema.optional(),
+  instruccion: z.string().trim().max(2000).optional(),
 });
 
 export const generarComidaPlanSchema = z.object({

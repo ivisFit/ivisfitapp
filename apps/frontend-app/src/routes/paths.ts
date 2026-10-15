@@ -124,6 +124,10 @@ export function profeAlumnaPlieguesRoute(id: string) {
   return profeAlumnaDetailTabRoute(id, "pliegues");
 }
 
+export function profeAlumnaPlieguesFotosRoute(id: string) {
+  return `/alumnas/${id}/pliegues/fotos`;
+}
+
 export type AlimentacionPlanStep = "perfil" | "objetivos" | "comidas" | "revisar";
 
 export const ALIMENTACION_PLAN_STEPS: AlimentacionPlanStep[] = [

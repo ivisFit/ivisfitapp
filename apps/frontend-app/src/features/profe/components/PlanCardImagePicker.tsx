@@ -1,4 +1,5 @@
 "use client";
+import { FeedbackModal } from "@/components/FeedbackModal";
 
 import { ChangeEvent, useRef, useState } from "react";
 import { Button } from "@/components/Button";
@@ -146,7 +147,7 @@ export function PlanCardImagePicker({
         </p>
       ) : null}
 
-      {error ? <p className="auth-error">{error}</p> : null}
+      <FeedbackModal message={error} />
     </div>
   );
 }

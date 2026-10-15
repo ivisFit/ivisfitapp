@@ -1,4 +1,5 @@
 "use client";
+import { FeedbackModal } from "@/components/FeedbackModal";
 
 import { useState } from "react";
 import { Button } from "@/components/Button";
@@ -154,11 +155,7 @@ export function HealthChangesReview({ alumna, onClose, onChange }: HealthChanges
           </button>
         </header>
 
-        {error && (
-          <div className="health-review__error" role="alert">
-            {error}
-          </div>
-        )}
+        <FeedbackModal message={error} />
 
         <div className="health-review__list">
           {HEALTH_FIELDS.map((field) => {

@@ -1,0 +1,80 @@
+.medicion-fotos-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.medicion-fotos-dialog__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgb(0 0 0 / 55%);
+  cursor: pointer;
+}
+
+.medicion-fotos-dialog__panel {
+  position: relative;
+  z-index: 1;
+  width: min(56rem, 100%);
+  max-height: min(90vh, 48rem);
+  overflow: auto;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+.medicion-fotos-dialog__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.medicion-fotos-dialog__header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.medicion-fotos-dialog__kicker {
+  margin: 0 0 0.2rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+}
+
+.medicion-fotos-dialog__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .medicion-fotos-dialog__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.medicion-fotos-dialog__figure {
+  margin: 0;
+}
+
+.medicion-fotos-dialog__figure figcaption {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.medicion-fotos-dialog__figure img {
+  width: 100%;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  object-fit: cover;
+  max-height: 16rem;
+}

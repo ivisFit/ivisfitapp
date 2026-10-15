@@ -13,6 +13,21 @@ import {
 } from "@ivisfit/database";
 import { AppError, assertFound } from "../utils/errors.js";
 
+const MEDICION_FOTO_PUBLIC_ID_PREFIX = "ivisfit/mediciones";
+
+function assertFotosProgresoPublicIds(
+  fotosProgreso?: CreateMedicionInput["fotosProgreso"],
+) {
+  if (!fotosProgreso) return;
+
+  for (const imagen of Object.values(fotosProgreso)) {
+    if (!imagen) continue;
+    if (!imagen.publicId.startsWith(MEDICION_FOTO_PUBLIC_ID_PREFIX)) {
+      throw new AppError(400, "La imagen de medición no es válida");
+    }
+  }
+}
+
 export const medicionesService = {
   async list(alumnaId?: string, metodoCalculo?: string) {
     const filter: Record<string, unknown> = {};
@@ -159,6 +174,8 @@ export const medicionesService = {
         ? normalizePlieguesJP7(data.pliegues)
         : data.pliegues;
 
+    assertFotosProgresoPublicIds(data.fotosProgreso);
+
     return Medicion.create({
       alumnaId: data.alumnaId,
       metodoCalculo: data.metodoCalculo,
@@ -167,6 +184,7 @@ export const medicionesService = {
       circunferencias: data.circunferencias,
       notas: data.notas,
       pesoCorporalKg: data.pesoCorporalKg,
+      fotosProgreso: data.fotosProgreso,
       metricas,
     });
   },

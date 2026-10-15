@@ -1,4 +1,5 @@
 "use client";
+import { FeedbackModal } from "@/components/FeedbackModal";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
@@ -310,7 +311,7 @@ export function GestionAlimentos({
               </Button>
             ) : null}
           </div>
-          {error ? <p className="auth-error">{error}</p> : null}
+          <FeedbackModal message={error} />
         </form>
       </section>
 

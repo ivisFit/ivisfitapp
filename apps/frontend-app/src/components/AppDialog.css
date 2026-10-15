@@ -43,6 +43,10 @@ html[data-color-scheme="light"] .app-dialog .field__input {
   color: var(--color-text);
 }
 
+.app-dialog--wide {
+  width: min(100%, 28rem);
+}
+
 .app-dialog__icon {
   display: grid;
   place-items: center;
@@ -55,6 +59,11 @@ html[data-color-scheme="light"] .app-dialog .field__input {
 .app-dialog__icon--danger {
   color: var(--color-error);
   background: var(--glass-coral-muted);
+}
+
+.app-dialog__icon--success {
+  color: #16a34a;
+  background: rgb(22 163 74 / 18%);
 }
 
 .app-dialog__icon--warning,

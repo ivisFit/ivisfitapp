@@ -21,6 +21,20 @@ const circunferenciasSchema = z.object({
   caderaCm: z.number().positive().optional(),
 });
 
+export const medicionImagenSchema = z.object({
+  url: z.string().url(),
+  publicId: z.string().min(1),
+  nombreArchivo: z.string().min(1).optional(),
+  uploadedAt: z.coerce.date().optional(),
+});
+
+export const fotosProgresoSchema = z.object({
+  frente: medicionImagenSchema.optional(),
+  espalda: medicionImagenSchema.optional(),
+  perfilIzquierdo: medicionImagenSchema.optional(),
+  perfilDerecho: medicionImagenSchema.optional(),
+});
+
 export const createMedicionSchema = z.object({
   alumnaId: objectIdSchema.optional(),
   metodoCalculo: metodoCalculoSchema,
@@ -29,6 +43,9 @@ export const createMedicionSchema = z.object({
   notas: z.string().trim().optional(),
   fecha: z.coerce.date().optional(),
   pesoCorporalKg: z.number().positive().optional(),
+  fotosProgreso: fotosProgresoSchema.optional(),
 });
 
+export type MedicionImagenInput = z.infer<typeof medicionImagenSchema>;
+export type FotosProgresoInput = z.infer<typeof fotosProgresoSchema>;
 export type CreateMedicionInput = z.infer<typeof createMedicionSchema>;

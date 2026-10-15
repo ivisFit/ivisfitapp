@@ -44,6 +44,7 @@ export type RutinaEjercicio = {
   descripcion?: string;
   series: number;
   repeticiones: number;
+  repeticionesPorSerie?: number[];
   descansoSegundos: number;
   media?: RutinaMediaAsset;
 };

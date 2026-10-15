@@ -6,6 +6,7 @@ import {
   removeFotoPerfil,
   requestHealthChangesForSession,
   setFotoPerfil,
+  updatePerfilForSession,
   updateNotificaciones,
 } from "../services/me.service.js";
 
@@ -22,6 +23,11 @@ export const meController = {
 
   async completeOnboarding(req: Request, res: Response) {
     const usuario = await completarOnboarding(req, req.body);
+    res.json(usuario);
+  },
+
+  async updatePerfil(req: Request, res: Response) {
+    const usuario = await updatePerfilForSession(req, req.body);
     res.json(usuario);
   },
 

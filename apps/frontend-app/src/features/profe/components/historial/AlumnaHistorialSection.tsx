@@ -1,4 +1,5 @@
 "use client";
+import { FeedbackModal } from "@/components/FeedbackModal";
 
 import { Button } from "@/components";
 import { AlumnaHistorialFilters } from "@/features/profe/components/historial/AlumnaHistorialFilters";
@@ -40,7 +41,7 @@ export function AlumnaHistorialSection({ alumnaId }: AlumnaHistorialSectionProps
         hasActiveFilters={hasActiveFilters}
       />
 
-      {error ? <p className="auth-error">{error}</p> : null}
+      <FeedbackModal message={error} />
 
       <AlumnaHistorialTimeline
         events={events}

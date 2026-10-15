@@ -1,4 +1,5 @@
 "use client";
+import { FeedbackModal } from "@/components/FeedbackModal";
 
 import { useEffect, useState } from "react";
 import { apiFetch, ApiError } from "@/lib/api";
@@ -63,7 +64,7 @@ export function CircunferenciasAlumnaToggleCard({
         />
         <span>Habilitar medición de circunferencias para esta alumna</span>
       </label>
-      {error ? <p className="auth-error">{error}</p> : null}
+      <FeedbackModal message={error} />
     </section>
   );
 }

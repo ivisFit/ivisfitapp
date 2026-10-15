@@ -68,7 +68,25 @@ const metricasSchema = new Schema(
 
 );
 
+const medicionImagenSchema = new Schema(
+  {
+    url: { type: String, required: true },
+    publicId: { type: String, required: true },
+    nombreArchivo: { type: String },
+    uploadedAt: { type: Date },
+  },
+  { _id: false },
+);
 
+const fotosProgresoSchema = new Schema(
+  {
+    frente: { type: medicionImagenSchema },
+    espalda: { type: medicionImagenSchema },
+    perfilIzquierdo: { type: medicionImagenSchema },
+    perfilDerecho: { type: medicionImagenSchema },
+  },
+  { _id: false },
+);
 
 const medicionSchema = new Schema(
 
@@ -117,6 +135,8 @@ const medicionSchema = new Schema(
     notas: { type: String },
 
     pesoCorporalKg: { type: Number },
+
+    fotosProgreso: { type: fotosProgresoSchema },
 
   },
 

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { sexoSchema } from "./shared";
 
 const horaEntrenamientoSchema = z
   .string()
@@ -8,6 +9,19 @@ export const completarOnboardingSchema = z.object({
   horaEntrenamiento: horaEntrenamientoSchema.optional(),
   recordatoriosPush: z.boolean().optional(),
   recordatoriosEntrenamiento: z.boolean().optional(),
+});
+
+export const updateMeProfileSchema = z.object({
+  nombre: z.string().trim().min(1, "Nombre requerido").optional(),
+  telefono: z.string().trim().min(1, "Teléfono requerido").optional(),
+  cedula: z
+    .string()
+    .regex(/^\d+$/, "La cédula debe ingresarse sin puntos ni guión")
+    .optional()
+    .or(z.literal("")),
+  fechaNacimiento: z.coerce.date().optional(),
+  sexo: sexoSchema.optional(),
+  alturaCm: z.coerce.number().positive().optional(),
 });
 
 export const updateNotificacionesSchema = z.object({
@@ -21,6 +35,7 @@ export const updateNotificacionesSchema = z.object({
 export type CompletarOnboardingInput = z.infer<
   typeof completarOnboardingSchema
 >;
+export type UpdateMeProfileInput = z.infer<typeof updateMeProfileSchema>;
 export type UpdateNotificacionesInput = z.infer<
   typeof updateNotificacionesSchema
 >;

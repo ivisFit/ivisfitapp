@@ -165,8 +165,14 @@ export const planNutricionalController = {
       throw new AppError(403, "Solo la profe puede generar borradores");
     }
 
-    const { alumnaId, planId, diasPlantilla, estructuraComidas, macrosObjetivo } =
-      req.body;
+    const {
+      alumnaId,
+      planId,
+      diasPlantilla,
+      estructuraComidas,
+      macrosObjetivo,
+      instruccion,
+    } = req.body;
     const job = createJob(() =>
       planNutricionalService.generateDraft(
         alumnaId,
@@ -174,6 +180,7 @@ export const planNutricionalController = {
         diasPlantilla,
         estructuraComidas,
         macrosObjetivo,
+        instruccion,
       ),
     );
     res.status(202).json({ jobId: job.jobId, status: job.status });

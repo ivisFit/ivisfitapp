@@ -2,6 +2,7 @@ import type { Request } from "express";
 import {
   Usuario,
   type CompletarOnboardingInput,
+  type UpdateMeProfileInput,
   type UpdateNotificacionesInput,
 } from "@ivisfit/database";
 import {
@@ -9,6 +10,7 @@ import {
   uploadFotoPerfil,
 } from "./cloudinary.service.js";
 import { AppError } from "../utils/errors.js";
+import { syncBetterAuthName } from "./auth-user-sync.service.js";
 
 const NOTIFICACIONES_DEFAULT = {
   pushHabilitado: false,
@@ -205,6 +207,47 @@ export async function completarOnboarding(
       NOTIFICACIONES_DEFAULT.notificarLogros,
   };
   await usuario.save();
+
+  return serializeUsuario(usuario);
+}
+
+export async function updatePerfilForSession(
+  req: Request,
+  input: UpdateMeProfileInput,
+) {
+  const usuario = await findUsuarioBySession(req);
+  const previousNombre = usuario.nombre;
+
+  if (input.nombre !== undefined) {
+    usuario.nombre = input.nombre.trim();
+  }
+  if (input.telefono !== undefined) {
+    usuario.telefono = input.telefono.trim();
+  }
+  if (input.cedula !== undefined) {
+    usuario.cedula = input.cedula === "" ? undefined : input.cedula;
+  }
+  if (input.fechaNacimiento !== undefined) {
+    usuario.fechaNacimiento = input.fechaNacimiento;
+  }
+  if (input.sexo !== undefined) {
+    usuario.sexo = input.sexo;
+  }
+  if (input.alturaCm !== undefined) {
+    usuario.alturaCm = input.alturaCm;
+  }
+
+  await usuario.save();
+
+  if (
+    input.nombre !== undefined &&
+    usuario.nombre.trim() !== previousNombre.trim()
+  ) {
+    await syncBetterAuthName({
+      email: usuario.correo,
+      name: usuario.nombre,
+    });
+  }
 
   return serializeUsuario(usuario);
 }

@@ -1,4 +1,5 @@
 "use client";
+import { FeedbackModal } from "@/components/FeedbackModal";
 
 import { useState } from "react";
 import type { FormEvent } from "react";
@@ -472,11 +473,7 @@ export function GestionPlanesLanding({
         </form>
       </section>
 
-      {error ? (
-        <section>
-          <p className="auth-error">{error}</p>
-        </section>
-      ) : null}
+      <FeedbackModal message={error} />
 
       <section className="planes-landing-list-card">
         <div className="planes-landing-list-card__header">

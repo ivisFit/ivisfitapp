@@ -71,7 +71,6 @@ export function PasswordInput({
           className="field__toggle-password"
           onClick={() => setVisible((v) => !v)}
           aria-label={visible ? "Ocultar contraseña" : "Mostrar contraseña"}
-          tabIndex={-1}
         >
           {visible ? <EyeOffIcon /> : <EyeIcon />}
         </button>

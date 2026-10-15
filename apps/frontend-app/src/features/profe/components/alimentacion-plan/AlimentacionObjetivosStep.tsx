@@ -24,17 +24,27 @@ import {
 } from "@/features/profe/components/alimentacion-plan/AlimentacionStepChrome";
 import { useAlimentacionStepSave } from "@/features/profe/hooks/useAlimentacionStepSave";
 import {
+  EstructuraComidaSortableRow,
+} from "@/features/profe/components/alimentacion-plan/EstructuraComidaSortableRow";
+import {
+  EstructuraComidasSortableList,
+  MAX_ESTRUCTURA_COMIDAS,
+} from "@/features/profe/components/alimentacion-plan/EstructuraComidasSortableList";
+import {
+  buildDefaultEstructura,
   buildEmptyWeek,
+  comidaPlanTieneContenido,
+  defaultMealName,
   defaultWeekDayNames,
   macrosFromPorcentaje,
   planDiasTienenEstructura,
+  reorderArrayAt,
   syncDiasConEstructura,
 } from "@/features/profe/lib/plan-macros";
 import { profeAlumnaAlimentacionStepRoute } from "@/routes/paths";
 import type { EstructuraComida } from "@/features/alumna/types/plan-nutricional";
 import { apiFetch } from "@/lib/api";
 import type { EvaluacionNutricionalApiDoc } from "@/features/alumna/types/evaluacion-nutricional";
-import { buildDefaultEstructura } from "@/features/profe/lib/plan-macros";
 
 const MACRO_FIELDS = [
   { key: "kcal", label: "Kcal", tone: "kcal", icon: Flame },
@@ -42,6 +52,8 @@ const MACRO_FIELDS = [
   { key: "carbohidratosG", label: "Carbos (g)", tone: "carbohidratos", icon: Wheat },
   { key: "grasasG", label: "Grasas (g)", tone: "grasas", icon: Droplets },
 ] as const;
+
+const MIN_ESTRUCTURA_COMIDAS = 1;
 
 function isDraftConflictError(message: string | null): boolean {
   if (!message) return false;
@@ -59,7 +71,6 @@ export function AlimentacionObjetivosStep() {
     estructuraComidas,
     setEstructuraComidas,
     dias,
-    setDias,
     macrosSugeridos,
     saveDraft,
     saving,
@@ -107,16 +118,61 @@ export function AlimentacionObjetivosStep() {
     );
   }
 
-  function rebalancePorcentajes() {
-    const n = estructuraComidas.length;
-    if (n === 0) return;
+  function rebalanceEstructuraList(items: EstructuraComida[]) {
+    const n = items.length;
+    if (n === 0) return items;
     const each = Math.floor(100 / n);
     const rest = 100 - each * n;
+    return items.map((item, index) => ({
+      ...item,
+      porcentajeKcal: each + (index === 0 ? rest : 0),
+    }));
+  }
+
+  function rebalancePorcentajes() {
+    setEstructuraComidas(rebalanceEstructuraList(estructuraComidas));
+  }
+
+  function insertEstructuraAfter(afterIndex: number) {
+    if (estructuraComidas.length >= MAX_ESTRUCTURA_COMIDAS) return;
+    const nuevo: EstructuraComida = {
+      nombre: defaultMealName(estructuraComidas.length),
+      horario: "",
+      porcentajeKcal: 0,
+    };
+    const next = [...estructuraComidas];
+    next.splice(afterIndex + 1, 0, nuevo);
+    setEstructuraComidas(rebalanceEstructuraList(next));
+  }
+
+  function reorderEstructura(fromIndex: number, toIndex: number) {
+    setEstructuraComidas(reorderArrayAt(estructuraComidas, fromIndex, toIndex));
+  }
+
+  async function removeEstructuraAt(index: number) {
+    if (estructuraComidas.length <= MIN_ESTRUCTURA_COMIDAS) return;
+
+    const nombre =
+      estructuraComidas[index]?.nombre?.trim() || defaultMealName(index);
+    const hasContent = dias.some(
+      (dia) =>
+        dia.comidas[index] && comidaPlanTieneContenido(dia.comidas[index]),
+    );
+
+    if (hasContent) {
+      const confirmed = await dialog.confirm({
+        title: "Quitar comida de la estructura",
+        message: `«${nombre}» tiene contenido en la semana. Si la quitás de la estructura, al continuar puede rearmarse la semana. ¿Continuar?`,
+        tone: "warning",
+        confirmLabel: "Quitar comida",
+      });
+      if (!confirmed) return;
+    }
+
     setEstructuraComidas(
-      estructuraComidas.map((item, index) => ({
-        ...item,
-        porcentajeKcal: each + (index === 0 ? rest : 0),
-      })),
+      rebalanceEstructuraList(
+        estructuraComidas.filter((_, itemIndex) => itemIndex !== index),
+      ),
     );
   }
 
@@ -329,30 +385,70 @@ export function AlimentacionObjetivosStep() {
           </p>
         ) : null}
 
-        <ol className="ap-slots">
-          {estructuraComidas.map((slot, index) => {
-            const meta = macrosFromPorcentaje(macrosObjetivo, slot.porcentajeKcal);
-            return (
-              <li
-                key={`${slot.nombre}-${index}`}
-                className="alimentacion-estructura-row"
-              >
-                <span className="alimentacion-estructura-row__index" aria-hidden="true">
-                  {index + 1}
-                </span>
-                <div className="alimentacion-estructura-row__fields">
+        {estructuraComidas.length > 0 ? (
+          <EstructuraComidasSortableList
+            itemCount={estructuraComidas.length}
+            onReorder={reorderEstructura}
+            onInsertAfter={insertEstructuraAfter}
+            renderRow={(index, sortableId) => {
+              const slot = estructuraComidas[index];
+              if (!slot) return null;
+              const meta = macrosFromPorcentaje(
+                macrosObjetivo,
+                slot.porcentajeKcal,
+              );
+              const canRemove =
+                estructuraComidas.length > MIN_ESTRUCTURA_COMIDAS;
+              return (
+                <EstructuraComidaSortableRow
+                  sortableId={sortableId}
+                  index={index}
+                  dragLabel={`Reordenar ${slot.nombre || `comida ${index + 1}`}`}
+                  canRemove={canRemove}
+                  onRemove={() => void removeEstructuraAt(index)}
+                  meta={
+                    <ul
+                      className="alimentacion-estructura-row__meta"
+                      aria-label="Meta de la comida"
+                    >
+                      <li className="ap-chip ap-chip--kcal">
+                        <Flame size={13} aria-hidden="true" />
+                        {meta.kcal} kcal
+                      </li>
+                      <li className="ap-chip ap-chip--proteina">
+                        P {meta.proteinaG} g
+                      </li>
+                      <li className="ap-chip ap-chip--carbohidratos">
+                        C {meta.carbohidratosG} g
+                      </li>
+                      <li className="ap-chip ap-chip--grasas">
+                        G {meta.grasasG} g
+                      </li>
+                      {slot.horario ? (
+                        <li className="ap-chip ap-chip--muted">
+                          <Clock3 size={13} aria-hidden="true" />
+                          {slot.horario}
+                        </li>
+                      ) : null}
+                    </ul>
+                  }
+                >
                   <Input
                     label="Comida"
                     name={`estructura-nombre-${index}`}
                     value={slot.nombre}
-                    onChange={(e) => updateEstructura(index, { nombre: e.target.value })}
+                    onChange={(e) =>
+                      updateEstructura(index, { nombre: e.target.value })
+                    }
                   />
                   <Input
                     label="Horario"
                     name={`estructura-horario-${index}`}
                     value={slot.horario ?? ""}
                     placeholder="08:00"
-                    onChange={(e) => updateEstructura(index, { horario: e.target.value })}
+                    onChange={(e) =>
+                      updateEstructura(index, { horario: e.target.value })
+                    }
                   />
                   <Input
                     label="% kcal"
@@ -367,28 +463,35 @@ export function AlimentacionObjetivosStep() {
                       })
                     }
                   />
-                </div>
-                <ul className="alimentacion-estructura-row__meta" aria-label="Meta de la comida">
-                  <li className="ap-chip ap-chip--kcal">
-                    <Flame size={13} aria-hidden="true" />
-                    {meta.kcal} kcal
-                  </li>
-                  <li className="ap-chip ap-chip--proteina">P {meta.proteinaG} g</li>
-                  <li className="ap-chip ap-chip--carbohidratos">
-                    C {meta.carbohidratosG} g
-                  </li>
-                  <li className="ap-chip ap-chip--grasas">G {meta.grasasG} g</li>
-                  {slot.horario ? (
-                    <li className="ap-chip ap-chip--muted">
-                      <Clock3 size={13} aria-hidden="true" />
-                      {slot.horario}
-                    </li>
-                  ) : null}
-                </ul>
-              </li>
-            );
-          })}
-        </ol>
+                </EstructuraComidaSortableRow>
+              );
+            }}
+          />
+        ) : (
+          <div className="alimentacion-estructura-empty">
+            <p className="ap-inline-note">
+              Todavía no hay comidas en la estructura del día.
+            </p>
+            <Button
+              type="button"
+              variant="ghost"
+              className="ap-btn-sm"
+              onClick={() =>
+                setEstructuraComidas(
+                  rebalanceEstructuraList([
+                    {
+                      nombre: defaultMealName(0),
+                      horario: "",
+                      porcentajeKcal: 100,
+                    },
+                  ]),
+                )
+              }
+            >
+              Agregar comida
+            </Button>
+          </div>
+        )}
       </section>
 
       {error ? (

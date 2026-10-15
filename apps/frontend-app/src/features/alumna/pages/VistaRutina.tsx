@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { AlumnaRutinaSkeleton } from "@/components/skeletons/AppSkeleton";
 import { useAuth } from "@/context/AuthContext";
 import { CoachInsightBanner } from "@/features/alumna/components/CoachInsightBanner";
@@ -33,12 +33,28 @@ export function VistaRutina() {
     error: rutinaError,
   } = useRutinaActiva(user?.id);
 
-  const dayInfo = useMemo(
-    () => (rutina ? resolveRutinaDay(rutina) : null),
-    [rutina],
+  const {
+    completedDateKeys,
+    markDayComplete,
+    markDaySkipped,
+    isDayComplete,
+    isPlanDayDone,
+    getDayProgreso,
+    upsertProgreso,
+  } = usePlanDayCompletions(rutina?.id, rutina);
+
+  const rutinaProgressOptions = useMemo(
+    () => ({ isPlanDayDone }),
+    [isPlanDayDone],
   );
-  const { completedDateKeys, markDayComplete, isDayComplete, getDayProgreso, upsertProgreso } =
-    usePlanDayCompletions(rutina?.id, rutina);
+
+  const dayInfo = useMemo(
+    () =>
+      rutina
+        ? resolveRutinaDay(rutina, undefined, undefined, rutinaProgressOptions)
+        : null,
+    [rutina, rutinaProgressOptions],
+  );
 
   const todayDateKey = useMemo(
     () => (rutina && dayInfo ? getRutinaDayDateKey(rutina, dayInfo) : null),
@@ -52,11 +68,16 @@ export function VistaRutina() {
 
     const baseDays =
       hasCustomPlanContentFlag && flatDays.length > 0
-        ? buildChallenge28Days(rutina, dayInfo, flatDays.length)
-        : buildPlanDays(rutina, dayInfo);
+        ? buildChallenge28Days(rutina, dayInfo, flatDays.length, rutinaProgressOptions)
+        : buildPlanDays(rutina, dayInfo, rutinaProgressOptions);
 
     return applyManualDayCompletions(baseDays, completedDateKeys, getDayProgreso);
-  }, [completedDateKeys, dayInfo, getDayProgreso, rutina]);
+  }, [completedDateKeys, dayInfo, getDayProgreso, rutina, rutinaProgressOptions]);
+
+  const handleSkipDay = useCallback(() => {
+    if (!rutina || !dayInfo) return;
+    void markDaySkipped(buildTodayCompletionInput(rutina, dayInfo));
+  }, [dayInfo, markDaySkipped, rutina]);
 
   const loading = authLoading || rutinaLoading;
   const error = rutinaError;
@@ -131,6 +152,7 @@ export function VistaRutina() {
                 onFinishDay={() =>
                   void markDayComplete(buildTodayCompletionInput(rutina, dayInfo))
                 }
+                onSkipDay={handleSkipDay}
               />
             ) : null}
 
@@ -140,6 +162,14 @@ export function VistaRutina() {
                 days={planDays}
                 getDayProgreso={getDayProgreso}
                 upsertProgreso={upsertProgreso}
+                onSkipDay={(day) => {
+                  if (!day.numeroSemana || !day.nombreDia) return;
+                  void markDaySkipped({
+                    dateKey: day.dateKey,
+                    numeroSemana: day.numeroSemana,
+                    nombreDia: day.nombreDia,
+                  });
+                }}
               />
             ) : null}
           </div>

@@ -37,11 +37,23 @@ const ejercicioRutinaBlueprintSchema = new Schema(
     ejercicioId: { type: String, required: true },
     series: { type: Number, required: true, min: 1, max: 8 },
     repeticiones: { type: Number, required: true, min: 1, max: 25 },
+    repeticionesPorSerie: {
+      type: [{ type: Number, min: 1, max: 25 }],
+      default: undefined,
+    },
     descansoSegundos: { type: Number, required: true, min: 1 },
     media: { type: mediaAssetSchema },
   },
   { _id: false },
 );
+
+ejercicioRutinaBlueprintSchema.path("repeticionesPorSerie").validate(function (
+  this: { series: number },
+  value?: number[],
+) {
+  if (!value || value.length === 0) return true;
+  return value.length === this.series;
+}, "repeticionesPorSerie debe coincidir con la cantidad de series");
 
 const diaRutinaBlueprintSchema = new Schema(
   {

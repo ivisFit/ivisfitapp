@@ -13,7 +13,7 @@ import {
   ALIMENTACION_STEP_DESCRIPTIONS,
   ALIMENTACION_STEP_LABELS,
 } from "@/features/profe/lib/plan-alimentacion-steps";
-import { useAlimentacionStepSave } from "@/features/profe/hooks/useAlimentacionStepSave";
+import { useAlimentacionPlan } from "@/features/profe/context/AlimentacionPlanProvider";
 
 const STEP_ICONS: Record<AlimentacionPlanStep, ReactNode> = {
   perfil: <UserRound size={18} aria-hidden="true" />,
@@ -30,7 +30,12 @@ export function AlimentacionStepperNav({ alumnaId }: { alumnaId: string }) {
   const currentIndex = currentStep
     ? ALIMENTACION_PLAN_STEPS.indexOf(currentStep)
     : -1;
-  const { handleStepLinkClick } = useAlimentacionStepSave();
+  const { flushAndSaveIfDirty } = useAlimentacionPlan();
+
+  function handleStepClick(event: React.MouseEvent<HTMLAnchorElement>) {
+    if (event.defaultPrevented || event.button !== 0) return;
+    flushAndSaveIfDirty();
+  }
 
   return (
     <nav className="alimentacion-plan-stepper" aria-label="Pasos del plan">
@@ -48,7 +53,7 @@ export function AlimentacionStepperNav({ alumnaId }: { alumnaId: string }) {
                 className="alimentacion-plan-stepper__link"
                 href={href}
                 aria-current={isCurrent ? "step" : undefined}
-                onClick={isCurrent ? undefined : handleStepLinkClick(href)}
+                onClick={isCurrent ? undefined : handleStepClick}
               >
                 <span className="alimentacion-plan-stepper__index">
                   {isComplete ? (

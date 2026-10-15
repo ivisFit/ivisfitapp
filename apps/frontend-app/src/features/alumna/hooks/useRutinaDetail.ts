@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { fetchCached } from "@/lib/apiCache";
+import { isRepeticionesPorSerieActive } from "@/lib/rutina-reps";
 import type {
   RutinaChallenge28,
   RutinaDetail,
@@ -32,6 +33,7 @@ type EjercicioRutinaApi = {
   ejercicioId: EjercicioApiDoc | string;
   series: number;
   repeticiones: number;
+  repeticionesPorSerie?: number[];
   descansoSegundos: number;
   media?: MediaAssetApi;
 };
@@ -153,6 +155,9 @@ function mapEjercicio(
     repeticiones: entry.repeticiones,
     descansoSegundos: entry.descansoSegundos,
     media: mapMediaAsset(entry.media),
+    ...(isRepeticionesPorSerieActive(entry.series, entry.repeticionesPorSerie)
+      ? { repeticionesPorSerie: entry.repeticionesPorSerie }
+      : {}),
   };
 }
 

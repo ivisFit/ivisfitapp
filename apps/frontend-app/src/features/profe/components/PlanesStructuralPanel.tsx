@@ -1,4 +1,5 @@
 "use client";
+import { FeedbackModal } from "@/components/FeedbackModal";
 
 import { useMemo, useState, type FormEvent } from "react";
 import { Button, Input } from "@/components";
@@ -234,7 +235,7 @@ export function PlanesStructuralPanel({ onStructureChange }: PlanesStructuralPan
         </form>
       ) : null}
 
-      {error ? <p className="auth-error">{error}</p> : null}
+      <FeedbackModal message={error} />
 
       {loading ? (
         <div aria-busy="true" aria-label="Cargando planes">

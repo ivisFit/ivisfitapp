@@ -2,6 +2,7 @@ import { Router, raw } from "express";
 import {
   completarOnboardingSchema,
   healthChangesRequestSchema,
+  updateMeProfileSchema,
   updateNotificacionesSchema,
 } from "@ivisfit/database";
 import { meController } from "../controllers/me.controller.js";
@@ -19,6 +20,12 @@ const ALLOWED_FOTO_PERFIL_TYPES = new Set([
 export const meRouter = Router();
 
 meRouter.get("/", asyncHandler(meController.get));
+
+meRouter.patch(
+  "/",
+  validateBody(updateMeProfileSchema),
+  asyncHandler(meController.updatePerfil),
+);
 
 meRouter.post(
   "/tutoriales-vistos",

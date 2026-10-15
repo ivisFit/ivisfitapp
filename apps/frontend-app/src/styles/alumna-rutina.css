@@ -535,6 +535,16 @@
   max-width: var(--training-story-plan-max);
 }
 
+.training-story__nav-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+  flex: 1;
+  max-width: 14rem;
+  margin-left: auto;
+}
+
 .training-story__nav-btn {
   min-height: 3rem;
   padding: 0 1.25rem;
@@ -1413,6 +1423,16 @@
 }
 
 .challenge-sheet__exercises span,
+.challenge-sheet__skip {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgb(255 255 255 / 10%);
+}
+
+.challenge-sheet__skip-btn {
+  width: 100%;
+}
+
 .challenge-sheet__empty {
   color: rgb(255 255 255 / 64%);
   margin: 0;
@@ -2066,6 +2086,61 @@
   color: var(--color-text);
 }
 
+.rutina-builder__metric--reps {
+  align-content: start;
+}
+
+.rutina-builder__reps-por-serie {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(2.6rem, 1fr));
+  gap: 0.35rem;
+}
+
+.rutina-builder__reps-por-serie-item {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+  font-size: 0.65rem;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.rutina-builder__reps-por-serie-item input {
+  width: 100%;
+  min-height: 2.25rem;
+  padding: 0 0.15rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: rgb(255 255 255 / 4%);
+  color: var(--color-text);
+  text-align: center;
+  font: inherit;
+}
+
+.rutina-builder__reps-mode-toggle {
+  width: fit-content;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: rgb(225 170 67 / 90%);
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 0.15rem;
+}
+
+.rutina-builder__reps-mode-toggle:hover,
+.rutina-builder__reps-mode-toggle:focus-visible {
+  color: var(--color-text);
+}
+
+.rutina-builder__reps-mode-toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 @media (min-width: 960px) {
   .rutina-builder__stepper button,
   .rutina-builder__stepper input {
@@ -2542,6 +2617,17 @@
       auto;
     grid-template-areas: "index identity series reps rest actions";
     align-items: center;
+  }
+
+  .rutina-builder--alumna .rutina-builder__exercise-row.is-reps-por-serie {
+    grid-template-columns:
+      2rem
+      minmax(11rem, 1.2fr)
+      minmax(5.5rem, 0.5fr)
+      minmax(14rem, 1.4fr)
+      minmax(6.5rem, 0.55fr)
+      auto;
+    align-items: start;
   }
 
   .rutina-builder--alumna .rutina-builder__exercise-index {

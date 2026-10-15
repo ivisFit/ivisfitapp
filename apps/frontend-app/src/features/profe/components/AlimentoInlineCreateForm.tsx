@@ -1,4 +1,5 @@
 "use client";
+import { FeedbackModal } from "@/components/FeedbackModal";
 
 import { useState, type FormEvent } from "react";
 import { Button, Input, Select } from "@/components";
@@ -192,11 +193,7 @@ export function AlimentoInlineCreateForm({
           Volver a la lista
         </Button>
       </div>
-      {error ? (
-        <p className="auth-error" role="alert">
-          {error}
-        </p>
-      ) : null}
+      <FeedbackModal message={error} />
     </form>
   );
 }

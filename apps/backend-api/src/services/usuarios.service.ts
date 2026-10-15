@@ -11,6 +11,21 @@ import {
   type ApproveHealthChangesInput,
 } from "@ivisfit/database";
 import { AppError, assertFound, isDuplicateKeyError } from "../utils/errors.js";
+import {
+  syncBetterAuthEmail,
+  syncBetterAuthName,
+} from "./auth-user-sync.service.js";
+
+const HEALTH_FIELDS = [
+  "mutualista",
+  "coberturaEmergenciaMedica",
+  "lesionesPatologias",
+  "alergias",
+] as const;
+
+function normalizeEmail(email: string) {
+  return email.trim().toLowerCase();
+}
 
 const ADMITTED_ALUMNA_FILTER = {
   rol: "alumna" as const,
@@ -93,12 +108,96 @@ export const usuariosService = {
 
   async update(id: string, data: UpdateUsuarioInput) {
     try {
-      const usuario = await Usuario.findByIdAndUpdate(id, data, {
-        new: true,
-        runValidators: true,
-      });
-      return assertFound(usuario, "Usuario no encontrado");
+      const usuario = await Usuario.findById(id);
+      assertFound(usuario, "Usuario no encontrado");
+
+      if (usuario.rol !== "alumna") {
+        throw new AppError(400, "Solo se pueden editar alumnas");
+      }
+
+      const previousCorreo = usuario.correo;
+      const previousNombre = usuario.nombre;
+
+      if (data.correo !== undefined) {
+        data.correo = normalizeEmail(data.correo);
+      }
+
+      if (
+        data.correo !== undefined &&
+        normalizeEmail(previousCorreo) !== data.correo
+      ) {
+        await syncBetterAuthEmail({
+          fromEmail: previousCorreo,
+          toEmail: data.correo,
+          name: data.nombre?.trim() ?? usuario.nombre,
+        });
+        usuario.correo = data.correo;
+      }
+
+      if (data.nombre !== undefined) {
+        usuario.nombre = data.nombre.trim();
+      }
+      if (data.telefono !== undefined) {
+        usuario.telefono = data.telefono.trim();
+      }
+      if (data.cedula !== undefined) {
+        usuario.cedula = data.cedula === "" ? undefined : data.cedula;
+      }
+      if (data.fechaNacimiento !== undefined) {
+        usuario.fechaNacimiento = data.fechaNacimiento;
+      }
+      if (data.sexo !== undefined) {
+        usuario.sexo = data.sexo;
+      }
+      if (data.alturaCm !== undefined) {
+        usuario.alturaCm = data.alturaCm;
+      }
+      if (data.circunferenciasHabilitadas !== undefined) {
+        usuario.circunferenciasHabilitadas = data.circunferenciasHabilitadas;
+      }
+      if (data.membresia !== undefined) {
+        usuario.membresia = {
+          ...(usuario.membresia ?? {}),
+          ...data.membresia,
+        };
+        usuario.markModified("membresia");
+      }
+
+      const pending =
+        (usuario.healthChangesPending as Record<string, unknown> | undefined) ??
+        {};
+
+      for (const field of HEALTH_FIELDS) {
+        const value = data[field];
+        if (value !== undefined) {
+          (usuario as Record<string, unknown>)[field] = value;
+          delete pending[field];
+        }
+      }
+
+      usuario.healthChangesPending =
+        Object.keys(pending).length > 0 ? pending : undefined;
+      usuario.markModified("healthChangesPending");
+
+      await usuario.save();
+
+      if (
+        data.nombre !== undefined &&
+        usuario.nombre.trim() !== previousNombre.trim() &&
+        (data.correo === undefined ||
+          normalizeEmail(previousCorreo) === usuario.correo)
+      ) {
+        await syncBetterAuthName({
+          email: usuario.correo,
+          name: usuario.nombre,
+        });
+      }
+
+      return usuario;
     } catch (error) {
+      if (error instanceof AppError) {
+        throw error;
+      }
       if (isDuplicateKeyError(error)) {
         throw new AppError(409, "Ya existe un usuario con ese correo o cédula");
       }

@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useState } from "react";
 import type {
   Medicion,
   MetodoCalculo,
@@ -14,6 +14,10 @@ import {
   sumMedicionValues,
 } from "@/features/profe/utils/pliegues-period";
 import { normalizePlieguesJP7 } from "@/lib/jp7-pliegues";
+import {
+  countFotosProgreso,
+  MedicionFotosProgresoDialog,
+} from "@/features/profe/components/pliegues/MedicionFotosProgresoDialog";
 
 type PlieguesHistoryTableProps = {
   mediciones: Medicion[];
@@ -73,8 +77,12 @@ export const PlieguesHistoryTable = memo(function PlieguesHistoryTable({
   sexo,
   metodo,
 }: PlieguesHistoryTableProps) {
+  const [fotosDialogMedicion, setFotosDialogMedicion] = useState<Medicion | null>(
+    null,
+  );
   const columns = getColumns(metodo, sexo);
   const sumUnit = metodo === "us-navy" ? "cm" : "mm";
+  const showFotosColumn = metodo !== "us-navy";
 
   if (mediciones.length === 0) {
     return (
@@ -106,11 +114,14 @@ export const PlieguesHistoryTable = memo(function PlieguesHistoryTable({
               ))}
               <th scope="col">Suma</th>
               <th scope="col">% grasa</th>
+              {showFotosColumn ? <th scope="col">Fotos</th> : null}
               <th scope="col">Notas</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((medicion) => (
+            {rows.map((medicion) => {
+              const fotosCount = countFotosProgreso(medicion.fotosProgreso);
+              return (
               <tr key={medicion.id}>
                 <td data-label="Fecha">{formatMedicionDate(medicion.fecha)}</td>
                 {columns.map((column) => (
@@ -133,12 +144,35 @@ export const PlieguesHistoryTable = memo(function PlieguesHistoryTable({
                     medicion.metricas.porcentajeGrasaCorporal,
                   )}
                 </td>
+                {showFotosColumn ? (
+                  <td data-label="Fotos">
+                    {fotosCount > 0 ? (
+                      <button
+                        type="button"
+                        className="pliegues-history-table__fotos-btn"
+                        onClick={() => setFotosDialogMedicion(medicion)}
+                      >
+                        Ver fotos ({fotosCount}/4)
+                      </button>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
+                ) : null}
                 <td data-label="Notas">{medicion.notas?.trim() || "—"}</td>
               </tr>
-            ))}
+            );
+            })}
           </tbody>
         </table>
       </div>
+      {fotosDialogMedicion?.fotosProgreso ? (
+        <MedicionFotosProgresoDialog
+          fotos={fotosDialogMedicion.fotosProgreso}
+          fechaLabel={formatMedicionDate(fotosDialogMedicion.fecha)}
+          onClose={() => setFotosDialogMedicion(null)}
+        />
+      ) : null}
     </section>
   );
 });

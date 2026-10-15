@@ -46,25 +46,58 @@ export function usePlanDayCompletions(
         ejerciciosCompletados:
           ejerciciosCompletados ?? existing?.ejerciciosCompletados ?? [],
         diaCompletado: true,
+        diaOmitido: false,
       });
     },
     [getDayProgreso, rutinaId, upsertProgreso],
   );
 
+  const markDaySkipped = useCallback(
+    async ({
+      dateKey,
+      numeroSemana,
+      nombreDia,
+    }: MarkDayCompleteInput) => {
+      if (!rutinaId) return;
+
+      await upsertProgreso({
+        rutinaId,
+        dateKey,
+        numeroSemana,
+        nombreDia,
+        ejerciciosCompletados: [],
+        diaCompletado: true,
+        diaOmitido: true,
+      });
+    },
+    [rutinaId, upsertProgreso],
+  );
+
   const isDayComplete = useCallback(
     (dateKey: string, numeroSemana?: number, nombreDia?: string) => {
       if (completedDateKeys.has(dateKey)) return true;
-      return Boolean(
-        getDayProgreso(dateKey, numeroSemana, nombreDia)?.diaCompletado,
-      );
+      const record = getDayProgreso(dateKey, numeroSemana, nombreDia);
+      return Boolean(record?.diaCompletado || record?.diaOmitido);
     },
     [completedDateKeys, getDayProgreso],
+  );
+
+  const isPlanDayDone = useCallback(
+    (
+      _dayNumber: number,
+      dateKey: string,
+      numeroSemana: number,
+      nombreDia: string,
+    ) => isDayComplete(dateKey, numeroSemana, nombreDia),
+    [isDayComplete],
   );
 
   return {
     completedDateKeys,
     markDayComplete,
+    markDaySkipped,
     isDayComplete,
+    isPlanDayDone,
     upsertProgreso,
     getDayProgreso,
     loading,

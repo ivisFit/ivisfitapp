@@ -1,4 +1,5 @@
 "use client";
+import { FeedbackModal } from "@/components/FeedbackModal";
 
 import { Button } from "@/components";
 import { useAppDialog } from "@/components/AppDialogProvider";
@@ -74,11 +75,7 @@ export function AlimentacionBorradorBanner() {
           {discarding ? "Descartando…" : "Descartar borrador"}
         </Button>
       </div>
-      {actionError ? (
-        <p className="auth-error" role="alert">
-          {actionError}
-        </p>
-      ) : null}
+      <FeedbackModal message={actionError} />
     </div>
   );
 }

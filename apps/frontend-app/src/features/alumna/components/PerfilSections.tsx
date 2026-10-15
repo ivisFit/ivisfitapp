@@ -6,9 +6,11 @@ import {
   HeartPulse,
   User,
 } from "lucide-react";
+import { InlineEditableSheetRow } from "@/components/sheet/InlineEditableSheetRow";
 import { UserAvatar } from "@/components/UserAvatar";
 import { GamificacionWidget } from "@/features/gamificacion/components/GamificacionWidget";
 import type { AlumnaDetail, HealthChangesPendingApiDoc } from "@/types/usuario";
+import { fechaToDateInputValue } from "@/types/usuario";
 import "./PerfilSections.css";
 
 type SheetField = {
@@ -112,58 +114,25 @@ function SheetGroup({
 
 export function PerfilSections({
   alumna,
-  onEditSection,
+  onSavePersonalField,
+  onSaveHealthField,
+  onEditNotificaciones,
 }: {
   alumna: AlumnaDetail;
-  onEditSection: (section: "personal" | "salud" | "notificaciones") => void;
+  onSavePersonalField: (field: string, value: string) => Promise<void>;
+  onSaveHealthField: (field: string, value: string) => Promise<void>;
+  onEditNotificaciones: () => void;
 }) {
   const healthPending = alumna.healthChangesPending;
   const isPending = (field: keyof HealthChangesPendingApiDoc) =>
     Boolean(healthPending?.[field]);
 
-  const personalFields: SheetField[] = [
-    { label: "Teléfono", value: alumna.telefono },
-    { label: "Cédula", value: alumna.cedula },
-    { label: "Fecha de nacimiento", value: alumna.fechaNacimiento },
-    {
-      label: "Sexo",
-      value:
-        alumna.sexo === "hombre"
-          ? "Hombre"
-          : alumna.sexo === "mujer"
-            ? "Mujer"
-            : undefined,
-    },
-    {
-      label: "Altura",
-      value: alumna.alturaCm
-        ? `${alumna.alturaCm.toLocaleString("es-UY")} cm`
-        : undefined,
-    },
-  ];
-
-  const healthFields: SheetField[] = [
-    {
-      label: "Mutualista",
-      value: alumna.mutualista,
-      pending: isPending("mutualista"),
-    },
-    {
-      label: "Cobertura emergencia",
-      value: alumna.coberturaEmergenciaMedica,
-      pending: isPending("coberturaEmergenciaMedica"),
-    },
-    {
-      label: "Lesiones / patologías",
-      value: alumna.lesionesPatologias,
-      pending: isPending("lesionesPatologias"),
-    },
-    {
-      label: "Alergias",
-      value: alumna.alergias,
-      pending: isPending("alergias"),
-    },
-  ];
+  const sexoDisplay =
+    alumna.sexo === "hombre"
+      ? "Hombre"
+      : alumna.sexo === "mujer"
+        ? "Mujer"
+        : undefined;
 
   const admissionFields: SheetField[] = [
     { label: "Rol", value: alumna.rol },
@@ -203,19 +172,101 @@ export function PerfilSections({
           </header>
 
           <div className="alumna-sheet__body">
-            <SheetGroup
-              title="Datos personales"
-              icon={<User size={15} />}
-              fields={personalFields}
-              onEdit={() => onEditSection("personal")}
-            />
+            <SheetGroup title="Datos personales" icon={<User size={15} />}>
+              <dl className="alumna-sheet__rows">
+                <InlineEditableSheetRow
+                  label="Nombre"
+                  value={alumna.nombre}
+                  onSave={(v) => onSavePersonalField("nombre", v)}
+                />
+                <InlineEditableSheetRow
+                  label="Teléfono"
+                  kind="tel"
+                  value={alumna.telefono}
+                  onSave={(v) => onSavePersonalField("telefono", v)}
+                />
+                <InlineEditableSheetRow
+                  label="Cédula"
+                  value={alumna.cedula ?? ""}
+                  inputMode="numeric"
+                  onSave={(v) => onSavePersonalField("cedula", v)}
+                />
+                <InlineEditableSheetRow
+                  label="Fecha de nacimiento"
+                  kind="date"
+                  value={fechaToDateInputValue(alumna.fechaNacimiento)}
+                  displayValue={alumna.fechaNacimiento}
+                  onSave={(v) => onSavePersonalField("fechaNacimiento", v)}
+                />
+                <InlineEditableSheetRow
+                  label="Sexo"
+                  kind="select"
+                  value={alumna.sexo ?? ""}
+                  displayValue={sexoDisplay}
+                  selectOptions={[
+                    { value: "", label: "Sin especificar" },
+                    { value: "mujer", label: "Mujer" },
+                    { value: "hombre", label: "Hombre" },
+                  ]}
+                  onSave={(v) => onSavePersonalField("sexo", v)}
+                />
+                <InlineEditableSheetRow
+                  label="Altura"
+                  kind="number"
+                  value={alumna.alturaCm ? String(alumna.alturaCm) : ""}
+                  displayValue={
+                    alumna.alturaCm
+                      ? `${alumna.alturaCm.toLocaleString("es-UY")} cm`
+                      : undefined
+                  }
+                  onSave={(v) => onSavePersonalField("alturaCm", v)}
+                />
+              </dl>
+            </SheetGroup>
+
             <SheetGroup
               title="Salud y cobertura"
               icon={<HeartPulse size={15} />}
-              fields={healthFields}
               variant="salud"
-              onEdit={() => onEditSection("salud")}
-            />
+            >
+              <dl className="alumna-sheet__rows">
+                <InlineEditableSheetRow
+                  label="Mutualista"
+                  value={alumna.mutualista ?? ""}
+                  pending={isPending("mutualista")}
+                  highlight
+                  pendingTitle="Pendiente de revisión por tu profe"
+                  onSave={(v) => onSaveHealthField("mutualista", v)}
+                />
+                <InlineEditableSheetRow
+                  label="Cobertura emergencia"
+                  value={alumna.coberturaEmergenciaMedica ?? ""}
+                  pending={isPending("coberturaEmergenciaMedica")}
+                  highlight
+                  pendingTitle="Pendiente de revisión por tu profe"
+                  onSave={(v) => onSaveHealthField("coberturaEmergenciaMedica", v)}
+                />
+                <InlineEditableSheetRow
+                  label="Lesiones / patologías"
+                  kind="textarea"
+                  value={alumna.lesionesPatologias ?? ""}
+                  pending={isPending("lesionesPatologias")}
+                  highlight
+                  pendingTitle="Pendiente de revisión por tu profe"
+                  onSave={(v) => onSaveHealthField("lesionesPatologias", v)}
+                />
+                <InlineEditableSheetRow
+                  label="Alergias"
+                  kind="textarea"
+                  value={alumna.alergias ?? ""}
+                  pending={isPending("alergias")}
+                  highlight
+                  pendingTitle="Pendiente de revisión por tu profe"
+                  onSave={(v) => onSaveHealthField("alergias", v)}
+                />
+              </dl>
+            </SheetGroup>
+
             <SheetGroup
               title="Admisión"
               icon={<ClipboardList size={15} />}
@@ -224,7 +275,7 @@ export function PerfilSections({
             <SheetGroup
               title="Notificaciones"
               icon={<Bell size={15} />}
-              onEdit={() => onEditSection("notificaciones")}
+              onEdit={onEditNotificaciones}
             >
               <p className="perfil-sheet__hint">
                 Recordatorios de entrenamiento, logros y check-ins de alimentación.

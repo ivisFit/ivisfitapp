@@ -5,6 +5,9 @@ const CLOUDINARY_UPLOAD_FOLDER_COMPROBANTES = "ivisfit/comprobantes";
 const CLOUDINARY_UPLOAD_FOLDER_AVATARS = "ivisfit/avatars";
 const CLOUDINARY_UPLOAD_FOLDER_LANDING_PLANS = "ivisfit/landing-plans";
 const CLOUDINARY_UPLOAD_FOLDER_AUTH = "ivisfit/auth";
+const CLOUDINARY_UPLOAD_FOLDER_MEDICIONES = "ivisfit/mediciones";
+
+export const MEDICION_FOTO_CLOUDINARY_FOLDER = CLOUDINARY_UPLOAD_FOLDER_MEDICIONES;
 
 type CloudinaryUploadResponse = {
   secure_url?: string;
@@ -173,6 +176,36 @@ export async function uploadComprobantePago({
     formato: body.format,
     bytes: body.bytes,
     resourceType: body.resource_type,
+    uploadedAt: new Date().toISOString(),
+  };
+}
+
+export async function uploadMedicionFoto({
+  file,
+  contentType,
+  filename,
+}: {
+  file: Buffer;
+  contentType: string;
+  filename: string;
+}) {
+  const timestamp = Math.floor(Date.now() / 1000).toString();
+  const signedParams = {
+    folder: CLOUDINARY_UPLOAD_FOLDER_MEDICIONES,
+    timestamp,
+  };
+
+  const body = await uploadToCloudinary({
+    file,
+    contentType,
+    folder: CLOUDINARY_UPLOAD_FOLDER_MEDICIONES,
+    signedParams,
+  });
+
+  return {
+    url: body.secure_url!,
+    publicId: body.public_id!,
+    nombreArchivo: filename,
     uploadedAt: new Date().toISOString(),
   };
 }

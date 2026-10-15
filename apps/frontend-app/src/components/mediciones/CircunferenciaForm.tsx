@@ -1,4 +1,5 @@
 "use client";
+import { FeedbackModal } from "@/components/FeedbackModal";
 
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
@@ -245,12 +246,8 @@ export function CircunferenciaForm({
         />
       </label>
 
-      {error ? <p className="auth-error">{error}</p> : null}
-      {successMessage ? (
-        <p className="skinfold-form__success" role="status">
-          {successMessage}
-        </p>
-      ) : null}
+      <FeedbackModal message={error} />
+      <FeedbackModal message={successMessage} tone="success" />
 
       <div className="skinfold-form__actions">
         <Button type="submit" disabled={isLoading}>

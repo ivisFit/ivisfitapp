@@ -1,4 +1,5 @@
 "use client";
+import { FeedbackModal } from "@/components/FeedbackModal";
 
 import { useState } from "react";
 import { Button, Input, Select } from "@/components";
@@ -84,8 +85,8 @@ export function MembresiaEditor({
       <Button type="button" onClick={() => void handleSave()} disabled={saving}>
         {saving ? "Guardando..." : "Guardar"}
       </Button>
-      {error ? <p className="auth-error">{error}</p> : null}
-      {success ? <p className="auth-success">{success}</p> : null}
+      <FeedbackModal message={error} />
+      <FeedbackModal message={success} tone="success" />
     </div>
   );
 

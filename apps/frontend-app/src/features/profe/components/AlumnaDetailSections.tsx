@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useState } from "react";
+import { memo, useCallback, useState } from "react";
 import {
   AlertTriangle,
   ClipboardList,
@@ -11,10 +11,13 @@ import {
   Ruler,
   StickyNote,
 } from "lucide-react";
+import { InlineEditableSheetRow } from "@/components/sheet/InlineEditableSheetRow";
 import { MembresiaEditor } from "./MembresiaEditor";
 import { CoachNotaComposer } from "./CoachNotaComposer";
 import { UserAvatar } from "@/components/UserAvatar";
+import { patchAlumnaField } from "@/features/profe/lib/patch-alumna-field";
 import type { AlumnaDetail } from "@/types/usuario";
+import { fechaToDateInputValue } from "@/types/usuario";
 
 type SheetField = {
   label: string;
@@ -127,53 +130,13 @@ export function AlumnaProfileSections({
 
   const edad = calcularEdad(alumna.fechaNacimiento);
 
-  const contactoFields: SheetField[] = [
-    { label: "Email", value: alumna.email },
-    { label: "Teléfono", value: alumna.telefono },
-    { label: "Cédula", value: alumna.cedula },
-  ];
-
-  const datosFisicosFields: SheetField[] = [
-    {
-      label: "Fecha de nacimiento",
-      value: alumna.fechaNacimiento,
+  const saveField = useCallback(
+    async (payload: Record<string, unknown>) => {
+      await patchAlumnaField(alumna.id, payload);
+      onAlumnaUpdated?.();
     },
-    { label: "Edad", value: edad !== null ? `${edad} años` : undefined },
-    {
-      label: "Sexo",
-      value:
-        alumna.sexo === "hombre"
-          ? "Hombre"
-          : alumna.sexo === "mujer"
-            ? "Mujer"
-            : undefined,
-    },
-    {
-      label: "Altura",
-      value: alumna.alturaCm
-        ? `${alumna.alturaCm.toLocaleString("es-UY")} cm`
-        : undefined,
-    },
-  ];
-
-  const saludFields: SheetField[] = [
-    {
-      label: "Mutualista",
-      value: alumna.mutualista,
-      pending: isPending("mutualista"),
-    },
-    {
-      label: "Emergencia médica",
-      value: alumna.coberturaEmergenciaMedica,
-      pending: isPending("coberturaEmergenciaMedica"),
-    },
-    {
-      label: "Lesiones / patologías",
-      value: alumna.lesionesPatologias,
-      pending: isPending("lesionesPatologias"),
-    },
-    { label: "Alergias", value: alumna.alergias, pending: isPending("alergias") },
-  ];
+    [alumna.id, onAlumnaUpdated],
+  );
 
   const expedienteFields: SheetField[] = [
     { label: "Fecha de registro", value: alumna.fechaRegistro },
@@ -183,6 +146,13 @@ export function AlumnaProfileSections({
       : []),
     { label: "ID", value: alumna.id },
   ];
+
+  const sexoDisplay =
+    alumna.sexo === "hombre"
+      ? "Hombre"
+      : alumna.sexo === "mujer"
+        ? "Mujer"
+        : undefined;
 
   return (
     <div className="alumna-sheet">
@@ -233,20 +203,88 @@ export function AlumnaProfileSections({
         </div>
 
         <div className="alumna-sheet__body">
-          <SheetGroup
-            title="Contacto e identificación"
-            icon={<Phone size={15} />}
-            fields={contactoFields}
-          />
-          <SheetGroup
-            title="Datos físicos"
-            icon={<Ruler size={15} />}
-            fields={datosFisicosFields}
-          />
+          <SheetGroup title="Contacto e identificación" icon={<Phone size={15} />}>
+            <dl className="alumna-sheet__rows">
+              <InlineEditableSheetRow
+                label="Nombre"
+                value={alumna.nombre}
+                onSave={(v) => saveField({ nombre: v })}
+              />
+              <InlineEditableSheetRow
+                label="Email"
+                kind="email"
+                value={alumna.email}
+                onSave={(v) => saveField({ correo: v.trim().toLowerCase() })}
+              />
+              <InlineEditableSheetRow
+                label="Teléfono"
+                kind="tel"
+                value={alumna.telefono}
+                onSave={(v) => saveField({ telefono: v })}
+              />
+              <InlineEditableSheetRow
+                label="Cédula"
+                value={alumna.cedula ?? ""}
+                inputMode="numeric"
+                onSave={(v) => saveField({ cedula: v })}
+              />
+            </dl>
+          </SheetGroup>
+
+          <SheetGroup title="Datos físicos" icon={<Ruler size={15} />}>
+            <dl className="alumna-sheet__rows">
+              <InlineEditableSheetRow
+                label="Fecha de nacimiento"
+                kind="date"
+                value={fechaToDateInputValue(alumna.fechaNacimiento)}
+                displayValue={alumna.fechaNacimiento}
+                onSave={(v) =>
+                  saveField({
+                    fechaNacimiento: new Date(`${v}T12:00:00`).toISOString(),
+                  })
+                }
+              />
+              <SheetRow
+                field={{
+                  label: "Edad",
+                  value: edad !== null ? `${edad} años` : undefined,
+                }}
+              />
+              <InlineEditableSheetRow
+                label="Sexo"
+                kind="select"
+                value={alumna.sexo ?? ""}
+                displayValue={sexoDisplay}
+                selectOptions={[
+                  { value: "", label: "Sin especificar" },
+                  { value: "mujer", label: "Mujer" },
+                  { value: "hombre", label: "Hombre" },
+                ]}
+                onSave={(v) => saveField({ sexo: v || undefined })}
+              />
+              <InlineEditableSheetRow
+                label="Altura"
+                kind="number"
+                value={alumna.alturaCm ? String(alumna.alturaCm) : ""}
+                displayValue={
+                  alumna.alturaCm
+                    ? `${alumna.alturaCm.toLocaleString("es-UY")} cm`
+                    : undefined
+                }
+                onSave={(v) => {
+                  const n = Number(v);
+                  if (!Number.isFinite(n) || n <= 0) {
+                    throw new Error("Ingresá una altura válida en cm");
+                  }
+                  return saveField({ alturaCm: n });
+                }}
+              />
+            </dl>
+          </SheetGroup>
+
           <SheetGroup
             title="Salud y cobertura"
             icon={<HeartPulse size={15} />}
-            fields={saludFields}
             variant="salud"
           >
             {pendingHealthCount > 0 && onReviewHealthChanges ? (
@@ -266,7 +304,40 @@ export function AlumnaProfileSections({
                 </button>
               </div>
             ) : null}
+            <dl className="alumna-sheet__rows">
+              <InlineEditableSheetRow
+                label="Mutualista"
+                value={alumna.mutualista ?? ""}
+                pending={isPending("mutualista")}
+                highlight
+                onSave={(v) => saveField({ mutualista: v })}
+              />
+              <InlineEditableSheetRow
+                label="Emergencia médica"
+                value={alumna.coberturaEmergenciaMedica ?? ""}
+                pending={isPending("coberturaEmergenciaMedica")}
+                highlight
+                onSave={(v) => saveField({ coberturaEmergenciaMedica: v })}
+              />
+              <InlineEditableSheetRow
+                label="Lesiones / patologías"
+                kind="textarea"
+                value={alumna.lesionesPatologias ?? ""}
+                pending={isPending("lesionesPatologias")}
+                highlight
+                onSave={(v) => saveField({ lesionesPatologias: v })}
+              />
+              <InlineEditableSheetRow
+                label="Alergias"
+                kind="textarea"
+                value={alumna.alergias ?? ""}
+                pending={isPending("alergias")}
+                highlight
+                onSave={(v) => saveField({ alergias: v })}
+              />
+            </dl>
           </SheetGroup>
+
           <SheetGroup
             title="Expediente"
             icon={<ClipboardList size={15} />}

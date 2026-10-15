@@ -1,11 +1,12 @@
 "use client";
+import { FeedbackModal } from "@/components/FeedbackModal";
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { flushSync } from "react-dom";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import {
   ArrowRight,
   Bookmark,
   CalendarDays,
+  Copy,
   Cookie,
   Croissant,
   LoaderCircle,
@@ -16,7 +17,7 @@ import {
   Utensils,
   UtensilsCrossed,
 } from "lucide-react";
-import { Button } from "@/components";
+import { Button, Input } from "@/components";
 import { useAppDialog } from "@/components/AppDialogProvider";
 import {
   AlimentacionStepFooter,
@@ -24,14 +25,25 @@ import {
 } from "@/features/profe/components/alimentacion-plan/AlimentacionStepChrome";
 import { useAlimentacionPlan } from "@/features/profe/context/AlimentacionPlanProvider";
 import { PlanNutricionalComidaCard } from "@/features/profe/components/PlanNutricionalComidaCard";
+import { CopiarComidaADiasModal } from "@/features/profe/components/alimentacion-plan/CopiarComidaADiasModal";
+import { GenerarSemanaIaChatDialog } from "@/features/profe/components/alimentacion-plan/GenerarSemanaIaChatDialog";
 import { IaAplicacionModal } from "@/features/profe/components/alimentacion-plan/IaAplicacionModal";
 import { MacrosProgressBar } from "@/features/profe/components/MacrosProgressBar";
 import { AlimentacionOrigenGate } from "@/features/profe/components/alimentacion-plan/AlimentacionOrigenGate";
+import { ComidaDiaSortableBlock } from "@/features/profe/components/alimentacion-plan/ComidaDiaSortableBlock";
+import { ComidasDiaSortableList } from "@/features/profe/components/alimentacion-plan/ComidasDiaSortableList";
+import { arrayMove } from "@dnd-kit/sortable";
 import { useAlimentacionStepSave } from "@/features/profe/hooks/useAlimentacionStepSave";
 import {
   applyMacrosComidaToComida,
+  cloneComidaPlan,
+  cloneDiaPlanComidas,
+  comidaPlanTieneContenido,
+  createComidaParaDia,
   defaultMealName,
+  diaPlanTieneContenido,
   diasDesincronizadosConEstructura,
+  diasPermitenSyncConEstructura,
   planDiasTienenContenido,
   planDiasTienenEstructura,
   syncDiasConEstructura,
@@ -73,12 +85,24 @@ function resolveComidaNombre(
   comidaIndex: number,
   comida: ComidaPlan,
 ) {
+  if (comida.nombre?.trim()) return comida.nombre.trim();
   return (
     estructuraComidas[comidaIndex]?.nombre?.trim() ||
-    comida.nombre?.trim() ||
     defaultMealName(comidaIndex)
   );
 }
+
+function resolveComidaHorario(
+  estructuraComidas: { horario?: string }[],
+  comidaIndex: number,
+  comida: ComidaPlan,
+) {
+  if (comida.horario?.trim()) return comida.horario;
+  return estructuraComidas[comidaIndex]?.horario ?? "";
+}
+
+const MIN_COMIDAS_POR_DIA = 1;
+const MAX_COMIDAS_POR_DIA = 10;
 
 type IaModo = "sugerir" | "alternativa" | "ajustar";
 
@@ -100,47 +124,18 @@ export function AlimentacionComidasStep() {
     saving,
     error: draftError,
     saveDraft,
+    registerComidaFlush,
+    flushPendingEdits,
     refetch,
   } = useAlimentacionPlan();
   const dialog = useAppDialog();
 
   const stepSave = useAlimentacionStepSave();
-  const comidaFlushHandlersRef = useRef(new Set<() => void>());
-
-  const registerComidaFlush = useCallback((flush: () => void) => {
-    comidaFlushHandlersRef.current.add(flush);
-    return () => {
-      comidaFlushHandlersRef.current.delete(flush);
-    };
-  }, []);
-
-  const flushAllComidaEditors = useCallback(() => {
-    flushSync(() => {
-      comidaFlushHandlersRef.current.forEach((flush) => flush());
-    });
-  }, []);
-
-  const handleStepLinkClick = useCallback(
-    (href: string) => (event: React.MouseEvent<HTMLAnchorElement>) => {
-      if (
-        event.defaultPrevented ||
-        event.button !== 0 ||
-        event.metaKey ||
-        event.ctrlKey ||
-        event.shiftKey ||
-        event.altKey
-      ) {
-        return;
-      }
-      event.preventDefault();
-      flushAllComidaEditors();
-      void stepSave.navigateWithSave(href);
-    },
-    [flushAllComidaEditors, stepSave],
-  );
+  const { handleStepLinkClick } = stepSave;
 
   useEffect(() => {
     if (!estructuraComidas.length || !planDiasTienenEstructura(dias)) return;
+    if (!diasPermitenSyncConEstructura(dias, estructuraComidas)) return;
     if (!diasDesincronizadosConEstructura(dias, estructuraComidas)) return;
 
     setDias(syncDiasConEstructura(dias, estructuraComidas, macrosObjetivo));
@@ -150,6 +145,7 @@ export function AlimentacionComidasStep() {
     () => !planDiasTienenEstructura(dias),
   );
   const [generatingWeek, setGeneratingWeek] = useState(false);
+  const [weekChatOpen, setWeekChatOpen] = useState(false);
   const [generatingComida, setGeneratingComida] = useState(false);
   const [iaChoice, setIaChoice] = useState<{ comidaIndex: number; modo: IaModo } | null>(
     null,
@@ -157,6 +153,9 @@ export function AlimentacionComidasStep() {
   const [revision, setRevision] = useState<RevisionSugerencia | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [copyModal, setCopyModal] = useState<
+    { kind: "comida"; comidaIndex: number } | { kind: "dia" } | null
+  >(null);
 
   const planId = plan?._id ?? plan?.id;
   const selectedDia = dias[selectedDiaIndex] ?? dias[0];
@@ -165,7 +164,7 @@ export function AlimentacionComidasStep() {
 
   async function handleSaveDraft() {
     setMessage(null);
-    flushAllComidaEditors();
+    flushPendingEdits();
     const saved = await saveDraft();
     if (saved) {
       setMessage(isPublicado ? "Cambios guardados." : "Borrador guardado.");
@@ -196,11 +195,101 @@ export function AlimentacionComidasStep() {
     );
   }
 
+  function reorderComidasEnDia(fromIndex: number, toIndex: number) {
+    setDias((current) =>
+      current.map((dia, dIndex) => {
+        if (dIndex !== selectedDiaIndex) return dia;
+        return {
+          ...dia,
+          comidas: arrayMove(dia.comidas, fromIndex, toIndex),
+        };
+      }),
+    );
+    setRevision((current) => {
+      if (!current || current.diaIndex !== selectedDiaIndex) return current;
+      if (current.comidaIndex === fromIndex) {
+        return { ...current, comidaIndex: toIndex };
+      }
+      if (
+        fromIndex < current.comidaIndex &&
+        toIndex >= current.comidaIndex
+      ) {
+        return { ...current, comidaIndex: current.comidaIndex - 1 };
+      }
+      if (
+        fromIndex > current.comidaIndex &&
+        toIndex <= current.comidaIndex
+      ) {
+        return { ...current, comidaIndex: current.comidaIndex + 1 };
+      }
+      return current;
+    });
+  }
+
+  function insertComidaAfter(afterIndex: number) {
+    setDias((current) =>
+      current.map((dia, dIndex) => {
+        if (dIndex !== selectedDiaIndex) return dia;
+        if (dia.comidas.length >= MAX_COMIDAS_POR_DIA) return dia;
+        const nueva = createComidaParaDia(macrosObjetivo, dia.comidas.length);
+        const comidas = [...dia.comidas];
+        comidas.splice(afterIndex + 1, 0, {
+          ...nueva,
+          ingredientes: nueva.ingredientes.map((ing) => ({ ...ing })),
+        });
+        return { ...dia, comidas };
+      }),
+    );
+  }
+
+  async function removeComidaEnDia(comidaIndex: number) {
+    const dia = dias[selectedDiaIndex];
+    const comida = dia?.comidas[comidaIndex];
+    if (!comida || dia.comidas.length <= MIN_COMIDAS_POR_DIA) return;
+
+    if (comidaPlanTieneContenido(comida)) {
+      const nombre = resolveComidaNombre(estructuraComidas, comidaIndex, comida);
+      const confirmed = await dialog.confirm({
+        title: "Quitar comida",
+        message: `«${nombre}» tiene ingredientes o notas. Si la quitás, se pierde el contenido de esta comida en ${dia.nombre}. ¿Continuar?`,
+        tone: "warning",
+        confirmLabel: "Quitar comida",
+      });
+      if (!confirmed) return;
+    }
+
+    setDias((current) =>
+      current.map((d, dIndex) => {
+        if (dIndex !== selectedDiaIndex) return d;
+        return {
+          ...d,
+          comidas: d.comidas.filter((_, i) => i !== comidaIndex),
+        };
+      }),
+    );
+    setRevision((current) => {
+      if (!current || current.diaIndex !== selectedDiaIndex) return null;
+      if (current.comidaIndex === comidaIndex) return null;
+      if (current.comidaIndex > comidaIndex) {
+        return { ...current, comidaIndex: current.comidaIndex - 1 };
+      }
+      return current;
+    });
+  }
+
   function updateComida(
     diaIndex: number,
     comidaIndex: number,
     patch: Partial<ComidaPlan>,
   ) {
+    const patchForComida =
+      patch.ingredientes != null
+        ? {
+            ...patch,
+            ingredientes: patch.ingredientes.map((ing) => ({ ...ing })),
+          }
+        : patch;
+
     setDias((current) =>
       applyMacrosComidaToDias(
         current.map((dia, dIndex) =>
@@ -210,8 +299,11 @@ export function AlimentacionComidasStep() {
                 ...dia,
                 comidas: dia.comidas.map((comida, cIndex) =>
                   cIndex !== comidaIndex
-                    ? { ...comida, ...patch }
-                    : applyMacrosComidaToComida({ ...comida, ...patch }),
+                    ? comida
+                    : applyMacrosComidaToComida({
+                        ...comida,
+                        ...patchForComida,
+                      }),
                 ),
               },
         ),
@@ -285,26 +377,125 @@ export function AlimentacionComidasStep() {
     }
   }
 
-  function copyComidaToDay(fromDia: number, comidaIndex: number, toDia: number) {
+  function copyComidaToDays(
+    fromDia: number,
+    comidaIndex: number,
+    targetDiaIndexes: number[],
+  ) {
+    const targetSet = new Set(
+      targetDiaIndexes.filter(
+        (index) =>
+          index !== fromDia &&
+          index >= 0 &&
+          Number.isInteger(index),
+      ),
+    );
+    if (targetSet.size === 0) return;
+
     setDias((current) => {
       const source = current[fromDia]?.comidas[comidaIndex];
       if (!source) return current;
-      return current.map((dia, index) =>
-        index !== toDia
-          ? dia
-          : {
-              ...dia,
-              comidas: dia.comidas.map((comida, cIndex) =>
-                cIndex !== comidaIndex
-                  ? comida
-                  : {
-                      ...source,
-                      ingredientes: source.ingredientes.map((ing) => ({ ...ing })),
-                    },
-              ),
-            },
-      );
+      return current.map((dia, index) => {
+        if (!targetSet.has(index)) return dia;
+        return {
+          ...dia,
+          comidas: dia.comidas.map((comida, cIndex) =>
+            cIndex !== comidaIndex ? comida : cloneComidaPlan(source),
+          ),
+        };
+      });
     });
+  }
+
+  async function handleConfirmCopyComida(targetDiaIndexes: number[]) {
+    if (!copyModal || copyModal.kind !== "comida") return;
+    const { comidaIndex } = copyModal;
+    const fromDia = selectedDiaIndex;
+
+    const destinosConContenido = targetDiaIndexes.filter((toDia) => {
+      const comida = dias[toDia]?.comidas[comidaIndex];
+      return comida && comidaPlanTieneContenido(comida);
+    });
+
+    if (destinosConContenido.length > 0) {
+      const nombres = destinosConContenido
+        .map((index) => dias[index]?.nombre ?? `Día ${index + 1}`)
+        .join(", ");
+      const confirmed = await dialog.confirm({
+        title: "Reemplazar comidas",
+        message:
+          destinosConContenido.length === 1
+            ? `La comida en ${nombres} ya tiene contenido. Se va a reemplazar por la copia. ¿Continuar?`
+            : `Las comidas en ${nombres} ya tienen contenido. Se van a reemplazar por la copia. ¿Continuar?`,
+        tone: "warning",
+        confirmLabel: "Reemplazar y copiar",
+      });
+      if (!confirmed) return;
+    }
+
+    copyComidaToDays(fromDia, comidaIndex, targetDiaIndexes);
+    setCopyModal(null);
+    setMessage(
+      targetDiaIndexes.length === 1
+        ? "Comida copiada a 1 día."
+        : `Comida copiada a ${targetDiaIndexes.length} días.`,
+    );
+  }
+
+  function copyDiaToDays(fromDia: number, targetDiaIndexes: number[]) {
+    const targetSet = new Set(
+      targetDiaIndexes.filter(
+        (index) =>
+          index !== fromDia &&
+          index >= 0 &&
+          Number.isInteger(index),
+      ),
+    );
+    if (targetSet.size === 0) return;
+
+    setDias((current) => {
+      const source = current[fromDia];
+      if (!source) return current;
+      return current.map((dia, index) => {
+        if (!targetSet.has(index)) return dia;
+        return {
+          ...dia,
+          comidas: cloneDiaPlanComidas(source),
+        };
+      });
+    });
+  }
+
+  async function handleConfirmCopyDia(targetDiaIndexes: number[]) {
+    const fromDia = selectedDiaIndex;
+    const destinosConContenido = targetDiaIndexes.filter((toDia) => {
+      const dia = dias[toDia];
+      return dia && diaPlanTieneContenido(dia);
+    });
+
+    if (destinosConContenido.length > 0) {
+      const nombres = destinosConContenido
+        .map((index) => dias[index]?.nombre ?? `Día ${index + 1}`)
+        .join(", ");
+      const confirmed = await dialog.confirm({
+        title: "Reemplazar días",
+        message:
+          destinosConContenido.length === 1
+            ? `${nombres} ya tiene comidas cargadas. Se van a reemplazar por la copia del día entero. ¿Continuar?`
+            : `${nombres} ya tienen comidas cargadas. Se van a reemplazar por la copia del día entero. ¿Continuar?`,
+        tone: "warning",
+        confirmLabel: "Reemplazar y copiar",
+      });
+      if (!confirmed) return;
+    }
+
+    copyDiaToDays(fromDia, targetDiaIndexes);
+    setCopyModal(null);
+    setMessage(
+      targetDiaIndexes.length === 1
+        ? "Día copiado a 1 día."
+        : `Día copiado a ${targetDiaIndexes.length} días.`,
+    );
   }
 
   async function saveComidaAsTemplate(comida: ComidaPlan) {
@@ -326,7 +517,7 @@ export function AlimentacionComidasStep() {
     setMessage("Comida guardada como plantilla.");
   }
 
-  async function handleGenerateWeek() {
+  async function handleGenerateWeek(instruccion: string) {
     if (
       planDiasTienenContenido(dias) &&
       !(await dialog.confirm({
@@ -341,18 +532,21 @@ export function AlimentacionComidasStep() {
     setGeneratingWeek(true);
     setError(null);
     try {
+      const trimmed = instruccion.trim();
       const data = await generarBorradorSemana({
         alumnaId,
         planId,
         diasPlantilla: dias.map((d) => ({ nombre: d.nombre })),
         estructuraComidas,
         macrosObjetivo,
+        ...(trimmed ? { instruccion: trimmed } : {}),
       });
       if (data?.dias) {
         setDias(
           syncDiasConEstructura(data.dias, estructuraComidas, macrosObjetivo),
         );
       }
+      setWeekChatOpen(false);
       setMessage("Semana generada con IA. Revisá cada día.");
       refetch();
     } catch (err) {
@@ -489,7 +683,10 @@ export function AlimentacionComidasStep() {
                 variant="ghost"
                 className="ap-btn-sm ap-btn-ai"
                 disabled={generatingWeek}
-                onClick={() => void handleGenerateWeek()}
+                onClick={() => {
+                  setError(null);
+                  setWeekChatOpen(true);
+                }}
               >
                 {generatingWeek ? (
                   <LoaderCircle size={15} className="ap-spin" aria-hidden="true" />
@@ -534,7 +731,7 @@ export function AlimentacionComidasStep() {
                 : 0;
             return (
               <button
-                key={`${dia.nombre}-${diaIndex}`}
+                key={diaIndex}
                 type="button"
                 className={isActive ? "ap-day-tab is-active" : "ap-day-tab"}
                 aria-pressed={isActive}
@@ -564,249 +761,338 @@ export function AlimentacionComidasStep() {
       {selectedDia && selectedDiaMacros ? (
         <section className="ap-day-summary" aria-label={`Resumen de ${selectedDia.nombre}`}>
           <div className="ap-day-summary__head">
-            <span className="ap-day-summary__icon" aria-hidden="true">
-              <CalendarDays size={18} />
-            </span>
-            <div>
-              <h3 className="ap-day-summary__title">{selectedDia.nombre}</h3>
-              <p className="ap-day-summary__meta">
-                {selectedDia.comidas.length} comidas · progreso vs objetivo diario
-              </p>
+            <div className="ap-day-summary__head-main">
+              <span className="ap-day-summary__icon" aria-hidden="true">
+                <CalendarDays size={18} />
+              </span>
+              <div>
+                <h3 className="ap-day-summary__title">{selectedDia.nombre}</h3>
+                <p className="ap-day-summary__meta">
+                  {selectedDia.comidas.length} comidas · progreso vs objetivo diario
+                </p>
+              </div>
             </div>
+            {dias.length > 1 ? (
+              <Button
+                type="button"
+                variant="ghost"
+                className="ap-btn-sm"
+                onClick={() => setCopyModal({ kind: "dia" })}
+              >
+                <Copy size={15} aria-hidden="true" />
+                Copiar día a otros días
+              </Button>
+            ) : null}
           </div>
           <MacrosProgressBar objetivo={macrosObjetivo} actual={selectedDiaMacros} />
         </section>
       ) : null}
 
-      {selectedDia?.comidas.map((comida, comidaIndex) => {
-        const actual = sumComidaMacros(comida);
-        const objetivo = comida.macrosObjetivo;
-        const comidaNombre = resolveComidaNombre(
-          estructuraComidas,
-          comidaIndex,
-          comida,
-        );
-        const comidaHorario =
-          estructuraComidas[comidaIndex]?.horario ?? comida.horario;
-        const comidaParaEditor =
-          comida.nombre === comidaNombre && comida.horario === comidaHorario
-            ? comida
-            : { ...comida, nombre: comidaNombre, horario: comidaHorario };
-        return (
-          <article
-            key={`${selectedDiaIndex}-${comidaIndex}`}
-            className="alimentacion-comida-block"
-          >
-            <header className="alimentacion-comida-block__header">
-              <span className="alimentacion-comida-block__icon" aria-hidden="true">
-                {getMealIcon(comidaNombre)}
-              </span>
-              <div className="alimentacion-comida-block__heading">
-                <h4 className="alimentacion-comida-block__title">
-                  {comidaNombre}
-                </h4>
-                <p className="alimentacion-comida-block__subtitle">
-                  {comidaHorario ? `${comidaHorario} · ` : ""}
-                  {actual.kcal > 0 ? `${actual.kcal} kcal` : "Sin ingredientes"}
-                </p>
-              </div>
-              {objetivo ? (
-                <span className="ap-badge ap-badge--gold">
-                  Meta {objetivo.kcal} kcal
-                </span>
-              ) : null}
-            </header>
-            {objetivo ? (
-              <MacrosProgressBar objetivo={objetivo} actual={actual} />
-            ) : null}
-            <div className="alimentacion-comida-block__tools">
-              <div
-                className="alimentacion-comida-block__ia"
-                role="group"
-                aria-label="Asistente IA"
-              >
-                <span className="ap-toolgroup__label">
-                  <Sparkles size={14} aria-hidden="true" />
-                  IA
-                </span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="ap-btn-sm"
-                  disabled={generatingComida}
-                  onClick={() => requestGenerateComida(comidaIndex, "sugerir")}
-                >
-                  Sugerir
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="ap-btn-sm"
-                  disabled={generatingComida}
-                  onClick={() => requestGenerateComida(comidaIndex, "alternativa")}
-                >
-                  Alternativa
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="ap-btn-sm"
-                  disabled={generatingComida}
-                  onClick={() => requestGenerateComida(comidaIndex, "ajustar")}
-                >
-                  Ajustar proteína
-                </Button>
-              </div>
-              <div
-                className="alimentacion-comida-block__actions"
-                role="group"
-                aria-label="Acciones de la comida"
-              >
-                <select
-                  className="alimentacion-comida-block__copy"
-                  aria-label="Copiar comida a otro día"
-                  defaultValue=""
-                  onChange={(event) => {
-                    const to = Number(event.target.value);
-                    if (!Number.isNaN(to)) {
-                      copyComidaToDay(selectedDiaIndex, comidaIndex, to);
-                      event.target.value = "";
-                    }
-                  }}
-                >
-                  <option value="">Copiar a día…</option>
-                  {dias.map((dia, index) =>
-                    index === selectedDiaIndex ? null : (
-                      <option key={dia.nombre} value={index}>
-                        {dia.nombre}
-                      </option>
-                    ),
-                  )}
-                </select>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="ap-btn-sm"
-                  onClick={() => void saveComidaAsTemplate(comida)}
-                >
-                  <Bookmark size={15} aria-hidden="true" />
-                  Guardar plantilla
-                </Button>
-              </div>
-            </div>
-            <PlanNutricionalComidaCard
-              comida={comidaParaEditor}
-              diaIndex={selectedDiaIndex}
-              comidaIndex={comidaIndex}
-              canRemove={false}
-              lockMealMeta
-              registerFlush={registerComidaFlush}
-              sugerencias={
-                revision &&
-                revision.diaIndex === selectedDiaIndex &&
-                revision.comidaIndex === comidaIndex
-                  ? revision.items
-                  : undefined
-              }
-              onAcceptSugerencia={acceptSugerencia}
-              onRejectSugerencia={rejectSugerencia}
-              onUpdate={(patch) =>
-                updateComida(selectedDiaIndex, comidaIndex, patch)
-              }
-              onSelectAlimento={(ingredienteIndex, alimento) =>
-                handleSelectAlimento(
-                  selectedDiaIndex,
-                  comidaIndex,
-                  ingredienteIndex,
-                  alimento,
-                )
-              }
-              onCantidadChange={(ingredienteIndex, ingrediente, cantidad) =>
-                handleCantidadChange(
-                  selectedDiaIndex,
-                  comidaIndex,
-                  ingredienteIndex,
-                  ingrediente,
-                  cantidad,
-                )
-              }
-              onUpdateIngrediente={(ingredienteIndex, patch) =>
-                updateIngrediente(
-                  selectedDiaIndex,
-                  comidaIndex,
-                  ingredienteIndex,
-                  patch,
-                )
-              }
-              onAddIngrediente={() =>
-                setDias((current) =>
-                  current.map((dia, dIndex) => {
-                    if (dIndex !== selectedDiaIndex) return dia;
-                    return {
-                      ...dia,
-                      comidas: dia.comidas.map((c, cIndex) =>
-                        cIndex !== comidaIndex
-                          ? c
-                          : {
-                              ...c,
-                              ingredientes: [
-                                ...c.ingredientes,
-                                createEmptyIngrediente(),
-                              ],
-                            },
-                      ),
-                    };
-                  }),
-                )
-              }
-              onRemoveIngrediente={(ingredienteIndex) =>
-                setDias((current) =>
-                  current.map((dia, dIndex) => {
-                    if (dIndex !== selectedDiaIndex) return dia;
-                    return {
-                      ...dia,
-                      comidas: dia.comidas.map((c, cIndex) => {
-                        if (cIndex !== comidaIndex || c.ingredientes.length <= 1) {
-                          return c;
+      {selectedDia ? (
+        <ComidasDiaSortableList
+          diaIndex={selectedDiaIndex}
+          itemCount={selectedDia.comidas.length}
+          onReorder={reorderComidasEnDia}
+          onInsertAfter={insertComidaAfter}
+          renderBlock={(comidaIndex, sortableId) => {
+            const comida = selectedDia.comidas[comidaIndex];
+            if (!comida) return null;
+            const actual = sumComidaMacros(comida);
+            const objetivo = comida.macrosObjetivo;
+            const comidaNombre = resolveComidaNombre(
+              estructuraComidas,
+              comidaIndex,
+              comida,
+            );
+            const nombrePlaceholder = resolveComidaNombre(
+              estructuraComidas,
+              comidaIndex,
+              { ...comida, nombre: "" },
+            );
+            const horarioPlaceholder =
+              estructuraComidas[comidaIndex]?.horario?.trim() || "08:00";
+            const canRemoveComida = selectedDia.comidas.length > MIN_COMIDAS_POR_DIA;
+            return (
+              <ComidaDiaSortableBlock
+                sortableId={sortableId}
+                dragLabel={`Reordenar ${comidaNombre}`}
+                canRemove={canRemoveComida}
+                onRemove={() => void removeComidaEnDia(comidaIndex)}
+                header={
+                  <header className="alimentacion-comida-block__header alimentacion-comida-block__header--editable">
+                    <span
+                      className="alimentacion-comida-block__icon"
+                      aria-hidden="true"
+                    >
+                      {getMealIcon(comida.nombre?.trim() || comidaNombre)}
+                    </span>
+                    <div className="alimentacion-comida-block__heading alimentacion-comida-block__heading--meta">
+                      <Input
+                        label="Comida"
+                        name={`comida-nombre-${selectedDiaIndex}-${comidaIndex}`}
+                        value={comida.nombre}
+                        placeholder={nombrePlaceholder}
+                        onChange={(e) =>
+                          updateComida(selectedDiaIndex, comidaIndex, {
+                            nombre: e.target.value,
+                          })
                         }
+                      />
+                      <Input
+                        label="Horario"
+                        name={`comida-horario-${selectedDiaIndex}-${comidaIndex}`}
+                        value={comida.horario ?? ""}
+                        placeholder={horarioPlaceholder}
+                        onChange={(e) =>
+                          updateComida(selectedDiaIndex, comidaIndex, {
+                            horario: e.target.value,
+                          })
+                        }
+                      />
+                      <p className="alimentacion-comida-block__subtitle">
+                        {actual.kcal > 0
+                          ? `${actual.kcal} kcal`
+                          : "Sin ingredientes"}
+                      </p>
+                    </div>
+                    {objetivo ? (
+                      <span className="ap-badge ap-badge--gold">
+                        Meta {objetivo.kcal} kcal
+                      </span>
+                    ) : null}
+                  </header>
+                }
+              >
+                {objetivo ? (
+                  <MacrosProgressBar objetivo={objetivo} actual={actual} />
+                ) : null}
+                <div className="alimentacion-comida-block__tools">
+                  <div
+                    className="alimentacion-comida-block__ia"
+                    role="group"
+                    aria-label="Asistente IA"
+                  >
+                    <span className="ap-toolgroup__label">
+                      <Sparkles size={14} aria-hidden="true" />
+                      IA
+                    </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="ap-btn-sm"
+                      disabled={generatingComida}
+                      onClick={() => requestGenerateComida(comidaIndex, "sugerir")}
+                    >
+                      Sugerir
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="ap-btn-sm"
+                      disabled={generatingComida}
+                      onClick={() =>
+                        requestGenerateComida(comidaIndex, "alternativa")
+                      }
+                    >
+                      Alternativa
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="ap-btn-sm"
+                      disabled={generatingComida}
+                      onClick={() => requestGenerateComida(comidaIndex, "ajustar")}
+                    >
+                      Ajustar proteína
+                    </Button>
+                  </div>
+                  <div
+                    className="alimentacion-comida-block__actions"
+                    role="group"
+                    aria-label="Acciones de la comida"
+                  >
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="ap-btn-sm"
+                      onClick={() => setCopyModal({ kind: "comida", comidaIndex })}
+                    >
+                      <Copy size={15} aria-hidden="true" />
+                      Copiar a otros días
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="ap-btn-sm"
+                      onClick={() => void saveComidaAsTemplate(comida)}
+                    >
+                      <Bookmark size={15} aria-hidden="true" />
+                      Guardar plantilla
+                    </Button>
+                  </div>
+                </div>
+                <PlanNutricionalComidaCard
+                  comida={comida}
+                  diaIndex={selectedDiaIndex}
+                  comidaIndex={comidaIndex}
+                  canRemove={false}
+                  lockMealMeta
+                  registerFlush={registerComidaFlush}
+                  sugerencias={
+                    revision &&
+                    revision.diaIndex === selectedDiaIndex &&
+                    revision.comidaIndex === comidaIndex
+                      ? revision.items
+                      : undefined
+                  }
+                  onAcceptSugerencia={acceptSugerencia}
+                  onRejectSugerencia={rejectSugerencia}
+                  onUpdate={(patch) =>
+                    updateComida(selectedDiaIndex, comidaIndex, patch)
+                  }
+                  onSelectAlimento={(ingredienteIndex, alimento) =>
+                    handleSelectAlimento(
+                      selectedDiaIndex,
+                      comidaIndex,
+                      ingredienteIndex,
+                      alimento,
+                    )
+                  }
+                  onCantidadChange={(ingredienteIndex, ingrediente, cantidad) =>
+                    handleCantidadChange(
+                      selectedDiaIndex,
+                      comidaIndex,
+                      ingredienteIndex,
+                      ingrediente,
+                      cantidad,
+                    )
+                  }
+                  onUpdateIngrediente={(ingredienteIndex, patch) =>
+                    updateIngrediente(
+                      selectedDiaIndex,
+                      comidaIndex,
+                      ingredienteIndex,
+                      patch,
+                    )
+                  }
+                  onAddIngrediente={() =>
+                    setDias((current) =>
+                      current.map((dia, dIndex) => {
+                        if (dIndex !== selectedDiaIndex) return dia;
                         return {
-                          ...c,
-                          ingredientes: c.ingredientes.filter(
-                            (_, i) => i !== ingredienteIndex,
+                          ...dia,
+                          comidas: dia.comidas.map((c, cIndex) =>
+                            cIndex !== comidaIndex
+                              ? c
+                              : {
+                                  ...c,
+                                  ingredientes: [
+                                    ...c.ingredientes,
+                                    createEmptyIngrediente(),
+                                  ],
+                                },
                           ),
                         };
                       }),
-                    };
-                  }),
-                )
-              }
-              onRemoveComida={() => undefined}
-            />
-          </article>
-        );
-      })}
+                    )
+                  }
+                  onRemoveIngrediente={(ingredienteIndex) =>
+                    setDias((current) =>
+                      current.map((dia, dIndex) => {
+                        if (dIndex !== selectedDiaIndex) return dia;
+                        return {
+                          ...dia,
+                          comidas: dia.comidas.map((c, cIndex) => {
+                            if (
+                              cIndex !== comidaIndex ||
+                              c.ingredientes.length <= 1
+                            ) {
+                              return c;
+                            }
+                            return {
+                              ...c,
+                              ingredientes: c.ingredientes.filter(
+                                (_, i) => i !== ingredienteIndex,
+                              ),
+                            };
+                          }),
+                        };
+                      }),
+                    )
+                  }
+                  onRemoveComida={() => undefined}
+                />
+              </ComidaDiaSortableBlock>
+            );
+          }}
+        />
+      ) : null}
 
-      {draftError ? (
-        <p className="auth-error" role="alert">
-          {draftError}
-        </p>
-      ) : null}
-      {error ? (
-        <p className="auth-error" role="alert">
-          {error}
-        </p>
-      ) : null}
-      {message ? (
-        <p className="ap-inline-note ap-inline-note--success" role="status">
-          {message}
-        </p>
-      ) : null}
+      <FeedbackModal message={draftError} />
+      <FeedbackModal message={weekChatOpen ? null : error} />
+      <FeedbackModal message={message} tone="success" />
+
+      <GenerarSemanaIaChatDialog
+        open={weekChatOpen}
+        generating={generatingWeek}
+        error={error}
+        onCancel={() => {
+          if (generatingWeek) return;
+          setWeekChatOpen(false);
+        }}
+        onGenerate={handleGenerateWeek}
+      />
 
       <IaAplicacionModal
         open={iaChoice !== null}
         onCancel={() => setIaChoice(null)}
         onApplyAll={() => void runGenerateComida("toda")}
         onReviewEach={() => void runGenerateComida("individual")}
+      />
+
+      <CopiarComidaADiasModal
+        open={copyModal !== null}
+        dias={dias}
+        fromDiaIndex={selectedDiaIndex}
+        title={
+          copyModal?.kind === "dia"
+            ? "Copiar día a otros días"
+            : "Copiar comida a otros días"
+        }
+        description={
+          copyModal?.kind === "dia" ? (
+            <>
+              Se van a copiar todas las comidas de{" "}
+              <strong>{selectedDia?.nombre ?? "este día"}</strong>. Elegí los
+              días destino.
+            </>
+          ) : (
+            <>
+              <strong>
+                {copyModal?.kind === "comida"
+                  ? resolveComidaNombre(
+                      estructuraComidas,
+                      copyModal.comidaIndex,
+                      selectedDia?.comidas[copyModal.comidaIndex] ?? {
+                        nombre: "",
+                        ingredientes: [],
+                      },
+                    )
+                  : ""}
+              </strong>{" "}
+              desde <strong>{selectedDia?.nombre ?? "este día"}</strong>. Elegí
+              los días destino.
+            </>
+          )
+        }
+        onCancel={() => setCopyModal(null)}
+        onConfirm={(targetDiaIndexes) => {
+          if (copyModal?.kind === "dia") {
+            void handleConfirmCopyDia(targetDiaIndexes);
+            return;
+          }
+          void handleConfirmCopyComida(targetDiaIndexes);
+        }}
       />
 
       <AlimentacionStepFooter
@@ -820,7 +1106,6 @@ export function AlimentacionComidasStep() {
           type="button"
           className="btn btn--primary ap-footer__cta"
           onClick={() => {
-            flushAllComidaEditors();
             void stepSave.navigateWithSave(
               profeAlumnaAlimentacionStepRoute(alumnaId, "revisar"),
             );

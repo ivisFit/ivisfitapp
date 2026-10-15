@@ -7,6 +7,7 @@ import { JSON_BODY_LIMIT } from "./config/http-limits.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { requireAuth } from "./middleware/requireAuth.js";
 import { comprobantesRouter } from "./routes/comprobantes.routes.js";
+import { medicionesFotosRouter } from "./routes/mediciones-fotos.routes.js";
 import { chatbotPublicRouter } from "./routes/chatbot.public.routes.js";
 import { landingPlanesPublicRouter } from "./routes/landing-planes.public.routes.js";
 import { apiRouter } from "./routes/index.js";
@@ -33,6 +34,7 @@ export function createApp() {
   app.use("/api/comprobantes-pago", comprobantesRouter);
   app.use("/api/chatbot", chatbotPublicRouter);
   app.use("/api/landing-planes", landingPlanesPublicRouter);
+  app.use("/api/mediciones/fotos", requireAuth, medicionesFotosRouter);
 
   app.use(express.json({ limit: JSON_BODY_LIMIT }));
 

@@ -1,4 +1,5 @@
 "use client";
+import { FeedbackModal } from "@/components/FeedbackModal";
 
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
@@ -246,7 +247,7 @@ export function GestionTutoriales({
               </Button>
             ) : null}
           </div>
-          {error ? <p className="auth-error">{error}</p> : null}
+          <FeedbackModal message={error} />
         </form>
       </section>
 

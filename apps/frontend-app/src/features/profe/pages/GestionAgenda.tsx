@@ -1,4 +1,5 @@
 "use client";
+import { FeedbackModal } from "@/components/FeedbackModal";
 
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components";
@@ -144,11 +145,7 @@ export function GestionAgenda({
         </div>
       ) : null}
 
-      {error ? (
-        <section>
-          <p className="auth-error">{error}</p>
-        </section>
-      ) : null}
+      <FeedbackModal message={error} />
 
       {loading ? (
         <div aria-busy="true" aria-label="Cargando agenda">

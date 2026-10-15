@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  repeticionesPorSerieMatchesSeries,
+  repeticionesPorSerieSchema,
+} from "./shared";
 
 export const mediaAssetSchema = z.object({
   type: z.enum(["image", "video", "gif"]),
@@ -7,13 +11,19 @@ export const mediaAssetSchema = z.object({
   posterUrl: z.string().trim().url().optional(),
 });
 
-export const ejercicioRutinaBlueprintSchema = z.object({
-  ejercicioId: z.string().min(1),
-  series: z.number().int().min(1).max(8),
-  repeticiones: z.number().int().min(1).max(25),
-  descansoSegundos: z.number().int().positive(),
-  media: mediaAssetSchema.optional(),
-});
+export const ejercicioRutinaBlueprintSchema = z
+  .object({
+    ejercicioId: z.string().min(1),
+    series: z.number().int().min(1).max(8),
+    repeticiones: z.number().int().min(1).max(25),
+    repeticionesPorSerie: repeticionesPorSerieSchema,
+    descansoSegundos: z.number().int().positive(),
+    media: mediaAssetSchema.optional(),
+  })
+  .refine(repeticionesPorSerieMatchesSeries, {
+    message: "repeticionesPorSerie debe coincidir con la cantidad de series",
+    path: ["repeticionesPorSerie"],
+  });
 
 export const diaRutinaBlueprintSchema = z.object({
   nombreDia: z.string().min(1),

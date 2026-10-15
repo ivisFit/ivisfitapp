@@ -20,11 +20,22 @@ import {
   loadCatalogoParaPlan,
   resolverDiasAlCatalogo,
 } from "../lib/plan-catalog-ingredientes.js";
+import {
+  normalizeAlimentoNombre,
+  type CatalogAlimentoMacros,
+} from "../lib/alimento-catalog-match.js";
+import {
+  buildTokensExcluidos,
+  filtrarCatalogoPorCondicionesSemana,
+  filtrarDiasPlanPorCondiciones,
+  parseCondicionesSemana,
+} from "../lib/plan-condiciones-semana.js";
 import { AppError, assertFound } from "../utils/errors.js";
 import { medicionesService } from "./mediciones.service.js";
 import {
   nutritionGeminiService,
   sanitizePlanDias,
+  type CondicionesDia,
 } from "./nutrition-gemini.service.js";
 
 const DEFAULT_MEAL_NAMES = [
@@ -122,8 +133,12 @@ async function enrichDiasConMacros(
 
 async function matchIngredientesConCatalogo(
   dias: DiaPlanNutricional[],
+  catalogOverride?: CatalogAlimentoMacros[],
 ): Promise<DiaPlanNutricional[]> {
-  const catalog = await loadCatalogoParaPlan();
+  const catalog =
+    catalogOverride?.length
+      ? catalogOverride
+      : await loadCatalogoParaPlan();
   if (catalog.length === 0) return dias;
   return resolverDiasAlCatalogo(dias, catalog);
 }
@@ -567,6 +582,7 @@ export const planNutricionalService = {
     diasPlantilla?: { nombre: string }[],
     estructuraComidas?: EstructuraComida[],
     macrosOverride?: MacrosObjetivo,
+    instruccion?: string,
   ) {
     const evaluacion = await EvaluacionNutricional.findOne({
       alumnaId,
@@ -612,12 +628,51 @@ export const planNutricionalService = {
           : buildDefaultEstructura(evalObj.cantidadComidas);
 
     const catalogRaw = await loadCatalogoParaPlan();
-    const catalog = filtrarCatalogoPorEvaluacion(catalogRaw, evalObj);
+    let catalog = filtrarCatalogoPorEvaluacion(catalogRaw, evalObj);
     if (catalog.length === 0) {
       throw new AppError(
         400,
         "No hay alimentos en el catálogo (o todos quedaron excluidos por alergias/evitados). Cargá alimentos antes de usar IA.",
       );
+    }
+
+    let condicionesDia: CondicionesDia | undefined;
+    const textoCondiciones = instruccion?.trim();
+    if (textoCondiciones) {
+      const parseadas = parseCondicionesSemana(textoCondiciones);
+      const interpretadas = await nutritionGeminiService.interpretarCondiciones(
+        textoCondiciones,
+        catalog,
+      );
+      const terminosIa = interpretadas.excluirTerminos
+        .map((t) => normalizeAlimentoNombre(t))
+        .filter((t) => t.length >= 3);
+      const parseadasMerged = {
+        ...parseadas,
+        terminosExclusion: Array.from(
+          new Set([...parseadas.terminosExclusion, ...terminosIa]),
+        ),
+      };
+      const { catalog: catalogFiltrado, excluidos } = filtrarCatalogoPorCondicionesSemana(
+        catalog,
+        parseadasMerged,
+        interpretadas.excluirIds,
+      );
+      catalog = catalogFiltrado;
+      if (catalog.length === 0) {
+        throw new AppError(
+          400,
+          "Las condiciones excluyen todos los alimentos del catálogo. Revisalas e intentá de nuevo.",
+        );
+      }
+      const reglas = Array.from(
+        new Set([...parseadas.reglas, ...interpretadas.reglas]),
+      );
+      condicionesDia = {
+        texto: textoCondiciones,
+        reglas,
+        tokensExcluidos: buildTokensExcluidos(parseadasMerged, excluidos),
+      };
     }
 
     const comidasSlots = buildComidasSlots(estructura, macrosObjetivo);
@@ -634,6 +689,7 @@ export const planNutricionalService = {
         diasPreviosResumen: resumenes,
         catalog,
         diaSeed: diaIndex,
+        condiciones: condicionesDia,
       });
       diasGenerados.push(dia);
       resumenes.push(summarizeDia(dia));
@@ -654,9 +710,16 @@ export const planNutricionalService = {
       estructura,
       macrosObjetivo,
     );
-    const diasMatched = await matchIngredientesConCatalogo(
+    let diasMatched = await matchIngredientesConCatalogo(
       sanitizePlanDias(diasAlineados),
+      catalog,
     );
+    if (condicionesDia?.tokensExcluidos.length) {
+      diasMatched = resolverDiasAlCatalogo(
+        filtrarDiasPlanPorCondiciones(diasMatched, condicionesDia.tokensExcluidos),
+        catalog,
+      );
+    }
     const diasEnriched = await enrichDiasConMacros(diasMatched);
     const toSave = { ...finalizedDraft, dias: diasEnriched };
 

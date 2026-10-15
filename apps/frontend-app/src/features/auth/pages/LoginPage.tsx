@@ -14,6 +14,12 @@ import {
 import { PwaInstallButton } from "@/components/pwa/PwaInstallButton";
 import { publicRoutes } from "@/routes/paths";
 import { prefetchPostLoginRoutes } from "@/lib/prefetch-app-routes";
+import { normalizeAuthEmail } from "@/lib/auth-errors";
+import {
+  clearRememberedLogin,
+  loadRememberedLogin,
+  saveRememberedLogin,
+} from "@/features/auth/lib/remember-login";
 import type { AuthUser } from "@/types/auth";
 
 function getPostLoginRoute(user: AuthUser, returnTo: string | null): string {
@@ -28,12 +34,31 @@ export function LoginPage() {
   const resetSuccess = searchParams.get("reset") === "ok";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const saved = loadRememberedLogin();
+    if (!saved) {
+      return;
+    }
+    setEmail(saved.email);
+    setPassword(saved.password);
+    setRememberMe(true);
+  }, []);
+
+  useEffect(() => {
     prefetchPostLoginRoutes(router, user?.role ?? null);
   }, [router, user?.role]);
+
+  function persistRememberCredentials() {
+    if (rememberMe) {
+      saveRememberedLogin(normalizeAuthEmail(email), password);
+    } else {
+      clearRememberedLogin();
+    }
+  }
 
   useEffect(() => {
     if (!user || submitting) return;
@@ -61,6 +86,7 @@ export function LoginPage() {
 
     try {
       const result = await login(email, password);
+      persistRememberCredentials();
 
       if (result.status === "needs2fa") {
         setSubmitting(false);
@@ -137,6 +163,15 @@ export function LoginPage() {
           value={password}
           onChange={(event) => setPassword(event.target.value)}
         />
+        <label className="auth-checkbox">
+          <input
+            type="checkbox"
+            checked={rememberMe}
+            disabled={isLoggingIn}
+            onChange={(event) => setRememberMe(event.target.checked)}
+          />
+          <span>Recordar usuario y contraseña</span>
+        </label>
         <p className="auth-link-row">
           <Link className="auth-link" href={publicRoutes.recuperar}>
             ¿Olvidaste tu contraseña?

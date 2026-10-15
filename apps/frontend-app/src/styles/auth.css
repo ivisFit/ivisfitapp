@@ -302,6 +302,19 @@
   box-shadow: 0 0 0 2px rgb(225 170 67 / 28%);
 }
 
+.auth-card--login .field--password .field__input {
+  padding-right: 2.75rem;
+}
+
+.auth-card--login .field__toggle-password {
+  z-index: 1;
+}
+
+.auth-card--login .auth-checkbox {
+  color: rgb(255 255 255 / 78%);
+  font-size: 0.8125rem;
+}
+
 .auth-card--login .auth-link-row {
   margin: -0.15rem 0 0.15rem;
 }

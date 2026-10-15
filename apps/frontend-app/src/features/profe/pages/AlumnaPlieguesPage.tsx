@@ -16,8 +16,10 @@ import { useAlumna } from "@/features/profe/hooks/useAlumna";
 import type { AlumnaDetail } from "@/types/usuario";
 import { useAlumnaMediciones } from "@/features/profe/hooks/useAlumnaMediciones";
 import type { MetodoCalculo } from "@/features/profe/types/medicion";
+import { countMedicionesConFotosProgreso } from "@/features/profe/lib/pliegues-fotos-historial";
 import {
   profeAlumnaDetailRoute,
+  profeAlumnaPlieguesFotosRoute,
   profeRoutes,
 } from "@/routes/paths";
 import {
@@ -27,6 +29,7 @@ import {
 } from "@/features/profe/utils/pliegues-period";
 import type { Sexo } from "@/types/usuario";
 import { useMediaQuery, isMobileQuery } from "@/hooks/useMediaQuery";
+import "@/styles/pliegues-fotos-historial.css";
 
 const PlieguesHistoryChart = dynamic(
   () =>
@@ -111,6 +114,11 @@ export function PlieguesContent({
     return filterMedicionesByMetodo(byPeriod, metodoCalculo);
   }, [mediciones, period, metodoCalculo]);
 
+  const medicionesConFotosCount = useMemo(
+    () => countMedicionesConFotosProgreso(mediciones),
+    [mediciones],
+  );
+
   if (loading) {
     return (
       <SkeletonStack aria-busy={true} aria-label="Cargando pliegues">
@@ -152,7 +160,20 @@ export function PlieguesContent({
               circunferencias (US Navy). Elegí el método y registrá cada medición.
             </p>
           </div>
-          <PlieguesPeriodFilter value={period} onChange={setPeriod} />
+          <div className="pliegues-hero__actions">
+            <Link
+              href={profeAlumnaPlieguesFotosRoute(alumnaId)}
+              className="pliegues-fotos-historial-link"
+            >
+              Historial de fotos
+              {medicionesConFotosCount > 0 ? (
+                <span className="pliegues-fotos-historial-link__badge">
+                  {medicionesConFotosCount}
+                </span>
+              ) : null}
+            </Link>
+            <PlieguesPeriodFilter value={period} onChange={setPeriod} />
+          </div>
         </div>
         <MetodoCalculoSelector
           value={metodoCalculo}

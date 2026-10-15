@@ -165,8 +165,10 @@ function mergeComidaConSlot(
   }
   return applyMacrosComidaToComida({
     ...comida,
-    nombre: slot.nombre,
-    horario: slot.horario,
+    nombre: comida.nombre?.trim() ? comida.nombre : slot.nombre,
+    horario: comida.horario?.trim()
+      ? comida.horario
+      : (slot.horario ?? ""),
     macrosObjetivo: macrosObjetivoComida,
     ingredientes: comida.ingredientes.map((ing) => ({ ...ing })),
   });
@@ -189,38 +191,94 @@ export function defaultMealName(index: number): string {
   return MEAL_NAMES[index] ?? `Comida ${index + 1}`;
 }
 
+export function reorderArrayAt<T>(items: T[], from: number, to: number): T[] {
+  if (
+    from === to ||
+    from < 0 ||
+    to < 0 ||
+    from >= items.length ||
+    to >= items.length
+  ) {
+    return items;
+  }
+  const next = [...items];
+  const [moved] = next.splice(from, 1);
+  next.splice(to, 0, moved);
+  return next;
+}
+
+export function mapDiasComidas(
+  dias: DiaPlanNutricional[],
+  mapComidas: (comidas: ComidaPlan[]) => ComidaPlan[],
+): DiaPlanNutricional[] {
+  return dias.map((dia) => ({
+    ...dia,
+    comidas: mapComidas(dia.comidas),
+  }));
+}
+
+export function diasPermitenSyncConEstructura(
+  dias: DiaPlanNutricional[],
+  estructura: EstructuraComida[],
+) {
+  if (!estructura.length || !dias.length) return false;
+  return dias.every((dia) => dia.comidas.length === estructura.length);
+}
+
+export function createComidaParaDia(
+  macrosObjetivo: MacrosObjetivo,
+  comidasEnDia: number,
+): ComidaPlan {
+  const nextCount = comidasEnDia + 1;
+  const porcentajeKcal = Math.floor(100 / nextCount);
+  return buildEmptyComidaSlot(
+    {
+      nombre: defaultMealName(comidasEnDia),
+      horario: "",
+      porcentajeKcal,
+    },
+    macrosObjetivo,
+  );
+}
+
 export function diasDesincronizadosConEstructura(
   dias: DiaPlanNutricional[],
   estructuraComidas: EstructuraComida[],
 ) {
   if (!estructuraComidas.length) return false;
-  return dias.some((dia) =>
-    dia.comidas.length !== estructuraComidas.length ||
-    dia.comidas.some((comida, index) => {
-      const slot = estructuraComidas[index];
-      if (!slot) return false;
-      return (
-        comida.nombre !== slot.nombre ||
-        (comida.horario ?? "") !== (slot.horario ?? "")
-      );
-    }),
+  return dias.some((dia) => dia.comidas.length !== estructuraComidas.length);
+}
+
+export function comidaPlanTieneContenido(comida: ComidaPlan): boolean {
+  return (
+    Boolean(comida.preparacion?.trim()) ||
+    Boolean(comida.notas?.trim()) ||
+    comida.ingredientes.some(
+      (ing) =>
+        ing.nombre.trim() !== "" ||
+        ing.kcal != null ||
+        Boolean(ing.alimentoId),
+    )
   );
 }
 
+export function cloneComidaPlan(comida: ComidaPlan): ComidaPlan {
+  return {
+    ...comida,
+    ingredientes: comida.ingredientes.map((ing) => ({ ...ing })),
+  };
+}
+
+export function diaPlanTieneContenido(dia: DiaPlanNutricional): boolean {
+  return dia.comidas.some(comidaPlanTieneContenido);
+}
+
+export function cloneDiaPlanComidas(dia: DiaPlanNutricional): ComidaPlan[] {
+  return dia.comidas.map(cloneComidaPlan);
+}
+
 export function planDiasTienenContenido(dias: DiaPlanNutricional[]) {
-  return dias.some((dia) =>
-    dia.comidas.some(
-      (comida) =>
-        Boolean(comida.preparacion?.trim()) ||
-        Boolean(comida.notas?.trim()) ||
-        comida.ingredientes.some(
-          (ing) =>
-            ing.nombre.trim() !== "" ||
-            ing.kcal != null ||
-            Boolean(ing.alimentoId),
-        ),
-    ),
-  );
+  return dias.some((dia) => dia.comidas.some(comidaPlanTieneContenido));
 }
 
 export function applyMacrosComidaToComida(comida: ComidaPlan): ComidaPlan {

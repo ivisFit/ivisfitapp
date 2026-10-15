@@ -1,10 +1,19 @@
 "use client";
+import { FeedbackModal } from "@/components/FeedbackModal";
 
 import { useState, useEffect } from "react";
 import type { FormEvent } from "react";
 import { Button, Input } from "@/components";
 import { CircunferenciaForm } from "@/components/mediciones/CircunferenciaForm";
+import {
+  buildFotosProgresoPayload,
+  emptyFotosProgresoState,
+  hasFotosProgreso,
+  MedicionFotosProgresoFields,
+} from "@/components/mediciones/MedicionFotosProgresoFields";
+import type { FotosProgresoSlot, MedicionImagen } from "@/features/profe/types/medicion";
 import { apiFetch, ApiError } from "@/lib/api";
+import { invalidateCache } from "@/lib/apiCache";
 import type { Sexo } from "@/types/usuario";
 import { JP7_PLIEGUE_SITES } from "@/lib/jp7-pliegues";
 import type {
@@ -153,13 +162,16 @@ function SkinfoldPlieguesForm({
   onDirtyChange?: (dirty: boolean) => void;
 }) {
   const [form, setForm] = useState<FormState>(getEmptyForm);
+  const [fotosProgreso, setFotosProgreso] = useState<
+    Partial<Record<FotosProgresoSlot, MedicionImagen | null>>
+  >(emptyFotosProgresoState);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    onDirtyChange?.(isSkinfoldFormDirty(form));
-  }, [form, onDirtyChange]);
+    onDirtyChange?.(isSkinfoldFormDirty(form) || hasFotosProgreso(fotosProgreso));
+  }, [form, fotosProgreso, onDirtyChange]);
 
   function handleChange(
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -211,6 +223,11 @@ function SkinfoldPlieguesForm({
       payload.notas = notas;
     }
 
+    const fotosPayload = buildFotosProgresoPayload(fotosProgreso);
+    if (fotosPayload) {
+      payload.fotosProgreso = fotosPayload;
+    }
+
     setIsLoading(true);
 
     try {
@@ -218,7 +235,9 @@ function SkinfoldPlieguesForm({
         method: "POST",
         body: JSON.stringify(payload),
       });
+      invalidateCache("/api/mediciones");
       setForm(getEmptyForm());
+      setFotosProgreso(emptyFotosProgresoState());
       const grasa = created.metricas.porcentajeGrasaCorporal;
       setSuccessMessage(
         grasa != null
@@ -296,6 +315,12 @@ function SkinfoldPlieguesForm({
         </div>
       )}
 
+      <MedicionFotosProgresoFields
+        disabled={isLoading}
+        value={fotosProgreso}
+        onChange={setFotosProgreso}
+      />
+
       <label className="field" htmlFor="notas">
         <span className="field__label">Notas (opcional)</span>
         <textarea
@@ -310,12 +335,8 @@ function SkinfoldPlieguesForm({
         />
       </label>
 
-      {error ? <p className="auth-error">{error}</p> : null}
-      {successMessage ? (
-        <p className="skinfold-form__success" role="status">
-          {successMessage}
-        </p>
-      ) : null}
+      <FeedbackModal message={error} />
+      <FeedbackModal message={successMessage} tone="success" />
 
       <div className="skinfold-form__actions">
         <Button type="submit" disabled={isLoading}>

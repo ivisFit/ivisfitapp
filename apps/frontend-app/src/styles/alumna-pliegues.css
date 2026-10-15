@@ -105,6 +105,13 @@
   gap: 1rem;
 }
 
+.pliegues-hero__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+
 .pliegues-hero__eyebrow {
   display: inline-block;
   margin-bottom: 0.35rem;
@@ -376,6 +383,19 @@
   color: #f0f0f0;
 }
 
+.pliegues-history-table__fotos-btn {
+  border: 0;
+  background: transparent;
+  color: var(--color-gold, #fdc915);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .pliegues-history-table__table td:last-child {
   white-space: normal;
   min-width: 8rem;
@@ -429,6 +449,10 @@
     align-items: flex-start;
     justify-content: space-between;
     gap: 1.25rem;
+  }
+
+  .pliegues-hero__actions {
+    align-items: flex-end;
   }
 
   .pliegues-hero__copy h1 {

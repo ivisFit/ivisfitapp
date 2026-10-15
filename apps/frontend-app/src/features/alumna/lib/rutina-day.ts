@@ -130,10 +130,22 @@ export function unlockAllPlanDays(days: ChallengeDay[]): ChallengeDay[] {
   }));
 }
 
+export type PlanDayDoneCheck = (
+  dayNumber: number,
+  dateKey: string,
+  numeroSemana: number,
+  nombreDia: string,
+) => boolean;
+
+export type RutinaDayProgressOptions = {
+  isPlanDayDone?: PlanDayDoneCheck;
+};
+
 export function resolveRutinaDay(
   rutina: RutinaDetail,
   now: Date = new Date(),
   timeZone: string = TIME_ZONE,
+  options?: RutinaDayProgressOptions,
 ): RutinaDay | null {
   const startKey =
     toDateKeyFromValue(rutina.startDate, timeZone) ||
@@ -141,29 +153,22 @@ export function resolveRutinaDay(
     toDateKeyFromDate(now, timeZone);
   const todayKey = toDateKeyFromDate(now, timeZone);
 
-  let daysSince = diffDays(startKey, todayKey);
-  if (daysSince < 0) daysSince = 0;
-
   const weeks = sortWeeks(rutina.semanas ?? []);
   if (weeks.length === 0) return null;
 
-  const weekIndex = Math.min(Math.floor(daysSince / 7), weeks.length - 1);
-  const week = weeks[weekIndex];
-  if (!week || week.dias.length === 0) return null;
-
-  const dayIndex = Math.min(daysSince % 7, week.dias.length - 1);
-  const dia = week.dias[dayIndex];
+  const activePlanDay = resolveActivePlanDayNumber(
+    rutina,
+    startKey,
+    todayKey,
+    options?.isPlanDayDone,
+  );
+  const resolved = resolveDayInfoForPlanDayNumber(rutina, activePlanDay);
+  if (!resolved) return null;
 
   return {
-    semana: week,
-    dia,
-    numeroSemana: week.numeroSemana,
-    nombreDia: dia.nombreDia,
-    ejercicios: dia.ejercicios,
+    ...resolved,
     startDateKey: startKey,
     todayKey,
-    dayIndex,
-    weekIndex,
   };
 }
 
@@ -276,6 +281,59 @@ export function getCurrentPlanDayNumber(
   }
 
   return Math.min(totalDays, Math.max(1, dayNumber));
+}
+
+export function resolveActivePlanDayNumber(
+  rutina: RutinaDetail,
+  startDateKey: string,
+  todayKey: string,
+  isPlanDayDone?: PlanDayDoneCheck,
+): number {
+  const calendarCap = getCurrentPlanDayNumber(rutina, startDateKey, todayKey);
+  const flatDays = getFlatRoutineDays(rutina);
+  if (flatDays.length === 0) return 1;
+  if (!isPlanDayDone) return calendarCap;
+
+  for (let index = 0; index < flatDays.length; index++) {
+    const dayNumber = index + 1;
+    if (dayNumber > calendarCap) break;
+
+    const entry = flatDays[index];
+    const dateKey = getDateKeyForPlanDayIndex(rutina, startDateKey, index);
+    if (
+      !isPlanDayDone(
+        dayNumber,
+        dateKey,
+        entry.numeroSemana,
+        entry.dia.nombreDia,
+      )
+    ) {
+      return dayNumber;
+    }
+  }
+
+  return Math.min(calendarCap, flatDays.length);
+}
+
+function resolveChallengeDayState(
+  dayNumber: number,
+  calendarCap: number,
+  _activePlanDay: number,
+  isPlanDayDone: PlanDayDoneCheck | undefined,
+  meta: { numeroSemana: number; nombreDia: string },
+  dateKey: string,
+): ChallengeDayState {
+  if (dayNumber > calendarCap) return "locked";
+
+  if (isPlanDayDone) {
+    if (isPlanDayDone(dayNumber, dateKey, meta.numeroSemana, meta.nombreDia)) {
+      return "completed";
+    }
+    return "unlocked";
+  }
+
+  if (dayNumber < calendarCap) return "completed";
+  return "unlocked";
 }
 
 export function getFlatRoutineDays(rutina: RutinaDetail): {
@@ -493,6 +551,7 @@ function buildDayTags(
 export function buildPlanDays(
   rutina: RutinaDetail,
   dayInfo: RutinaDay | null,
+  options?: RutinaDayProgressOptions,
 ): ChallengeDay[] {
   const flatDays = getFlatRoutineDays(rutina);
   if (flatDays.length === 0) return [];
@@ -503,23 +562,29 @@ export function buildPlanDays(
     toDateKeyFromValue(rutina.createdAt, TIME_ZONE) ??
     toDateKeyFromDate(new Date(), TIME_ZONE);
   const todayKey = dayInfo?.todayKey ?? toDateKeyFromDate(new Date(), TIME_ZONE);
-  const totalDays = flatDays.length;
-  const currentDayNumber = getCurrentPlanDayNumber(
+  const calendarCap = getCurrentPlanDayNumber(rutina, startDateKey, todayKey);
+  const activePlanDay = resolveActivePlanDayNumber(
     rutina,
     startDateKey,
     todayKey,
+    options?.isPlanDayDone,
   );
 
   return flatDays.map((routineDay, index) => {
     const dayNumber = index + 1;
     const dateKey = getDateKeyForPlanDayIndex(rutina, startDateKey, index);
     const media = getFirstRoutineMedia(routineDay.dia);
-    const state: ChallengeDayState =
-      dayNumber < currentDayNumber
-        ? "completed"
-        : dayNumber === currentDayNumber
-          ? "unlocked"
-          : "locked";
+    const state = resolveChallengeDayState(
+      dayNumber,
+      calendarCap,
+      activePlanDay,
+      options?.isPlanDayDone,
+      {
+        numeroSemana: routineDay.numeroSemana,
+        nombreDia: routineDay.dia.nombreDia,
+      },
+      dateKey,
+    );
 
     return attachStoryMedia(rutina, dayNumber, {
       dayNumber,
@@ -527,7 +592,7 @@ export function buildPlanDays(
       title: routineDay.dia.nombreDia,
       tags: buildDayTags(routineDay.dia),
       state,
-      isToday: dayNumber === currentDayNumber,
+      isToday: dayNumber === activePlanDay,
       nombreDia: routineDay.dia.nombreDia,
       ...(routineDay.dia.comentario?.trim()
         ? { comentario: routineDay.dia.comentario.trim() }
@@ -545,6 +610,7 @@ export function buildChallenge28Days(
   rutina: RutinaDetail,
   dayInfo: RutinaDay | null,
   totalDays = 28,
+  options?: RutinaDayProgressOptions,
 ): ChallengeDay[] {
   const flatDays = getFlatRoutineDays(rutina);
   const startDateKey =
@@ -553,9 +619,18 @@ export function buildChallenge28Days(
     toDateKeyFromValue(rutina.createdAt, TIME_ZONE) ??
     toDateKeyFromDate(new Date(), TIME_ZONE);
   const todayKey = dayInfo?.todayKey ?? toDateKeyFromDate(new Date(), TIME_ZONE);
-  const currentDayNumber = Math.min(
+  const calendarCap = Math.min(
     totalDays,
     getCurrentPlanDayNumber(rutina, startDateKey, todayKey),
+  );
+  const activePlanDay = Math.min(
+    totalDays,
+    resolveActivePlanDayNumber(
+      rutina,
+      startDateKey,
+      todayKey,
+      options?.isPlanDayDone,
+    ),
   );
 
   return Array.from({ length: totalDays }, (_, index) => {
@@ -566,17 +641,23 @@ export function buildChallenge28Days(
     const routineDay = getRoutineDayForChallenge(flatDays, dayNumber);
     const dateKey = getDateKeyForPlanDayIndex(rutina, startDateKey, index);
     const media = configuredDay?.media ?? getFirstRoutineMedia(routineDay?.dia);
-    const state: ChallengeDayState =
-      dayNumber < currentDayNumber
-        ? "completed"
-        : dayNumber === currentDayNumber
-          ? "unlocked"
-          : "locked";
 
     const nombreDia =
       routineDay?.dia.nombreDia ??
       configuredDay?.title ??
       `Día ${dayNumber}`;
+
+    const state = resolveChallengeDayState(
+      dayNumber,
+      calendarCap,
+      activePlanDay,
+      options?.isPlanDayDone,
+      {
+        numeroSemana: routineDay?.numeroSemana ?? 1,
+        nombreDia,
+      },
+      dateKey,
+    );
 
     return attachStoryMedia(rutina, dayNumber, {
       dayNumber,
@@ -584,7 +665,7 @@ export function buildChallenge28Days(
       title: configuredDay?.title ?? nombreDia,
       tags: buildDayTags(routineDay?.dia, configuredDay?.tags),
       state,
-      isToday: dayNumber === currentDayNumber,
+      isToday: dayNumber === activePlanDay,
       nombreDia,
       ...(routineDay?.dia.comentario?.trim()
         ? { comentario: routineDay.dia.comentario.trim() }

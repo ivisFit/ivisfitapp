@@ -1,4 +1,5 @@
 "use client";
+import { FeedbackModal } from "@/components/FeedbackModal";
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -114,7 +115,7 @@ export function NotificacionesProfePage() {
       </div>
 
       {loading ? <p className="alumnas-panel__status">Cargando...</p> : null}
-      {error ? <p className="auth-error">{error}</p> : null}
+      <FeedbackModal message={error} />
 
       {!loading && !error && items.length === 0 ? (
         <section className="feature-card">

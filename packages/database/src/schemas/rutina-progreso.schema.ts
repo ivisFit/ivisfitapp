@@ -10,6 +10,7 @@ export const upsertRutinaProgresoSchema = z.object({
   nombreDia: z.string().min(1),
   ejerciciosCompletados: z.array(z.string().min(1)).default([]),
   diaCompletado: z.boolean().default(false),
+  diaOmitido: z.boolean().default(false),
 });
 
 export type UpsertRutinaProgresoInput = z.infer<

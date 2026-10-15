@@ -1,4 +1,5 @@
 "use client";
+import { FeedbackModal } from "@/components/FeedbackModal";
 
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/Button";
@@ -67,7 +68,7 @@ export function AutomatizacionesPage() {
       </div>
 
       {loading ? <p className="alumnas-panel__status">Cargando...</p> : null}
-      {error ? <p className="auth-error">{error}</p> : null}
+      <FeedbackModal message={error} />
 
       {data ? (
         <>

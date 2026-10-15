@@ -1,4 +1,5 @@
 "use client";
+import { FeedbackModal } from "@/components/FeedbackModal";
 
 import { useEffect, useState } from "react";
 import {
@@ -198,11 +199,7 @@ export function AlimentacionOrigenGate({ onReady }: AlimentacionOrigenGateProps)
         </article>
       </div>
 
-      {error ? (
-        <p className="auth-error" role="alert">
-          {error}
-        </p>
-      ) : null}
+      <FeedbackModal message={error} />
     </section>
   );
 }

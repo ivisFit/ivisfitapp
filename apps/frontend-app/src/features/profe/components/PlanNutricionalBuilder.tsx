@@ -1,4 +1,5 @@
 "use client";
+import { FeedbackModal } from "@/components/FeedbackModal";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { Button, Input, InfoTooltip } from "@/components";
@@ -993,8 +994,8 @@ export function PlanNutricionalBuilder({
               Armar a mano
             </Button>
           </div>
-          {error ? <p className="auth-error">{error}</p> : null}
-          {message ? <p className="alumnas-panel__status">{message}</p> : null}
+          <FeedbackModal message={error} />
+          <FeedbackModal message={message} tone="success" />
         </div>
       </div>
     );
@@ -1141,7 +1142,7 @@ export function PlanNutricionalBuilder({
             const isActive = diaIndex === selectedDiaIndex;
             return (
               <button
-                key={`${dia.nombre}-${diaIndex}`}
+                key={diaIndex}
                 type="button"
                 className={
                   isActive
@@ -1296,8 +1297,8 @@ export function PlanNutricionalBuilder({
         </div>
       </div>
 
-      {error ? <p className="auth-error">{error}</p> : null}
-      {message ? <p className="alumnas-panel__status">{message}</p> : null}
+      <FeedbackModal message={error} />
+      <FeedbackModal message={message} tone="success" />
 
       <div className="plan-nutricional-builder__save-bar">
         <div className="plan-nutricional-builder__save-bar-status">

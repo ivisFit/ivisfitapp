@@ -23,6 +23,7 @@ type SemanaPlain = {
       ejercicioId: unknown;
       series: number;
       repeticiones: number;
+      repeticionesPorSerie?: number[];
       descansoSegundos: number;
       media?: unknown;
     }[];
@@ -164,6 +165,9 @@ export const rutinasService = {
         series: ej.series,
         repeticiones: ej.repeticiones,
         descansoSegundos: ej.descansoSegundos,
+        ...(ej.repeticionesPorSerie?.length
+          ? { repeticionesPorSerie: [...ej.repeticionesPorSerie] }
+          : {}),
         ...(ej.media ? { media: ej.media } : {}),
       })),
     }));

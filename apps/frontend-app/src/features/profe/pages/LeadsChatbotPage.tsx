@@ -1,4 +1,5 @@
 "use client";
+import { FeedbackModal } from "@/components/FeedbackModal";
 
 import { useEffect, useState } from "react";
 import { Button, Input } from "@/components";
@@ -190,11 +191,7 @@ export function LeadsChatbotPage({
         </div>
       </section>
 
-      {error ? (
-        <section>
-          <p className="auth-error">{error}</p>
-        </section>
-      ) : null}
+      <FeedbackModal message={error} />
 
       {loading ? (
         <section aria-busy="true" aria-label="Cargando leads">

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { SaveStatus } from "@/features/alumna/hooks/useSaveLogPeso";
 import type { RutinaEjercicio } from "@/features/alumna/types/rutina";
 import type { UpsertLogPesoPayload } from "@/features/alumna/types/log-peso";
+import { formatSeriesReps } from "@/lib/rutina-reps";
 
 type ExerciseWeightLogProps = {
   ejercicio: RutinaEjercicio;
@@ -142,7 +143,12 @@ export function ExerciseWeightLog({
     >
       <div className="weight-log__header">
         <span className="weight-log__scheme">
-          {ejercicio.series} x {ejercicio.repeticiones}
+          {formatSeriesReps(
+            ejercicio.series,
+            ejercicio.repeticiones,
+            ejercicio.repeticionesPorSerie,
+            "x",
+          )}
         </span>
         {statusLabel ? (
           <span

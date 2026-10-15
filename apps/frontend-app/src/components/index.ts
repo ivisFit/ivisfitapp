@@ -9,3 +9,4 @@ export { AuthLayout } from "./layout/AuthLayout";
 export { AuthCard } from "./layout/AuthCard";
 export { AppShell } from "./layout/AppShell";
 export { AppBottomNav } from "./layout/AppBottomNav";
+export { FeedbackModal } from "./FeedbackModal";

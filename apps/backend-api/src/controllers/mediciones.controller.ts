@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { medicionesService } from "../services/mediciones.service.js";
 import { getUsuarioForSession } from "../services/me.service.js";
 import { gamificacionService } from "../services/gamificacion.service.js";
+import { uploadMedicionFoto } from "../services/cloudinary.service.js";
 import { AppError } from "../utils/errors.js";
 import { getParamId } from "../utils/params.js";
 
@@ -79,6 +80,29 @@ export const medicionesController = {
     }
 
     res.json(medicion);
+  },
+
+  async uploadFoto(req: Request, res: Response) {
+    const usuario = await getUsuarioForSession(req);
+    if (usuario.rol !== "profe") {
+      throw new AppError(403, "No tenés permiso para esta acción");
+    }
+
+    const contentType = req.header("content-type")?.split(";")[0] ?? "";
+    const filename =
+      req.header("x-file-name")?.trim() || `medicion-foto-${Date.now()}`;
+
+    if (!Buffer.isBuffer(req.body) || req.body.length === 0) {
+      throw new AppError(400, "Adjuntá una imagen para continuar");
+    }
+
+    const uploaded = await uploadMedicionFoto({
+      file: req.body,
+      contentType,
+      filename,
+    });
+
+    res.status(201).json(uploaded);
   },
 
   async create(req: Request, res: Response) {

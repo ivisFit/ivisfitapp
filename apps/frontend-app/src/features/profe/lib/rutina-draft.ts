@@ -8,6 +8,10 @@ import {
   type PlanContentEditorState,
   type PlanContentMediaType,
 } from "@/features/profe/lib/plan-content";
+import {
+  isRepeticionesPorSerieActive,
+  persistRepeticionesPorSerie,
+} from "@/lib/rutina-reps";
 
 export type MediaType = PlanContentMediaType;
 
@@ -16,6 +20,7 @@ export type EjercicioRutinaDraft = {
   ejercicioId: string;
   series: number;
   repeticiones: number;
+  repeticionesPorSerie?: number[];
   descansoSegundos: number;
   mediaType: MediaType;
   mediaUrl: string;
@@ -50,6 +55,7 @@ export type PlanTemplateBlueprint = {
         ejercicioId: string;
         series: number;
         repeticiones: number;
+        repeticionesPorSerie?: number[];
         descansoSegundos: number;
         media?: {
           type: MediaType;
@@ -147,6 +153,33 @@ export function planContentDefaultsFromTemplate(
 
 export { mergePlanContentEditorWithDefaults } from "@/features/profe/lib/plan-content";
 
+function repeticionesPorSerieFromSource(
+  series: number,
+  repeticionesPorSerie?: number[],
+): number[] | undefined {
+  if (!isRepeticionesPorSerieActive(series, repeticionesPorSerie)) {
+    return undefined;
+  }
+  return [...repeticionesPorSerie];
+}
+
+function withPersistedRepeticionesPorSerie<T extends {
+  series: number;
+  repeticiones: number;
+}>(
+  ejercicio: T,
+  repeticionesPorSerie?: number[],
+): T & { repeticionesPorSerie?: number[] } {
+  const persisted = persistRepeticionesPorSerie(
+    ejercicio.series,
+    ejercicio.repeticiones,
+    repeticionesPorSerie,
+  );
+  return persisted
+    ? { ...ejercicio, repeticionesPorSerie: persisted }
+    : ejercicio;
+}
+
 function semanasFromBlueprint(
   blueprint: PlanTemplateBlueprint,
   defaultEjercicioId: string,
@@ -159,16 +192,23 @@ function semanasFromBlueprint(
       localId: createLocalId(),
       nombreDia: dia.nombreDia,
       comentario: dia.comentario ?? "",
-      drafts: dia.ejercicios.map((ej) => ({
-        localId: createLocalId(),
-        ejercicioId: resolveEjercicioId(ej.ejercicioId),
-        series: ej.series,
-        repeticiones: ej.repeticiones,
-        descansoSegundos: ej.descansoSegundos,
-        mediaType: ej.media?.type ?? "gif",
-        mediaUrl: ej.media?.url ?? "",
-        mediaPosterUrl: ej.media?.posterUrl ?? "",
-      })),
+      drafts: dia.ejercicios.map((ej) => {
+        const repeticionesPorSerie = repeticionesPorSerieFromSource(
+          ej.series,
+          ej.repeticionesPorSerie,
+        );
+        return {
+          localId: createLocalId(),
+          ejercicioId: resolveEjercicioId(ej.ejercicioId),
+          series: ej.series,
+          repeticiones: ej.repeticiones,
+          descansoSegundos: ej.descansoSegundos,
+          mediaType: ej.media?.type ?? "gif",
+          mediaUrl: ej.media?.url ?? "",
+          mediaPosterUrl: ej.media?.posterUrl ?? "",
+          ...(repeticionesPorSerie ? { repeticionesPorSerie } : {}),
+        };
+      }),
     })),
   }));
 }
@@ -236,6 +276,7 @@ export function rutinaDocToFormState(
           id?: string;
           series: number;
           repeticiones: number;
+          repeticionesPorSerie?: number[];
           descansoSegundos: number;
           media?: { type: MediaType; url: string; posterUrl?: string };
         }[];
@@ -255,16 +296,23 @@ export function rutinaDocToFormState(
       localId: createLocalId(),
       nombreDia: dia.nombreDia,
       comentario: dia.comentario ?? "",
-      drafts: dia.ejercicios.map((ej) => ({
-        localId: createLocalId(),
-        ejercicioId: ej.id ?? defaultEjercicioId,
-        series: ej.series,
-        repeticiones: ej.repeticiones,
-        descansoSegundos: ej.descansoSegundos,
-        mediaType: ej.media?.type ?? "gif",
-        mediaUrl: ej.media?.url ?? "",
-        mediaPosterUrl: ej.media?.posterUrl ?? "",
-      })),
+      drafts: dia.ejercicios.map((ej) => {
+        const repeticionesPorSerie = repeticionesPorSerieFromSource(
+          ej.series,
+          ej.repeticionesPorSerie,
+        );
+        return {
+          localId: createLocalId(),
+          ejercicioId: ej.id ?? defaultEjercicioId,
+          series: ej.series,
+          repeticiones: ej.repeticiones,
+          descansoSegundos: ej.descansoSegundos,
+          mediaType: ej.media?.type ?? "gif",
+          mediaUrl: ej.media?.url ?? "",
+          mediaPosterUrl: ej.media?.posterUrl ?? "",
+          ...(repeticionesPorSerie ? { repeticionesPorSerie } : {}),
+        };
+      }),
     })),
   }));
 
@@ -377,13 +425,16 @@ function diaDraftToBlueprint(dia: DiaPlanDraft): BlueprintDia | undefined {
         undefined,
         draft.mediaPosterUrl,
       );
-      return {
-        ejercicioId: draft.ejercicioId,
-        series: draft.series,
-        repeticiones: draft.repeticiones,
-        descansoSegundos: draft.descansoSegundos,
-        ...(media ? { media } : {}),
-      };
+      return withPersistedRepeticionesPorSerie(
+        {
+          ejercicioId: draft.ejercicioId,
+          series: draft.series,
+          repeticiones: draft.repeticiones,
+          descansoSegundos: draft.descansoSegundos,
+          ...(media ? { media } : {}),
+        },
+        draft.repeticionesPorSerie,
+      );
     });
 
   if (!nombreDia || ejercicios.length === 0) return undefined;

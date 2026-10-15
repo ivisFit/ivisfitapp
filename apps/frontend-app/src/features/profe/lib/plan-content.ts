@@ -13,6 +13,7 @@ type SemanaPlanDraftLike = {
       ejercicioId: string;
       series: number;
       repeticiones: number;
+      repeticionesPorSerie?: number[];
       descansoSegundos: number;
     }[];
   }[];
@@ -402,6 +403,10 @@ export function draftSemanasToRutinaSemanas(
             series: draft.series,
             repeticiones: draft.repeticiones,
             descansoSegundos: draft.descansoSegundos,
+            ...(draft.repeticionesPorSerie &&
+            draft.repeticionesPorSerie.length === draft.series
+              ? { repeticionesPorSerie: draft.repeticionesPorSerie }
+              : {}),
           };
         }),
     })),

@@ -1,4 +1,5 @@
 "use client";
+import { FeedbackModal } from "@/components/FeedbackModal";
 
 import { useMemo, useState } from "react";
 import { Plus, RefreshCw, ShoppingBasket, Trash2 } from "lucide-react";
@@ -192,11 +193,7 @@ export function ListaComprasSemanasCard({ alumnaId }: ListaComprasSemanasCardPro
         </div>
       ) : null}
 
-      {error ? (
-        <p className="auth-error" role="alert">
-          {error}
-        </p>
-      ) : null}
+      <FeedbackModal message={error} />
 
       <div className="alimentacion-tab-summary__actions">
         {semanas.length === 0 ? (

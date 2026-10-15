@@ -5,6 +5,7 @@ import {
   formatSeguimientoDayDateLabel,
   type SeguimientoDayView,
 } from "@/features/profe/lib/seguimiento";
+import { formatSeriesReps } from "@/lib/rutina-reps";
 
 type SeguimientoDayPanelProps = {
   dayView: SeguimientoDayView;
@@ -74,7 +75,13 @@ export function SeguimientoDayPanel({
                   <div className="seguimiento-exercises__copy">
                     <strong>{ejercicio.nombre}</strong>
                     <span>
-                      {ejercicio.series} x {ejercicio.repeticiones} · Descanso{" "}
+                      {formatSeriesReps(
+                        ejercicio.series,
+                        ejercicio.repeticiones,
+                        ejercicio.repeticionesPorSerie,
+                        "x",
+                      )}{" "}
+                      · Descanso{" "}
                       {ejercicio.descansoSegundos}s
                     </span>
                   </div>

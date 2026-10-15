@@ -1,4 +1,5 @@
 "use client";
+import { FeedbackModal } from "@/components/FeedbackModal";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -117,11 +118,7 @@ export function AlimentacionTabSummary({
           ) : null}
         </ul>
       )}
-      {discardError ? (
-        <p className="auth-error" role="alert">
-          {discardError}
-        </p>
-      ) : null}
+      <FeedbackModal message={discardError} />
       <div className="alimentacion-tab-summary__actions">
         <Link className="btn btn--primary ap-footer__cta" href={continueHref}>
           <span>

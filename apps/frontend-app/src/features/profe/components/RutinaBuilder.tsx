@@ -1,4 +1,5 @@
 "use client";
+import { FeedbackModal } from "@/components/FeedbackModal";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
@@ -1564,8 +1565,8 @@ export function RutinaBuilder({
                   Plantilla sincronizada
                 </p>
               )}
-              {saveError ? <p className="auth-error">{saveError}</p> : null}
-              {successMessage ? <p className="auth-hint">{successMessage}</p> : null}
+              <FeedbackModal message={saveError} />
+              <FeedbackModal message={successMessage} tone="success" />
               {templateSaveBlockedReason ? (
                 <p className="rutina-builder__save-bar-hint" role="status">
                   {templateSaveBlockedReason}
@@ -1601,8 +1602,8 @@ export function RutinaBuilder({
                   Rutina sincronizada
                 </p>
               )}
-              {saveError ? <p className="auth-error">{saveError}</p> : null}
-              {successMessage ? <p className="auth-hint">{successMessage}</p> : null}
+              <FeedbackModal message={saveError} />
+              <FeedbackModal message={successMessage} tone="success" />
               {alumnaSaveBlockedReason ? (
                 <p className="rutina-builder__save-bar-hint" role="status">
                   {alumnaSaveBlockedReason}

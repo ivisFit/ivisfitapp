@@ -29,6 +29,7 @@ type PlanDaysDashboardProps = {
   upsertProgreso?: (
     payload: UpsertRutinaProgresoPayload,
   ) => Promise<RutinaProgresoRecord>;
+  onSkipDay?: (day: ChallengeDay) => void;
 };
 
 function resolvePlanCopy(
@@ -66,6 +67,7 @@ export const PlanDaysDashboard = memo(function PlanDaysDashboard({
   sheetContainment = "fullscreen",
   getDayProgreso,
   upsertProgreso,
+  onSkipDay,
 }: PlanDaysDashboardProps) {
   const [selectedDay, setSelectedDay] = useState<ChallengeDay | null>(null);
   const copy = resolvePlanCopy(rutina, { eyebrow, title, subtitle, ariaLabel });
@@ -161,6 +163,7 @@ export const PlanDaysDashboard = memo(function PlanDaysDashboard({
         containment={sheetContainment}
         getDayProgreso={getDayProgreso}
         upsertProgreso={upsertProgreso}
+        onSkipDay={onSkipDay}
       />
     </section>
   );

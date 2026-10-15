@@ -1,4 +1,5 @@
 "use client";
+import { FeedbackModal } from "@/components/FeedbackModal";
 
 import { useState } from "react";
 import { Button } from "@/components";
@@ -111,7 +112,7 @@ export function NutricionChatPanel({
           ))
         )}
       </div>
-      {error ? <p className="auth-error">{error}</p> : null}
+      <FeedbackModal message={error} />
       <form className="nutricion-chat-panel__form" onSubmit={(event) => void handleSend(event)}>
         <textarea
           className="nutricion-chat-panel__input"

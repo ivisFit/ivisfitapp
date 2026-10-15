@@ -15,5 +15,6 @@ export function mapMedicionFromApi(doc: MedicionApiDoc): Medicion {
     metricas: doc.metricas,
     notas: doc.notas,
     pesoCorporalKg: doc.pesoCorporalKg,
+    fotosProgreso: doc.fotosProgreso,
   };
 }

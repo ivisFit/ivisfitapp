@@ -17,6 +17,7 @@ const rutinaProgresoSchema = new Schema(
     nombreDia: { type: String, required: true },
     ejerciciosCompletados: { type: [String], default: [] },
     diaCompletado: { type: Boolean, default: false },
+    diaOmitido: { type: Boolean, default: false },
     fechaCompletado: { type: String },
   },
   { timestamps: true, collection: "rutina_progreso" },

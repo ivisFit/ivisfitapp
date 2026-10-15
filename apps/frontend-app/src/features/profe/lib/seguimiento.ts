@@ -21,6 +21,7 @@ export type SeguimientoExerciseView = {
   nombre: string;
   series: number;
   repeticiones: number;
+  repeticionesPorSerie?: number[];
   descansoSegundos: number;
   completado: boolean;
   pesosPorSerie: number[];
@@ -52,6 +53,7 @@ export function resolveDayStatus(
   const total = day.ejercicios.length;
   const completedCount = progreso?.ejerciciosCompletados.length ?? 0;
   const diaCompletado =
+    progreso?.diaOmitido === true ||
     progreso?.diaCompletado ||
     (total > 0 && completedCount >= total);
 
@@ -128,6 +130,10 @@ export function buildExerciseViews(
       series: ejercicio.series,
       repeticiones: ejercicio.repeticiones,
       descansoSegundos: ejercicio.descansoSegundos,
+      ...(ejercicio.repeticionesPorSerie &&
+      ejercicio.repeticionesPorSerie.length === ejercicio.series
+        ? { repeticionesPorSerie: ejercicio.repeticionesPorSerie }
+        : {}),
       completado: completedSet.has(ejercicio.id),
       pesosPorSerie: pesosBySlot[slotKey] ?? [],
     };

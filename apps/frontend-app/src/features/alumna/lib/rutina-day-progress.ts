@@ -95,17 +95,19 @@ export function applyManualDayCompletions(
     dateKey: string,
     numeroSemana?: number,
     nombreDia?: string,
-  ) => { diaCompletado?: boolean } | undefined,
+  ) => { diaCompletado?: boolean; diaOmitido?: boolean } | undefined,
 ): ChallengeDay[] {
   return days.map((day) => {
+    const progreso = getDayProgreso?.(
+      day.dateKey,
+      day.numeroSemana,
+      day.nombreDia,
+    );
     const isCompleted =
       completedDateKeys.has(day.dateKey) ||
-      Boolean(
-        getDayProgreso?.(day.dateKey, day.numeroSemana, day.nombreDia)
-          ?.diaCompletado,
-      );
+      Boolean(progreso?.diaCompletado || progreso?.diaOmitido);
 
     return isCompleted ? { ...day, state: "completed" } : day;
   });
 }
-
+

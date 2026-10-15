@@ -56,6 +56,39 @@
   }
 }
 
+/* ---------- Banner borrador activo ---------- */
+
+.alimentacion-plan-shell .plan-nutricional-builder__version-banner {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.alimentacion-plan-shell .plan-nutricional-builder__version-banner-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  border: 1px solid rgb(199 152 10 / 35%);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--glass-bg);
+}
+
+.alimentacion-plan-shell .plan-nutricional-builder__version-banner-actions .btn {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+.alimentacion-plan-shell .plan-nutricional-builder__version-banner-actions .btn + .btn {
+  border-left: 1px solid rgb(199 152 10 / 35%);
+}
+
+.alimentacion-plan-shell .plan-nutricional-builder__version-banner-actions .btn--ghost:hover:not(:disabled) {
+  background: var(--gold-a10);
+}
+
 /* ---------- Botones e iconos dentro del stepper ---------- */
 
 .alimentacion-plan-shell .btn,
@@ -400,6 +433,7 @@
   height: 2px;
   border-radius: 2px;
   background: var(--ap-tint-strong);
+  pointer-events: none;
 }
 
 .alimentacion-plan-stepper__item.is-complete:not(:last-child)::after {
@@ -407,6 +441,8 @@
 }
 
 .alimentacion-plan-stepper__link {
+  position: relative;
+  z-index: 1;
   display: grid;
   gap: 0.65rem;
   justify-items: start;
@@ -1004,29 +1040,75 @@
   list-style: none;
 }
 
+.alimentacion-estructura-list__segment {
+  display: grid;
+  gap: 0;
+  list-style: none;
+}
+
 .alimentacion-estructura-row {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "fields actions"
+    "meta meta";
   align-items: start;
-  gap: 0.75rem 0.9rem;
-  padding: 1rem;
+  gap: 0.75rem 1rem;
+  padding: 1rem 1.1rem;
   border: 1px solid var(--ap-card-border);
   border-radius: var(--radius-lg);
-  background: var(--ap-tint);
-  transition: border-color 0.2s ease;
+  background: var(--ap-card-bg);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  cursor: grab;
+  touch-action: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.alimentacion-estructura-row:active {
+  cursor: grabbing;
+}
+
+.alimentacion-estructura-row:hover {
+  border-color: var(--gold-a22);
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.06);
 }
 
 .alimentacion-estructura-row:focus-within {
   border-color: var(--glass-border-amber);
 }
 
+.alimentacion-estructura-row--dragging {
+  z-index: 2;
+  border-color: var(--glass-border-amber);
+  box-shadow: var(--glass-shadow-float);
+  opacity: 0.96;
+}
+
+.alimentacion-estructura-row__aside {
+  grid-area: actions;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  margin-top: 0;
+}
+
+.alimentacion-estructura-row__fields,
+.alimentacion-estructura-row__actions button {
+  cursor: auto;
+  touch-action: auto;
+}
+
 .alimentacion-estructura-row__index {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   width: 2rem;
   height: 2rem;
-  margin-top: 1.4rem;
   border-radius: 50%;
   background: var(--gold-a15);
   color: var(--color-gold);
@@ -1035,7 +1117,21 @@
   font-variant-numeric: tabular-nums;
 }
 
+.alimentacion-estructura-row__actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.alimentacion-estructura-row__actions .btn--icon {
+  min-width: 2.25rem;
+  min-height: 2.25rem;
+  padding: 0.25rem;
+}
+
 .alimentacion-estructura-row__fields {
+  grid-area: fields;
   display: grid;
   gap: 0.75rem;
   min-width: 0;
@@ -1047,11 +1143,15 @@
   }
 }
 
+.alimentacion-estructura-row__meta-host {
+  grid-area: meta;
+  min-width: 0;
+}
+
 .alimentacion-estructura-row__meta {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
-  grid-column: 2;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1059,6 +1159,97 @@
 
 .alimentacion-estructura-row .field__input {
   background: var(--glass-bg-solid);
+}
+
+.alimentacion-estructura-empty {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: start;
+}
+
+/* Botón «Agregar comida» en Estructura: ancho como las cards, solo borde */
+.alimentacion-estructura-list__segment .alimentacion-comida-insert {
+  justify-content: stretch;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  margin: 0.35rem 0;
+  padding: 0;
+}
+
+.alimentacion-estructura-list__segment .alimentacion-comida-insert::before {
+  display: none;
+}
+
+.alimentacion-estructura-list__segment .alimentacion-comida-insert__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  gap: 0.45rem;
+  max-width: none;
+  min-height: 2.75rem;
+  padding: 0.65rem 1rem;
+  border: 1px dashed var(--ap-card-border);
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  font-size: 0.82rem;
+  box-shadow: none;
+  pointer-events: auto;
+  opacity: 1;
+  transform: none;
+  transition:
+    border-color 0.18s ease,
+    color 0.18s ease;
+}
+
+.alimentacion-estructura-list__segment .alimentacion-comida-insert__label {
+  max-width: none;
+  opacity: 1;
+}
+
+.alimentacion-estructura-list__segment .alimentacion-comida-insert:hover .alimentacion-comida-insert__btn,
+.alimentacion-estructura-list__segment .alimentacion-comida-insert:focus-within .alimentacion-comida-insert__btn {
+  width: 100%;
+  max-width: none;
+  min-height: 2.75rem;
+  padding: 0.65rem 1rem;
+  border-color: var(--glass-border-amber);
+  border-style: solid;
+  background: transparent;
+  color: var(--color-gold);
+  box-shadow: none;
+  transform: none;
+}
+
+@media (hover: hover) {
+  .alimentacion-estructura-list__segment .alimentacion-comida-insert:hover .alimentacion-comida-insert__btn,
+  .alimentacion-estructura-list__segment
+    .alimentacion-comida-insert:focus-within
+    .alimentacion-comida-insert__btn {
+    width: 100%;
+    max-width: none;
+    min-height: 2.75rem;
+    padding: 0.65rem 1rem;
+    transform: none;
+  }
+
+  .alimentacion-estructura-list__segment
+    .alimentacion-comida-insert:hover
+    .alimentacion-comida-insert__label,
+  .alimentacion-estructura-list__segment
+    .alimentacion-comida-insert:focus-within
+    .alimentacion-comida-insert__label {
+    max-width: none;
+    opacity: 1;
+  }
+}
+
+.alimentacion-estructura-list__segment .alimentacion-comida-insert__btn:active {
+  border-color: var(--color-gold);
+  color: var(--color-gold);
 }
 
 /* ---------- Origen de la semana (gate) ---------- */
@@ -1314,8 +1505,21 @@
 
 .ap-day-summary__head {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.ap-day-summary__head-main {
+  display: flex;
   align-items: center;
   gap: 0.75rem;
+  min-width: 0;
+}
+
+.ap-day-summary__head .btn {
+  flex-shrink: 0;
 }
 
 .ap-day-summary__icon {
@@ -1409,9 +1613,193 @@
 
 /* Bloque de comida */
 
+.alimentacion-comida-list {
+  display: grid;
+  gap: 0;
+}
+
+.alimentacion-comida-list__segment {
+  display: grid;
+  gap: 0;
+}
+
 .alimentacion-comida-block {
   display: grid;
-  gap: 1.1rem;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid var(--ap-card-border);
+  border-radius: var(--radius-lg);
+  background: var(--ap-card-bg);
+}
+
+.alimentacion-comida-block--dragging {
+  opacity: 0.92;
+  border-color: var(--glass-border-amber);
+  box-shadow: var(--shadow-md);
+}
+
+.alimentacion-comida-block__header-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.alimentacion-comida-block__header-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.alimentacion-comida-block__header-main .alimentacion-comida-block__header {
+  margin: 0;
+}
+
+.alimentacion-comida-block__drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  padding: 0.35rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: grab;
+  touch-action: none;
+}
+
+.alimentacion-comida-block__drag-handle:active {
+  cursor: grabbing;
+}
+
+.alimentacion-comida-block__drag-handle:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.alimentacion-comida-block__remove {
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+/* Ranura fija entre comidas: mismo alto siempre; el botón crece al hover */
+.alimentacion-comida-insert {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 2.5rem;
+  margin: 0;
+  padding: 0;
+}
+
+.alimentacion-comida-insert::before {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  top: 50%;
+  height: 1px;
+  background: var(--ap-card-border);
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.alimentacion-comida-insert__btn {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  min-width: 0;
+  max-width: 2rem;
+  height: 2rem;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px dashed transparent;
+  border-radius: 999px;
+  background: var(--ap-card-bg);
+  color: var(--color-gold);
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.88);
+  transition:
+    max-width 0.22s ease,
+    gap 0.22s ease,
+    padding 0.22s ease,
+    opacity 0.18s ease,
+    transform 0.22s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.alimentacion-comida-insert__label {
+  display: inline-block;
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: max-width 0.22s ease, opacity 0.16s ease;
+}
+
+@media (hover: hover) {
+  .alimentacion-comida-insert:hover::before,
+  .alimentacion-comida-insert:focus-within::before {
+    opacity: 0;
+  }
+
+  .alimentacion-comida-insert:hover .alimentacion-comida-insert__btn,
+  .alimentacion-comida-insert:focus-within .alimentacion-comida-insert__btn {
+    max-width: 13rem;
+    gap: 0.4rem;
+    padding: 0.35rem 0.85rem;
+    border-color: var(--glass-border-amber);
+    box-shadow: 0 2px 12px rgb(0 0 0 / 0.08);
+    pointer-events: auto;
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .alimentacion-comida-insert:hover .alimentacion-comida-insert__label,
+  .alimentacion-comida-insert:focus-within .alimentacion-comida-insert__label {
+    max-width: 7.5rem;
+    opacity: 1;
+  }
+}
+
+@media (hover: none) {
+  .alimentacion-comida-insert::before {
+    opacity: 0;
+  }
+
+  .alimentacion-comida-insert__btn {
+    max-width: 13rem;
+    gap: 0.4rem;
+    padding: 0.35rem 0.85rem;
+    border-color: var(--glass-border-amber);
+    pointer-events: auto;
+    opacity: 1;
+    transform: none;
+  }
+
+  .alimentacion-comida-insert__label {
+    max-width: 7.5rem;
+    opacity: 1;
+  }
+}
+
+.alimentacion-comida-insert__btn:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
 }
 
 .alimentacion-comida-block__header {
@@ -1436,6 +1824,32 @@
 .alimentacion-comida-block__heading {
   flex: 1;
   min-width: 0;
+}
+
+.alimentacion-comida-block__header--editable {
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.alimentacion-comida-block__heading--meta {
+  display: grid;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .alimentacion-comida-block__heading--meta {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.75fr);
+    align-items: end;
+  }
+
+  .alimentacion-comida-block__heading--meta .alimentacion-comida-block__subtitle {
+    grid-column: 1 / -1;
+  }
+}
+
+.alimentacion-comida-block__heading--meta .field__input {
+  background: var(--glass-bg-solid);
 }
 
 .alimentacion-plan-shell .alimentacion-comida-block__title {
@@ -1488,28 +1902,60 @@
   text-transform: uppercase;
 }
 
-.alimentacion-comida-block__copy {
-  min-height: 2.25rem;
-  padding: 0.35rem 0.7rem;
-  border: 1px solid var(--glass-border-amber);
+/* Modal copiar comida a varios días */
+
+.copiar-comida-dias-modal {
+  text-align: left;
+}
+
+.copiar-comida-dias-modal .app-dialog__title,
+.copiar-comida-dias-modal .app-dialog__message {
+  text-align: center;
+}
+
+.copiar-comida-dias-modal__body {
+  display: grid;
+  gap: 0.5rem;
+  max-height: min(50vh, 16rem);
+  margin-bottom: 1.25rem;
+  overflow: auto;
+  padding: 0.15rem 0.1rem;
+}
+
+.copiar-comida-dias-modal__list {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.copiar-comida-dias-modal__item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 2.75rem;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid var(--ap-card-border);
   border-radius: var(--radius-md);
-  background: var(--glass-bg-solid);
-  color: var(--color-gold);
-  color-scheme: inherit;
-  font: inherit;
-  font-size: 0.8125rem;
-  font-weight: 600;
+  background: var(--ap-tint);
   cursor: pointer;
-}
-
-.alimentacion-comida-block__copy:focus-visible {
-  outline: 2px solid var(--color-yellow);
-  outline-offset: 2px;
-}
-
-.alimentacion-comida-block__copy option {
-  background-color: var(--glass-bg-solid-elevated);
+  font-size: 0.9375rem;
   color: var(--color-text);
+}
+
+.copiar-comida-dias-modal__item--all {
+  font-weight: 650;
+  border-color: var(--glass-border-amber);
+  background: var(--gold-a08);
+}
+
+.copiar-comida-dias-modal__item input {
+  width: 1.05rem;
+  height: 1.05rem;
+  flex-shrink: 0;
+  accent-color: var(--color-gold);
+  cursor: pointer;
 }
 
 /* Tarjeta de ingredientes dentro del bloque */
@@ -2106,8 +2552,7 @@
 
 @media (max-width: 767px) {
   .alimentacion-plan-shell .btn.ap-btn-sm,
-  .alimentacion-comida-block .plan-nutricional-comida .btn,
-  .alimentacion-comida-block__copy {
+  .alimentacion-comida-block .plan-nutricional-comida .btn {
     min-height: 2.75rem;
   }
 
@@ -2115,7 +2560,8 @@
     flex: 1 1 100%;
   }
 
-  .ap-header-actions .btn {
+  .ap-header-actions .btn,
+  .ap-day-summary__head .btn {
     flex: 1 1 auto;
   }
 
@@ -2134,6 +2580,17 @@
 
   .alimentacion-estructura-row {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .alimentacion-estructura-row__aside {
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 0;
+  }
+
+  .alimentacion-estructura-row__actions {
+    flex-direction: row;
   }
 
   .alimentacion-estructura-row__index {

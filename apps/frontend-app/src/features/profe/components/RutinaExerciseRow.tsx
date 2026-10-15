@@ -5,11 +5,15 @@ import { Button } from "@/components";
 import { EjercicioAutocomplete } from "@/features/profe/components/EjercicioAutocomplete";
 import type { BancoEjercicio } from "@/features/profe/hooks/useBancoEjercicios";
 import type { EjercicioRutinaDraft } from "@/features/profe/lib/rutina-draft";
+import {
+  isRepeticionesPorSerieActive,
+  REPS_MAX,
+  REPS_MIN,
+  resizeRepeticionesPorSerie,
+  SERIES_MAX,
+  SERIES_MIN,
+} from "@/lib/rutina-reps";
 
-const SERIES_MIN = 1;
-const SERIES_MAX = 8;
-const REPS_MIN = 1;
-const REPS_MAX = 25;
 const DESCANSO_OPTIONS = [30, 45, 60, 90, 120, 180];
 
 const PRESETS = [
@@ -33,6 +37,7 @@ type RutinaExerciseRowProps = {
 };
 
 function clamp(value: number, min: number, max: number) {
+  if (!Number.isFinite(value)) return min;
   return Math.min(max, Math.max(min, value));
 }
 
@@ -56,9 +61,72 @@ export function RutinaExerciseRow({
 }: RutinaExerciseRowProps) {
   const [editingExercise, setEditingExercise] = useState(!draft.ejercicioId);
   const selected = ejercicios.find((ejercicio) => ejercicio.id === draft.ejercicioId);
+  const perSetMode = isRepeticionesPorSerieActive(
+    draft.series,
+    draft.repeticionesPorSerie,
+  );
+
+  function updateSeries(nextSeries: number) {
+    const series = clamp(nextSeries, SERIES_MIN, SERIES_MAX);
+    if (!perSetMode) {
+      onUpdate({ series });
+      return;
+    }
+    onUpdate({
+      series,
+      repeticionesPorSerie: resizeRepeticionesPorSerie(
+        series,
+        draft.repeticiones,
+        draft.repeticionesPorSerie,
+      ),
+    });
+  }
+
+  function updateRepeticiones(nextRepeticiones: number) {
+    onUpdate({
+      repeticiones: clamp(nextRepeticiones, REPS_MIN, REPS_MAX),
+      repeticionesPorSerie: undefined,
+    });
+  }
+
+  function updateRepeticionPorSerie(serieIndex: number, nextValue: number) {
+    const next = resizeRepeticionesPorSerie(
+      draft.series,
+      draft.repeticiones,
+      draft.repeticionesPorSerie,
+    );
+    next[serieIndex] = clamp(nextValue, REPS_MIN, REPS_MAX);
+    onUpdate({
+      repeticiones: next[0] ?? draft.repeticiones,
+      repeticionesPorSerie: next,
+    });
+  }
+
+  function enablePerSetMode() {
+    onUpdate({
+      repeticionesPorSerie: resizeRepeticionesPorSerie(
+        draft.series,
+        draft.repeticiones,
+        draft.repeticionesPorSerie,
+      ),
+    });
+  }
+
+  function disablePerSetMode() {
+    onUpdate({
+      repeticiones: draft.repeticionesPorSerie?.[0] ?? draft.repeticiones,
+      repeticionesPorSerie: undefined,
+    });
+  }
 
   return (
-    <div className="rutina-builder__exercise-row">
+    <div
+      className={
+        perSetMode
+          ? "rutina-builder__exercise-row is-reps-por-serie"
+          : "rutina-builder__exercise-row"
+      }
+    >
       <span className="rutina-builder__exercise-index">{index + 1}</span>
 
       <div className="rutina-builder__exercise-identity">
@@ -96,6 +164,7 @@ export function RutinaExerciseRow({
                 onUpdate({
                   series: preset.series,
                   repeticiones: preset.repeticiones,
+                  repeticionesPorSerie: undefined,
                 })
               }
             >
@@ -112,7 +181,7 @@ export function RutinaExerciseRow({
             <button
               type="button"
               disabled={disabled || draft.series <= SERIES_MIN}
-              onClick={() => onUpdate({ series: draft.series - 1 })}
+              onClick={() => updateSeries(draft.series - 1)}
               aria-label="Menos series"
             >
               −
@@ -124,15 +193,13 @@ export function RutinaExerciseRow({
               value={draft.series}
               disabled={disabled}
               onChange={(event) =>
-                onUpdate({
-                  series: clamp(Number(event.target.value), SERIES_MIN, SERIES_MAX),
-                })
+                updateSeries(Number(event.target.value))
               }
             />
             <button
               type="button"
               disabled={disabled || draft.series >= SERIES_MAX}
-              onClick={() => onUpdate({ series: draft.series + 1 })}
+              onClick={() => updateSeries(draft.series + 1)}
               aria-label="Más series"
             >
               +
@@ -140,43 +207,76 @@ export function RutinaExerciseRow({
           </div>
         </label>
 
-        <label className="rutina-builder__metric">
+        <div className="rutina-builder__metric rutina-builder__metric--reps">
           <span>Reps</span>
-          <div className="rutina-builder__stepper">
-            <button
-              type="button"
-              disabled={disabled || draft.repeticiones <= REPS_MIN}
-              onClick={() => onUpdate({ repeticiones: draft.repeticiones - 1 })}
-              aria-label="Menos repeticiones"
+          {perSetMode ? (
+            <div
+              className="rutina-builder__reps-por-serie"
+              role="group"
+              aria-label="Repeticiones por serie"
             >
-              −
-            </button>
-            <input
-              type="number"
-              min={REPS_MIN}
-              max={REPS_MAX}
-              value={draft.repeticiones}
-              disabled={disabled}
-              onChange={(event) =>
-                onUpdate({
-                  repeticiones: clamp(
-                    Number(event.target.value),
-                    REPS_MIN,
-                    REPS_MAX,
-                  ),
-                })
-              }
-            />
-            <button
-              type="button"
-              disabled={disabled || draft.repeticiones >= REPS_MAX}
-              onClick={() => onUpdate({ repeticiones: draft.repeticiones + 1 })}
-              aria-label="Más repeticiones"
-            >
-              +
-            </button>
-          </div>
-        </label>
+              {draft.repeticionesPorSerie.map((value, serieIndex) => (
+                <label
+                  key={`serie-reps-${serieIndex}`}
+                  className="rutina-builder__reps-por-serie-item"
+                >
+                  <span>S{serieIndex + 1}</span>
+                  <input
+                    type="number"
+                    min={REPS_MIN}
+                    max={REPS_MAX}
+                    value={value}
+                    disabled={disabled}
+                    aria-label={`Repeticiones de la serie ${serieIndex + 1}`}
+                    onChange={(event) =>
+                      updateRepeticionPorSerie(
+                        serieIndex,
+                        Number(event.target.value),
+                      )
+                    }
+                  />
+                </label>
+              ))}
+            </div>
+          ) : (
+            <div className="rutina-builder__stepper">
+              <button
+                type="button"
+                disabled={disabled || draft.repeticiones <= REPS_MIN}
+                onClick={() => updateRepeticiones(draft.repeticiones - 1)}
+                aria-label="Menos repeticiones"
+              >
+                −
+              </button>
+              <input
+                type="number"
+                min={REPS_MIN}
+                max={REPS_MAX}
+                value={draft.repeticiones}
+                disabled={disabled}
+                onChange={(event) =>
+                  updateRepeticiones(Number(event.target.value))
+                }
+              />
+              <button
+                type="button"
+                disabled={disabled || draft.repeticiones >= REPS_MAX}
+                onClick={() => updateRepeticiones(draft.repeticiones + 1)}
+                aria-label="Más repeticiones"
+              >
+                +
+              </button>
+            </div>
+          )}
+          <button
+            type="button"
+            className="rutina-builder__reps-mode-toggle"
+            disabled={disabled}
+            onClick={perSetMode ? disablePerSetMode : enablePerSetMode}
+          >
+            {perSetMode ? "Mismas reps" : "Reps distintas por serie"}
+          </button>
+        </div>
 
         <label className="rutina-builder__metric">
           <span>Descanso</span>

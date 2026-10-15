@@ -1,4 +1,5 @@
 "use client";
+import { FeedbackModal } from "@/components/FeedbackModal";
 
 import Link from "next/link";
 import { ListSkeleton } from "@/components/skeletons/AppSkeleton";
@@ -47,7 +48,7 @@ export function CreadorRutinas() {
             <ListSkeleton items={5} />
           </div>
         ) : null}
-        {error ? <p className="auth-error">{error}</p> : null}
+        <FeedbackModal message={error} />
 
         {!loading && !error && planTemplates.length === 0 ? (
           <p className="planes-catalog__empty">

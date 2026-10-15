@@ -4,31 +4,21 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import {
+  healthProfileSchema,
+  personalProfileSchema,
+} from "@/lib/usuario-profile-schemas";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { Select } from "@/components/Select";
 import { useRequestHealthChanges } from "@/features/alumna/hooks/usePerfil";
+import { apiFetch } from "@/lib/api";
+import { invalidateCache } from "@/lib/apiCache";
 import type { HealthChangesRequestInput } from "@/types/usuario";
 import "./PerfilEditForm.css";
 
-const personalSchema = z.object({
-  telefono: z.string().min(1, "Teléfono requerido"),
-  cedula: z
-    .string()
-    .regex(/^\d+$/, "Cédula solo números")
-    .optional()
-    .or(z.literal("")),
-  fechaNacimiento: z.string().optional(),
-  sexo: z.enum(["hombre", "mujer"]).optional(),
-  alturaCm: z.coerce.number().positive().optional(),
-});
-
-const healthSchema = z.object({
-  mutualista: z.string().min(1, "Mutualista requerida").optional(),
-  coberturaEmergenciaMedica: z.string().min(1, "Cobertura requerida").optional(),
-  lesionesPatologias: z.string().min(1, "Campo requerido").optional(),
-  alergias: z.string().min(1, "Campo requerido").optional(),
-});
+const personalSchema = personalProfileSchema;
+const healthSchema = healthProfileSchema;
 
 const notificacionesSchema = z.object({
   recordatoriosEntrenamiento: z.boolean().optional(),
@@ -153,18 +143,30 @@ function FormShell({
   );
 }
 
-async function patchMe(data: unknown) {
-  const response = await fetch("/api/me", {
+async function patchMeProfile(data: PersonalForm) {
+  const payload: Record<string, unknown> = {
+    nombre: data.nombre.trim(),
+    telefono: data.telefono.trim(),
+    cedula: data.cedula,
+    sexo: data.sexo || undefined,
+    alturaCm: data.alturaCm,
+  };
+  if (data.fechaNacimiento?.trim()) {
+    payload.fechaNacimiento = data.fechaNacimiento;
+  }
+  await apiFetch("/api/me", {
     method: "PATCH",
-    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  invalidateCache("/api/me");
+}
+
+async function putMeNotificaciones(data: NotificacionesForm) {
+  await apiFetch("/api/me/notificaciones", {
+    method: "PUT",
     body: JSON.stringify(data),
   });
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    throw new Error(
-      typeof err?.message === "string" ? err.message : "Error al actualizar",
-    );
-  }
+  invalidateCache("/api/me");
 }
 
 function PersonalEditForm({
@@ -192,7 +194,7 @@ function PersonalEditForm({
     setSubmitting(true);
     setError(null);
     try {
-      await patchMe(data);
+      await patchMeProfile(data);
       onSuccess();
       onClose();
     } catch (err) {
@@ -205,12 +207,26 @@ function PersonalEditForm({
   return (
     <FormShell
       title="Datos personales"
-      subtitle="Teléfono, cédula, fecha de nacimiento, sexo y altura"
+      subtitle="Nombre, teléfono, cédula, fecha de nacimiento, sexo y altura"
       error={error}
       submitting={submitting}
       onClose={onClose}
       onSubmit={handleSubmit(onSubmit)}
     >
+      <div className="perfil-edit__field">
+        <FieldLabel htmlFor="nombre">Nombre y apellido</FieldLabel>
+        <Input
+          label=""
+          id="nombre"
+          type="text"
+          placeholder="Tu nombre"
+          autoComplete="name"
+          {...register("nombre")}
+          disabled={submitting}
+        />
+        <FieldError message={errors.nombre?.message} />
+      </div>
+
       <div className="perfil-edit__field">
         <FieldLabel htmlFor="telefono">Teléfono</FieldLabel>
         <Input
@@ -423,7 +439,7 @@ function NotificacionesEditForm({
     setSubmitting(true);
     setError(null);
     try {
-      await patchMe(data);
+      await putMeNotificaciones(data);
       onSuccess();
       onClose();
     } catch (err) {

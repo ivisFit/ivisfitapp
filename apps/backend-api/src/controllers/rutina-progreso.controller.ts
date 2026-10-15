@@ -48,7 +48,7 @@ export const rutinaProgresoController = {
 
     const progreso = await rutinaProgresoService.upsert(alumnaId, req.body);
 
-    if (progreso.diaCompletado) {
+    if (progreso.diaCompletado && !progreso.diaOmitido) {
       await gamificacionService.procesarEvento(alumnaId, "entrenamiento", {
         referencia: progreso.dateKey,
       });

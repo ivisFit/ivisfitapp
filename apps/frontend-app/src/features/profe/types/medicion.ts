@@ -32,6 +32,21 @@ export type Circunferencias = {
   caderaCm?: number;
 };
 
+export type MedicionImagen = {
+  url: string;
+  publicId: string;
+  nombreArchivo?: string;
+  uploadedAt?: string;
+};
+
+export type FotosProgresoSlot =
+  | "frente"
+  | "espalda"
+  | "perfilIzquierdo"
+  | "perfilDerecho";
+
+export type FotosProgreso = Partial<Record<FotosProgresoSlot, MedicionImagen>>;
+
 export type CreateMedicionPayload = {
   alumnaId?: string;
   metodoCalculo: MetodoCalculo;
@@ -40,6 +55,7 @@ export type CreateMedicionPayload = {
   fecha?: string;
   notas?: string;
   pesoCorporalKg?: number;
+  fotosProgreso?: FotosProgreso;
 };
 
 export type MedicionMetricas = {
@@ -57,6 +73,7 @@ export type MedicionApiDoc = {
   metricas: MedicionMetricas;
   notas?: string;
   pesoCorporalKg?: number;
+  fotosProgreso?: FotosProgreso;
   createdAt: string;
   updatedAt: string;
 };
@@ -71,6 +88,7 @@ export type Medicion = {
   metricas: MedicionMetricas;
   notas?: string;
   pesoCorporalKg?: number;
+  fotosProgreso?: FotosProgreso;
 };
 
 export function resolveMetodoCalculo(

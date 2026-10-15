@@ -1,0 +1,477 @@
+/* Historial comparativo de fotos de pliegues (profe) */
+
+.pliegues-fotos-historial-page.page {
+  max-width: 76rem;
+}
+
+.pliegues-fotos-historial-page {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+
+.pliegues-fotos-historial-page .page__back {
+  margin: 0;
+}
+
+/* Hero */
+
+.pliegues-fotos-historial-hero {
+  display: grid;
+  gap: 1.25rem;
+  padding: clamp(1.1rem, 4vw, 1.75rem);
+  border-radius: var(--radius-hero, 1.6rem);
+  background:
+    radial-gradient(circle at 12% 0%, rgb(253 201 21 / 14%), transparent 45%),
+    var(--glass-bg-elevated);
+  border: 1px solid var(--glass-border-amber);
+  box-shadow: var(--glass-shadow-float);
+  backdrop-filter: blur(var(--glass-blur, 24px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 24px));
+}
+
+.pliegues-fotos-historial-hero__top {
+  display: grid;
+  gap: 1rem;
+}
+
+.pliegues-fotos-historial-hero__eyebrow {
+  display: inline-block;
+  margin-bottom: 0.35rem;
+  color: var(--color-gold, #fdc915);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.pliegues-fotos-historial-hero__copy h1 {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+}
+
+.pliegues-fotos-historial-hero__copy p {
+  max-width: 38rem;
+  margin: 0;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+/* Resumen */
+
+.pliegues-fotos-historial-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.pliegues-fotos-historial-summary__card {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.85rem 1rem;
+  border-radius: 1rem;
+  border: 1px solid var(--gold-a22, rgb(253 201 21 / 22%));
+  background: rgb(15 15 15 / 45%);
+}
+
+.pliegues-fotos-historial-summary__label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.pliegues-fotos-historial-summary__value {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.pliegues-fotos-historial-summary__value--down {
+  color: var(--color-success, #22c55e);
+}
+
+.pliegues-fotos-historial-summary__value--up {
+  color: #f59e0b;
+}
+
+/* Card de la grilla */
+
+.pliegues-fotos-historial__card {
+  padding: clamp(0.9rem, 3vw, 1.35rem);
+  border-radius: var(--radius-card, 1.25rem);
+  background: var(--glass-bg-elevated);
+  border: 1px solid var(--glass-border-amber);
+  box-shadow: var(--glass-shadow-float);
+  backdrop-filter: blur(var(--glass-blur, 24px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 24px));
+}
+
+.pliegues-fotos-historial__card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
+}
+
+.pliegues-fotos-historial__card-head h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.pliegues-fotos-historial__card-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.pliegues-fotos-historial__scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 0.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold-a35, rgb(253 201 21 / 35%)) transparent;
+}
+
+.pliegues-fotos-historial__table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0.6rem 0;
+}
+
+.pliegues-fotos-historial__corner,
+.pliegues-fotos-historial__row-label {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  min-width: 5.5rem;
+  max-width: 6.5rem;
+  padding: 0.5rem 0.65rem 0.5rem 0;
+  text-align: left;
+  background: var(--glass-bg-solid, rgb(20 17 15 / 92%));
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-gold, #fdc915);
+}
+
+.pliegues-fotos-historial__row-label {
+  vertical-align: middle;
+  border-right: 2px solid var(--gold-a22, rgb(253 201 21 / 22%));
+}
+
+.pliegues-fotos-historial__corner {
+  color: var(--color-text-muted);
+  vertical-align: bottom;
+}
+
+.pliegues-fotos-historial__col-head {
+  min-width: 9rem;
+  width: 9rem;
+  padding: 0 0 0.75rem;
+  text-align: center;
+  vertical-align: bottom;
+}
+
+.pliegues-fotos-historial__col-date {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.pliegues-fotos-historial__col-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.3rem;
+  margin-top: 0.4rem;
+}
+
+.pliegues-fotos-historial__chip {
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: rgb(255 255 255 / 8%);
+  color: var(--color-text-muted);
+}
+
+.pliegues-fotos-historial__chip--gold {
+  background: var(--color-yellow-muted, rgb(253 201 21 / 18%));
+  color: var(--color-gold, #fdc915);
+}
+
+.pliegues-fotos-historial__latest {
+  display: inline-block;
+  margin-top: 0.4rem;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-gold, #fdc915);
+}
+
+.pliegues-fotos-historial__cell {
+  padding: 0.3rem 0;
+  vertical-align: middle;
+}
+
+.pliegues-fotos-historial__thumb-btn,
+.pliegues-fotos-historial__placeholder {
+  position: relative;
+  display: block;
+  width: 9rem;
+  aspect-ratio: 3 / 4;
+  border-radius: 0.9rem;
+  overflow: hidden;
+}
+
+.pliegues-fotos-historial__thumb-btn {
+  padding: 0;
+  border: 1px solid var(--gold-a22, rgb(253 201 21 / 22%));
+  background: rgb(0 0 0 / 30%);
+  cursor: zoom-in;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.pliegues-fotos-historial__thumb-btn img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pliegues-fotos-historial__thumb-btn:hover,
+.pliegues-fotos-historial__thumb-btn:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgb(253 201 21 / 60%);
+  box-shadow: 0 10px 24px rgb(0 0 0 / 35%);
+  outline: none;
+}
+
+.pliegues-fotos-historial__zoom {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 1.25rem 0 0.45rem;
+  background: linear-gradient(to top, rgb(0 0 0 / 70%), transparent);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.pliegues-fotos-historial__thumb-btn:hover .pliegues-fotos-historial__zoom,
+.pliegues-fotos-historial__thumb-btn:focus-visible .pliegues-fotos-historial__zoom {
+  opacity: 1;
+}
+
+.pliegues-fotos-historial__placeholder {
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--glass-border, rgb(255 255 255 / 14%));
+  background: rgb(255 255 255 / 3%);
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.pliegues-fotos-historial__empty {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.pliegues-fotos-historial__empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.pliegues-fotos-historial__empty-actions .btn {
+  text-decoration: none;
+}
+
+/* Link de entrada desde Pliegues */
+
+.pliegues-fotos-historial-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.95rem;
+  border: 1px solid var(--gold-a35, rgb(253 201 21 / 35%));
+  border-radius: 999px;
+  background: var(--color-yellow-muted, rgb(253 201 21 / 18%));
+  color: var(--color-gold, #fdc915);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.pliegues-fotos-historial-link:hover {
+  box-shadow: 0 0 18px rgb(253 201 21 / 25%);
+}
+
+.pliegues-fotos-historial-link__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.3rem;
+  height: 1.3rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: var(--color-gold, #fdc915);
+  color: #14110f;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+/* Lightbox */
+
+.pliegues-fotos-lightbox__panel {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 0.75rem;
+  width: min(34rem, 100%);
+  max-height: 94vh;
+  padding: 1rem 1.15rem 1.1rem;
+  border-radius: var(--radius-card, 1.25rem);
+  border: 1px solid var(--glass-border-amber);
+  background: var(--glass-bg-solid-elevated, rgb(28 23 18 / 96%));
+  box-shadow: var(--shadow-card, 0 24px 48px rgb(0 0 0 / 48%));
+}
+
+.pliegues-fotos-lightbox__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.pliegues-fotos-lightbox__header h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.pliegues-fotos-lightbox__kicker {
+  margin: 0 0 0.15rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-gold, #fdc915);
+}
+
+.pliegues-fotos-lightbox__meta {
+  margin: 0.2rem 0 0;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.pliegues-fotos-lightbox__close {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--glass-border, rgb(255 255 255 / 14%));
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pliegues-fotos-lightbox__stage {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 0;
+}
+
+.pliegues-fotos-lightbox__stage img {
+  justify-self: center;
+  max-width: 100%;
+  max-height: min(68vh, 30rem);
+  border-radius: 0.9rem;
+  object-fit: contain;
+}
+
+.pliegues-fotos-lightbox__nav {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--gold-a22, rgb(253 201 21 / 22%));
+  border-radius: 50%;
+  background: rgb(255 255 255 / 6%);
+  color: var(--color-text);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.pliegues-fotos-lightbox__nav:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.pliegues-fotos-lightbox__counter {
+  margin: 0;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+/* Responsive */
+
+@media (min-width: 720px) {
+  .pliegues-fotos-historial-hero__top {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+}
+
+@media (max-width: 640px) {
+  .pliegues-fotos-historial-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .pliegues-fotos-historial__col-head {
+    min-width: 7.5rem;
+    width: 7.5rem;
+  }
+
+  .pliegues-fotos-historial__thumb-btn,
+  .pliegues-fotos-historial__placeholder {
+    width: 7.5rem;
+  }
+
+  .pliegues-fotos-historial__corner,
+  .pliegues-fotos-historial__row-label {
+    min-width: 4.5rem;
+    font-size: 0.65rem;
+  }
+
+  .pliegues-fotos-lightbox__nav {
+    width: 1.9rem;
+    height: 1.9rem;
+  }
+}

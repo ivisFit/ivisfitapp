@@ -25,3 +25,19 @@ export const membresiaEstadoSchema = z.enum([
 ]);
 
 export const mensajeAutorRolSchema = z.enum(["profe", "alumna"]);
+
+export const repeticionesPorSerieSchema = z
+  .array(z.number().int().min(1).max(25))
+  .min(1)
+  .max(8)
+  .optional();
+
+export function repeticionesPorSerieMatchesSeries(ejercicio: {
+  series: number;
+  repeticionesPorSerie?: number[];
+}): boolean {
+  return (
+    ejercicio.repeticionesPorSerie == null ||
+    ejercicio.repeticionesPorSerie.length === ejercicio.series
+  );
+}

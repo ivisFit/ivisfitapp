@@ -147,8 +147,10 @@ export {
 
 export {
   completarOnboardingSchema,
+  updateMeProfileSchema,
   updateNotificacionesSchema,
   type CompletarOnboardingInput,
+  type UpdateMeProfileInput,
   type UpdateNotificacionesInput,
 } from "./schemas/me.schema";
 
@@ -207,7 +209,11 @@ export {
 
 export {
   createMedicionSchema,
+  fotosProgresoSchema,
+  medicionImagenSchema,
   type CreateMedicionInput,
+  type FotosProgresoInput,
+  type MedicionImagenInput,
 } from "./schemas/medicion.schema";
 
 export {

@@ -20,6 +20,7 @@ import {
 } from "@/features/alumna/lib/rutina-day";
 import type { RutinaDay } from "@/features/alumna/lib/rutina-day";
 import type { RutinaDetail, RutinaMediaAsset } from "@/features/alumna/types/rutina";
+import { formatSeriesReps } from "@/lib/rutina-reps";
 
 import type { RutinaProgresoRecord } from "@/features/alumna/types/rutina-progreso";
 
@@ -29,6 +30,7 @@ type TrainingStoryPreviewProps = {
   dayDateKey: string;
   isDayCompleted: boolean;
   onFinishDay: () => void;
+  onSkipDay?: () => void;
   getDayProgreso?: (
     dateKey: string,
     numeroSemana?: number,
@@ -126,6 +128,7 @@ export function TrainingStoryPreview({
   dayDateKey,
   isDayCompleted,
   onFinishDay,
+  onSkipDay,
   getDayProgreso: getDayProgresoProp,
   upsertProgreso: upsertProgresoProp,
 }: TrainingStoryPreviewProps) {
@@ -210,6 +213,14 @@ export function TrainingStoryPreview({
     setSelectedVideoKey(null);
     setRestTimerExerciseKey(null);
   }, [dayDateKey]);
+
+  function handleSkipDay() {
+    if (!onSkipDay || isDayCompleted) return;
+    const confirmed = window.confirm(
+      "¿Marcar este día como no entrenado? Vas a pasar al siguiente día del plan sin sumar XP ni racha.",
+    );
+    if (confirmed) onSkipDay();
+  }
 
   async function toggleCompleted(ejercicioId: string) {
     const current = [
@@ -367,16 +378,27 @@ export function TrainingStoryPreview({
                 Anterior
               </button>
               {isLastStep ? (
-                <button
-                  type="button"
-                  className={`training-story__nav-btn training-story__nav-btn--primary${
-                    isDayCompleted ? " is-completed" : ""
-                  }`}
-                  disabled={isDayCompleted || !allExercisesCompleted}
-                  onClick={onFinishDay}
-                >
-                  {isDayCompleted ? "Día completado ✓" : "Finalizar día"}
-                </button>
+                <div className="training-story__nav-actions">
+                  <button
+                    type="button"
+                    className={`training-story__nav-btn training-story__nav-btn--primary${
+                      isDayCompleted ? " is-completed" : ""
+                    }`}
+                    disabled={isDayCompleted || !allExercisesCompleted}
+                    onClick={onFinishDay}
+                  >
+                    {isDayCompleted ? "Día completado ✓" : "Finalizar día"}
+                  </button>
+                  {onSkipDay && !isDayCompleted ? (
+                    <button
+                      type="button"
+                      className="training-story__nav-btn training-story__nav-btn--ghost"
+                      onClick={handleSkipDay}
+                    >
+                      No entrené hoy
+                    </button>
+                  ) : null}
+                </div>
               ) : (
                 <button
                   type="button"
@@ -421,7 +443,11 @@ export function TrainingStoryPreview({
                 {activeEjercicio.nombre}
               </h3>
               <span className="training-story__exercise-scheme">
-                {activeEjercicio.series} × {activeEjercicio.repeticiones}
+                {formatSeriesReps(
+                  activeEjercicio.series,
+                  activeEjercicio.repeticiones,
+                  activeEjercicio.repeticionesPorSerie,
+                )}
               </span>
             </div>
 
@@ -492,16 +518,27 @@ export function TrainingStoryPreview({
                 Anterior
               </button>
               {isLastStep ? (
-                <button
-                  type="button"
-                  className={`training-story__nav-btn training-story__nav-btn--primary${
-                    isDayCompleted ? " is-completed" : ""
-                  }`}
-                  disabled={isDayCompleted || !allExercisesCompleted}
-                  onClick={onFinishDay}
-                >
-                  {isDayCompleted ? "Día completado ✓" : "Finalizar día"}
-                </button>
+                <div className="training-story__nav-actions">
+                  <button
+                    type="button"
+                    className={`training-story__nav-btn training-story__nav-btn--primary${
+                      isDayCompleted ? " is-completed" : ""
+                    }`}
+                    disabled={isDayCompleted || !allExercisesCompleted}
+                    onClick={onFinishDay}
+                  >
+                    {isDayCompleted ? "Día completado ✓" : "Finalizar día"}
+                  </button>
+                  {onSkipDay && !isDayCompleted ? (
+                    <button
+                      type="button"
+                      className="training-story__nav-btn training-story__nav-btn--ghost"
+                      onClick={handleSkipDay}
+                    >
+                      No entrené hoy
+                    </button>
+                  ) : null}
+                </div>
               ) : isOutroStep(nextStep) ? (
                 <button
                   type="button"

@@ -15,6 +15,12 @@ import {
   resolverDiasAlCatalogo,
 } from "../lib/plan-catalog-ingredientes.js";
 import type { CatalogAlimentoMacros } from "../lib/alimento-catalog-match.js";
+import { normalizeAlimentoNombre } from "../lib/alimento-catalog-match.js";
+import {
+  extraerTerminosSin,
+  filtrarDiasPlanPorCondiciones,
+} from "../lib/plan-condiciones-semana.js";
+import { isExcludedByEvaluacion } from "../lib/sustitucion-alimento.js";
 import { generateGeminiText, isGeminiConfigured } from "./gemini-client.js";
 
 const NUTRITION_SYSTEM_PROMPT = `Sos una nutricionista deportiva de IVIIS FIT, especializada en mujeres.
@@ -86,6 +92,95 @@ CATÁLOGO OBLIGATORIO (solo estos alimentos; usá nombre EXACTO o alimentoId):
 ${JSON.stringify(items)}
 PROHIBIDO: nombres genéricos ("Proteína magra", "Carbohidrato", "Vegetales") o alimentos fuera del catálogo.
 Formato ingrediente: { "alimentoId": "opcional", "nombre": "del catálogo", "cantidad": number, "unidad": "g|ml|unidad" }`;
+}
+
+export type CondicionesSemana = {
+  excluirIds: string[];
+  excluirTerminos: string[];
+  reglas: string[];
+};
+
+export type CondicionesDia = {
+  texto: string;
+  reglas: string[];
+  /** Tokens normalizados de alimentos prohibidos (términos + nombres de catálogo excluidos). */
+  tokensExcluidos: string[];
+};
+
+function nombresIngredientes(dia: DiaPlanNutricional) {
+  return dia.comidas.flatMap((comida) =>
+    comida.ingredientes.map((ing) => ({
+      comida: comida.nombre,
+      nombre: ing.nombre ?? "",
+    })),
+  );
+}
+
+function detectarAlimentosExcluidos(
+  dia: DiaPlanNutricional,
+  tokens: string[],
+): string[] {
+  if (tokens.length === 0) return [];
+  const encontrados = new Set<string>();
+  for (const { comida, nombre } of nombresIngredientes(dia)) {
+    if (nombre.trim() && isExcludedByEvaluacion(nombre, tokens)) {
+      encontrados.add(`"${nombre}" (${comida}) está prohibido por las condiciones`);
+    }
+  }
+  return Array.from(encontrados);
+}
+
+function buildDayInstruction(
+  evaluacion: EvaluacionContext,
+  input: {
+    diaNombre: string;
+    macrosObjetivo: MacrosObjetivo;
+    estructuraComidas: EstructuraComida[];
+    comidasConObjetivo: ComidaPlan[];
+    diasPreviosResumen: string[];
+    catalog: CatalogAlimentoMacros[];
+    condiciones?: CondicionesDia;
+  },
+  feedback: string[],
+): string {
+  const condiciones = input.condiciones;
+  const bloqueCondiciones = condiciones?.texto.trim()
+    ? `CONDICIONES OBLIGATORIAS DE LA PROFESIONAL (prioridad máxima, por encima de la variedad y de cualquier preferencia):
+${condiciones.texto.trim()}
+${condiciones.reglas.length ? `Reglas verificables: ${JSON.stringify(condiciones.reglas)}` : ""}
+Cumplilas al pie de la letra en TODAS las comidas del día. Si una condición choca con otra preferencia, gana la condición. Una sola violación invalida el día.
+${feedback.length ? `Tu intento anterior fue rechazado por: ${feedback.join("; ")}. Corregilo.` : ""}
+
+`
+    : "";
+
+  return `${bloqueCondiciones}Generá UN día del plan nutricional (${input.diaNombre}) en JSON:
+{
+  "nombre": "${input.diaNombre}",
+  "comidas": [{
+    "nombre": "string",
+    "horario": "08:00",
+    "ingredientes": [{ "nombre": "string", "cantidad": number, "unidad": "g|ml|unidad" }],
+    "notas": "opcional",
+    "preparacion": "breve"
+  }]
+}
+
+Evaluación: ${JSON.stringify(evaluacion)}
+Macros del día: ${JSON.stringify(input.macrosObjetivo)}
+Estructura de comidas (respetá nombres y horarios): ${JSON.stringify(input.estructuraComidas)}
+Metas por comida (aproximá ingredientes en gramos para llegar): ${JSON.stringify(
+    input.comidasConObjetivo.map((c) => ({
+      nombre: c.nombre,
+      horario: c.horario,
+      macrosObjetivo: c.macrosObjetivo,
+    })),
+  )}
+${input.diasPreviosResumen.length ? `Días ya armados (variá proteínas y carbos, no repitas menús): ${input.diasPreviosResumen.join(" | ")}` : ""}
+Tiempo máximo cocina: ${evaluacion.tiempoCocinaMinutos} min.
+Cantidades en gramos exactos.
+${catalogInstructionBlock(input.catalog)}
+Devolvé SOLO JSON válido.`;
 }
 
 function normalizeIngredienteRaw(
@@ -348,6 +443,7 @@ Devolvé SOLO JSON válido.`;
       diasPreviosResumen: string[];
       catalog: CatalogAlimentoMacros[];
       diaSeed: number;
+      condiciones?: CondicionesDia;
     },
   ): Promise<DiaPlanNutricional> {
     const fallback: DiaPlanNutricional = {
@@ -357,51 +453,127 @@ Devolvé SOLO JSON válido.`;
       ),
     };
 
-    const instruction = `Generá UN día del plan nutricional (${input.diaNombre}) en JSON:
+    const condiciones = input.condiciones;
+    const MAX_INTENTOS = condiciones ? 3 : 1;
+    let feedback: string[] = [];
+    let mejor: DiaPlanNutricional | null = null;
+
+    for (let intento = 1; intento <= MAX_INTENTOS; intento += 1) {
+      const instruction = buildDayInstruction(evaluacion, input, feedback);
+      const text = await generateNutritionText(
+        instruction,
+        JSON.stringify(fallback),
+        4096,
+        { jsonMode: true },
+      );
+      const parsed = extractJson<DiaPlanNutricional>(text);
+      if (!parsed?.comidas?.length) break;
+
+      const comidas = parsed.comidas.map((comida, index) =>
+        normalizeComidaFromIa(comida, input.comidasConObjetivo[index]),
+      );
+      const candidato: DiaPlanNutricional = { nombre: input.diaNombre, comidas };
+      mejor = candidato;
+
+      if (!condiciones) break;
+
+      const incumplimientos = [
+        ...detectarAlimentosExcluidos(candidato, condiciones.tokensExcluidos),
+        ...(await this.validarDiaConReglas(candidato, condiciones, input.diasPreviosResumen)),
+      ];
+      if (incumplimientos.length === 0) break;
+      feedback = incumplimientos;
+      if (intento === MAX_INTENTOS) {
+        // Último intento con incumplimientos: se descartan los alimentos prohibidos
+        // y el catálogo ya filtrado completa el resto.
+        mejor = filtrarDiasPlanPorCondiciones(
+          [candidato],
+          condiciones.tokensExcluidos,
+        )[0]!;
+      }
+    }
+
+    if (!mejor) return fallback;
+
+    return resolverDiasAlCatalogo([mejor], input.catalog)[0]!;
+  },
+
+  async interpretarCondiciones(
+    instruccion: string,
+    catalog: CatalogAlimentoMacros[],
+  ): Promise<CondicionesSemana> {
+    const texto = instruccion.trim();
+    const terminosLiterales = extraerTerminosSin(texto);
+    const base: CondicionesSemana = {
+      excluirIds: [],
+      excluirTerminos: Array.from(new Set(terminosLiterales)),
+      reglas: [],
+    };
+    if (!texto) return base;
+
+    const prompt = `Analizá las condiciones que pidió la profesional para un plan semanal y devolvé SOLO JSON:
 {
-  "nombre": "${input.diaNombre}",
-  "comidas": [{
-    "nombre": "string",
-    "horario": "08:00",
-    "ingredientes": [{ "nombre": "string", "cantidad": number, "unidad": "g|ml|unidad" }],
-    "notas": "opcional",
-    "preparacion": "breve"
-  }]
+  "excluirIds": ["_id de cada alimento del catálogo que viole una prohibición"],
+  "excluirTerminos": ["palabras de alimentos prohibidos, en singular y minúscula"],
+  "reglas": ["condiciones que NO son prohibiciones de alimentos, una por ítem, verificables sobre un día de comidas"]
 }
+Criterio:
+- Si prohíbe un alimento o grupo (ej: "sin pescado", "sin lácteos", "nada de cerdo"), excluí TODOS los alimentos del catálogo que pertenezcan a ese grupo, incluidos derivados y variantes. Sé exhaustiva.
+- No excluyas alimentos que no fueron prohibidos.
+- Las demás condiciones (tiempo, meal prep, más proteína, variedad, presupuesto) van en "reglas", reformuladas de forma concreta.
 
-Evaluación: ${JSON.stringify(evaluacion)}
-Macros del día: ${JSON.stringify(input.macrosObjetivo)}
-Estructura de comidas (respetá nombres y horarios): ${JSON.stringify(input.estructuraComidas)}
-Metas por comida (aproximá ingredientes en gramos para llegar): ${JSON.stringify(
-      input.comidasConObjetivo.map((c) => ({
-        nombre: c.nombre,
-        horario: c.horario,
-        macrosObjetivo: c.macrosObjetivo,
-      })),
-    )}
-${input.diasPreviosResumen.length ? `Días ya armados (variá proteínas y carbos, no repitas menús): ${input.diasPreviosResumen.join(" | ")}` : ""}
-Tiempo máximo cocina: ${evaluacion.tiempoCocinaMinutos} min.
-Cantidades en gramos exactos.
-${catalogInstructionBlock(input.catalog)}
-Devolvé SOLO JSON válido.`;
+Condiciones: ${texto}
+Catálogo: ${JSON.stringify(formatCatalogoParaPrompt(catalog))}`;
 
+    const text = await generateNutritionText(prompt, JSON.stringify(base), 4096, {
+      jsonMode: true,
+    });
+    const parsed = extractJson<Partial<CondicionesSemana>>(text);
+    if (!parsed) return base;
+
+    const idsValidos = new Set(catalog.map((item) => String(item._id)));
+    const excluirIds = (Array.isArray(parsed.excluirIds) ? parsed.excluirIds : [])
+      .map(String)
+      .filter((id) => idsValidos.has(id));
+    const terminos = [
+      ...terminosLiterales,
+      ...(Array.isArray(parsed.excluirTerminos) ? parsed.excluirTerminos : []),
+    ]
+      .map((t) => normalizeAlimentoNombre(String(t)))
+      .filter((t) => t.length >= 3);
+    const reglas = (Array.isArray(parsed.reglas) ? parsed.reglas : [])
+      .map((r) => String(r).trim())
+      .filter(Boolean)
+      .slice(0, 12);
+
+    return {
+      excluirIds: Array.from(new Set(excluirIds)),
+      excluirTerminos: Array.from(new Set(terminos)),
+      reglas,
+    };
+  },
+
+  async validarDiaConReglas(
+    dia: DiaPlanNutricional,
+    condiciones: CondicionesDia,
+    diasPreviosResumen: string[],
+  ): Promise<string[]> {
+    if (condiciones.reglas.length === 0) return [];
+    const prompt = `Sos auditora estricta de planes nutricionales. Verificá si el día cumple TODAS las reglas. Devolvé SOLO JSON:
+{ "cumple": boolean, "incumplimientos": ["qué regla se rompe y en qué comida, breve"] }
+Solo marcá incumplimiento si es claramente verificable en este día; no inventes problemas.
+Reglas: ${JSON.stringify(condiciones.reglas)}
+Día: ${JSON.stringify(dia)}
+${diasPreviosResumen.length ? `Días anteriores (para reglas de variedad): ${diasPreviosResumen.join(" | ")}` : ""}`;
     const text = await generateNutritionText(
-      instruction,
-      JSON.stringify(fallback),
-      4096,
+      prompt,
+      JSON.stringify({ cumple: true, incumplimientos: [] }),
+      1024,
       { jsonMode: true },
     );
-    const parsed = extractJson<DiaPlanNutricional>(text);
-    if (!parsed?.comidas?.length) return fallback;
-
-    const comidas = parsed.comidas.map((comida, index) =>
-      normalizeComidaFromIa(comida, input.comidasConObjetivo[index]),
-    );
-
-    return resolverDiasAlCatalogo(
-      [{ nombre: input.diaNombre, comidas }],
-      input.catalog,
-    )[0]!;
+    const parsed = extractJson<{ cumple?: boolean; incumplimientos?: string[] }>(text);
+    if (!parsed || parsed.cumple !== false) return [];
+    return (parsed.incumplimientos ?? []).map(String).filter(Boolean).slice(0, 6);
   },
 
   async generateComidaPlan(

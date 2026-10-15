@@ -1,4 +1,5 @@
 "use client";
+import { FeedbackModal } from "@/components/FeedbackModal";
 
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -30,6 +31,26 @@ import { prepareDiasForPlanApi } from "@/features/profe/lib/plan-macros";
 import { useAlimentacionStepSave } from "@/features/profe/hooks/useAlimentacionStepSave";
 import { useRouter } from "next/navigation";
 
+const MAX_WARNING_LINES_IN_CONFIRM = 5;
+
+function formatWarningsConfirmMessage(
+  items: { mensaje: string }[],
+  action: "publicar" | "guardar",
+) {
+  const intro =
+    action === "guardar"
+      ? "El plan tiene advertencias. ¿Querés guardar los cambios igual?"
+      : "El plan tiene advertencias. ¿Querés publicarlo igual?";
+  const lines = items
+    .slice(0, MAX_WARNING_LINES_IN_CONFIRM)
+    .map((item) => `• ${item.mensaje}`);
+  const rest = items.length - MAX_WARNING_LINES_IN_CONFIRM;
+  if (rest > 0) {
+    lines.push(`… y ${rest} más.`);
+  }
+  return [intro, "", ...lines].join("\n");
+}
+
 export function AlimentacionRevisarStep() {
   const router = useRouter();
   const dialog = useAppDialog();
@@ -56,7 +77,6 @@ export function AlimentacionRevisarStep() {
   const [loadingVal, setLoadingVal] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [acceptedWarnings, setAcceptedWarnings] = useState(false);
   const [validationFetchError, setValidationFetchError] = useState<string | null>(null);
   const [validationErrorStatus, setValidationErrorStatus] = useState<number | null>(
     null,
@@ -116,9 +136,7 @@ export function AlimentacionRevisarStep() {
   const errors =
     validacion?.items.filter((item) => item.nivel === "error") ?? [];
   const canPublish =
-    Boolean(validacion?.puedePublicar) &&
-    !validationFetchError &&
-    (warnings.length === 0 || acceptedWarnings);
+    Boolean(validacion?.puedePublicar) && !validationFetchError && !loadingVal;
 
   const blockingHint =
     validationFetchError
@@ -129,12 +147,19 @@ export function AlimentacionRevisarStep() {
         ? isPublicado
           ? "Corregí los errores antes de guardar."
           : "Corregí los errores para poder publicar."
-        : warnings.length > 0 && !acceptedWarnings
-          ? isPublicado
-            ? "Aceptá las advertencias para poder guardar."
-            : "Aceptá las advertencias para poder publicar."
-          : null;
-  const publishHint = blockingHint ?? (isPublicado ? "La alumna ve el plan actualizado al guardar." : null);
+        : null;
+
+  const warningsHint =
+    warnings.length > 0 && errors.length === 0
+      ? isPublicado
+        ? "Hay advertencias: al guardar te vamos a pedir confirmación."
+        : "Hay advertencias: al publicar te vamos a pedir confirmación."
+      : null;
+
+  const publishHint =
+    blockingHint ??
+    warningsHint ??
+    (isPublicado ? "La alumna ve el plan actualizado al guardar." : null);
 
   async function handleDiscardDraft() {
     const draftId = planBorrador?._id ?? planBorrador?.id;
@@ -164,6 +189,17 @@ export function AlimentacionRevisarStep() {
   }
 
   async function handlePublish() {
+    if (warnings.length > 0 && errors.length === 0) {
+      const action = isPublicado ? "guardar" : "publicar";
+      const confirmed = await dialog.confirm({
+        title: isPublicado ? "Guardar con advertencias" : "Publicar con advertencias",
+        message: formatWarningsConfirmMessage(warnings, action),
+        tone: "warning",
+        confirmLabel: isPublicado ? "Guardar igual" : "Publicar igual",
+      });
+      if (!confirmed) return;
+    }
+
     setPublishing(true);
     setError(null);
     try {
@@ -308,16 +344,6 @@ export function AlimentacionRevisarStep() {
             Sin observaciones. El plan está listo para publicar.
           </p>
         ) : null}
-        {warnings.length > 0 && errors.length === 0 ? (
-          <label className="alimentacion-revisar-checklist__accept">
-            <input
-              type="checkbox"
-              checked={acceptedWarnings}
-              onChange={(e) => setAcceptedWarnings(e.target.checked)}
-            />
-            <span>Acepto publicar con las advertencias listadas</span>
-          </label>
-        ) : null}
       </section>
 
       <section className="ap-card alimentacion-revisar-preview">
@@ -331,11 +357,7 @@ export function AlimentacionRevisarStep() {
         </div>
       </section>
 
-      {error ? (
-        <p className="auth-error" role="alert">
-          {error}
-        </p>
-      ) : null}
+      <FeedbackModal message={error} />
 
       {planBorrador ? (
         <div className="alimentacion-revisar-discard">

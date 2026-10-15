@@ -12,6 +12,7 @@ import {
   type ReactNode,
   type SetStateAction,
 } from "react";
+import { flushSync } from "react-dom";
 import { apiFetch, ApiError, formatApiError } from "@/lib/api";
 import { usePlanNutricionalProfe } from "@/features/profe/hooks/useGestionAlimentacion";
 import type {
@@ -26,6 +27,7 @@ import {
   buildDefaultEstructura,
   prepareDiasForPlanApi,
   defaultWeekDayNames,
+  diasPermitenSyncConEstructura,
   planDiasTienenEstructura,
   syncDiasConEstructura,
 } from "@/features/profe/lib/plan-macros";
@@ -52,6 +54,13 @@ type AlimentacionPlanContextValue = {
   dias: DiaPlanNutricional[];
   macrosSugeridos: MacrosObjetivo | null;
   hasUnsavedChanges: boolean;
+  registerComidaFlush: (flush: () => void) => () => void;
+  flushPendingEdits: () => void;
+  flushAndSaveIfDirty: () => void;
+  persistBeforeNavigation: () => Promise<{
+    ok: boolean;
+    error: string | null;
+  }>;
   setTitulo: (value: string) => void;
   setObservacionesProfe: (value: string) => void;
   setMacrosObjetivo: (value: MacrosObjetivo) => void;
@@ -118,7 +127,11 @@ function localStateFromPlanDoc(plan: PlanNutricionalApiDoc) {
       ? plan.dias
       : defaultWeekDayNames().map((nombre) => ({ nombre, comidas: [] }));
 
-  if (nextEstructura.length > 0 && planDiasTienenEstructura(nextDias)) {
+  if (
+    nextEstructura.length > 0 &&
+    planDiasTienenEstructura(nextDias) &&
+    diasPermitenSyncConEstructura(nextDias, nextEstructura)
+  ) {
     nextDias = syncDiasConEstructura(
       nextDias,
       nextEstructura,
@@ -184,6 +197,48 @@ export function AlimentacionPlanProvider({
   const [error, setError] = useState<string | null>(null);
   const hasUnsavedChangesRef = useRef(false);
   const hydratedPlanIdRef = useRef<string | null>(null);
+  const comidaFlushHandlersRef = useRef(new Set<() => void>());
+  const lastSaveErrorRef = useRef<string | null>(null);
+  const draftFieldsRef = useRef({
+    titulo,
+    observacionesProfe,
+    macrosObjetivo,
+    estructuraComidas,
+    savedSnapshot,
+  });
+  draftFieldsRef.current = {
+    titulo,
+    observacionesProfe,
+    macrosObjetivo,
+    estructuraComidas,
+    savedSnapshot,
+  };
+
+  const registerComidaFlush = useCallback((flush: () => void) => {
+    comidaFlushHandlersRef.current.add(flush);
+    return () => {
+      comidaFlushHandlersRef.current.delete(flush);
+    };
+  }, []);
+
+  const flushPendingEdits = useCallback(() => {
+    flushSync(() => {
+      comidaFlushHandlersRef.current.forEach((flush) => flush());
+    });
+  }, []);
+
+  const hasUnsavedChangesNow = useCallback(() => {
+    const fields = draftFieldsRef.current;
+    if (fields.savedSnapshot === null) return false;
+    const current = serializeDraft({
+      titulo: fields.titulo,
+      observacionesProfe: fields.observacionesProfe,
+      macrosObjetivo: fields.macrosObjetivo,
+      estructuraComidas: fields.estructuraComidas,
+      dias: diasRef.current,
+    });
+    return current !== fields.savedSnapshot;
+  }, []);
 
   const planKey = `${plan?._id ?? plan?.id ?? "none"}:${plan?.estado ?? "none"}:${plan?.updatedAt ?? ""}`;
   const borradorKey = `${planBorrador?._id ?? planBorrador?.id ?? "none"}:${planBorrador?.updatedAt ?? ""}`;
@@ -279,6 +334,7 @@ export function AlimentacionPlanProvider({
   }, [alumnaId, plan, planBorrador]);
 
   const saveDraft = useCallback(async (overrides?: SaveDraftOverrides) => {
+    flushPendingEdits();
     setSaving(true);
     setError(null);
 
@@ -287,7 +343,11 @@ export function AlimentacionPlanProvider({
     const nextMacros = overrides?.macrosObjetivo ?? macrosObjetivo;
     const nextEstructura = overrides?.estructuraComidas ?? estructuraComidas;
     let nextDiasRaw = overrides?.dias ?? diasRef.current;
-    if (nextEstructura.length > 0 && planDiasTienenEstructura(nextDiasRaw)) {
+    if (
+      nextEstructura.length > 0 &&
+      planDiasTienenEstructura(nextDiasRaw) &&
+      diasPermitenSyncConEstructura(nextDiasRaw, nextEstructura)
+    ) {
       nextDiasRaw = syncDiasConEstructura(
         nextDiasRaw,
         nextEstructura,
@@ -335,10 +395,13 @@ export function AlimentacionPlanProvider({
 
       applyPlanToEditor(saved);
       await refetchWorkspace();
+      lastSaveErrorRef.current = null;
 
       return saved;
     } catch (err) {
-      setError(formatApiError(err));
+      const message = formatApiError(err);
+      lastSaveErrorRef.current = message;
+      setError(message);
       return null;
     } finally {
       setSaving(false);
@@ -352,7 +415,26 @@ export function AlimentacionPlanProvider({
     resolvePersistPlanId,
     titulo,
     applyPlanToEditor,
+    flushPendingEdits,
   ]);
+
+  const flushAndSaveIfDirty = useCallback(() => {
+    flushPendingEdits();
+    if (!hasUnsavedChangesNow()) return;
+    void saveDraft();
+  }, [flushPendingEdits, hasUnsavedChangesNow, saveDraft]);
+
+  const persistBeforeNavigation = useCallback(async () => {
+    flushPendingEdits();
+    if (!hasUnsavedChangesNow()) {
+      return { ok: true, error: null };
+    }
+    const saved = await saveDraft();
+    return {
+      ok: saved !== null,
+      error: saved !== null ? null : lastSaveErrorRef.current,
+    };
+  }, [flushPendingEdits, hasUnsavedChangesNow, saveDraft]);
 
   const value = useMemo(
     () => ({
@@ -370,6 +452,10 @@ export function AlimentacionPlanProvider({
       dias,
       macrosSugeridos,
       hasUnsavedChanges,
+      registerComidaFlush,
+      flushPendingEdits,
+      flushAndSaveIfDirty,
+      persistBeforeNavigation,
       setTitulo,
       setObservacionesProfe,
       setMacrosObjetivo,
@@ -396,6 +482,10 @@ export function AlimentacionPlanProvider({
       dias,
       macrosSugeridos,
       hasUnsavedChanges,
+      registerComidaFlush,
+      flushPendingEdits,
+      flushAndSaveIfDirty,
+      persistBeforeNavigation,
       saveDraft,
       refetchWorkspace,
       reloadFromServer,

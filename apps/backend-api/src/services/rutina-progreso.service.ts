@@ -52,6 +52,7 @@ export const rutinaProgresoService = {
       nombreDia: data.nombreDia,
       ejerciciosCompletados: data.ejerciciosCompletados,
       diaCompletado: data.diaCompletado,
+      diaOmitido: data.diaOmitido ?? false,
     };
 
     if (data.diaCompletado && !existing?.fechaCompletado) {

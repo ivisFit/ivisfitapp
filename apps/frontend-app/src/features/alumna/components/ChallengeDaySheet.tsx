@@ -17,6 +17,7 @@ import { VideoPlayIcon } from "@/components/icons/exercise-action-icons";
 import { DayIntroMedia } from "@/features/alumna/components/DayIntroMedia";
 import type { ChallengeDay, DayStoryStep } from "@/features/alumna/lib/rutina-day";
 import type { RutinaDetail, RutinaEjercicio } from "@/features/alumna/types/rutina";
+import { formatSeriesReps } from "@/lib/rutina-reps";
 import {
   buildDayStorySequence,
   formatDescanso,
@@ -55,6 +56,7 @@ type ChallengeDaySheetProps = {
   upsertProgreso?: (
     payload: UpsertRutinaProgresoPayload,
   ) => Promise<RutinaProgresoRecord>;
+  onSkipDay?: (day: ChallengeDay) => void;
 };
 
 export function ChallengeDaySheet({
@@ -65,6 +67,7 @@ export function ChallengeDaySheet({
   containment = "fullscreen",
   getDayProgreso: getDayProgresoProp,
   upsertProgreso: upsertProgresoProp,
+  onSkipDay,
 }: ChallengeDaySheetProps) {
   const isContained = containment === "viewport";
   const [selectedExercise, setSelectedExercise] = useState<RutinaEjercicio | null>(
@@ -155,6 +158,25 @@ export function ChallengeDaySheet({
   }, [day, isContained, onClose]);
 
   if (!day) return null;
+
+  const activeDay = day;
+
+  const dayIsDone =
+    dayProgreso?.diaCompletado === true || dayProgreso?.diaOmitido === true;
+  const canSkipDay =
+    Boolean(onSkipDay) &&
+    day.state !== "locked" &&
+    !dayIsDone &&
+    day.numeroSemana &&
+    day.nombreDia?.trim();
+
+  function handleSkipDay() {
+    if (!canSkipDay || !onSkipDay) return;
+    const confirmed = window.confirm(
+      "¿Marcar este día como no entrenado? Vas a pasar al siguiente día del plan sin sumar XP ni racha.",
+    );
+    if (confirmed) onSkipDay(activeDay);
+  }
 
   const selectedExerciseEmbedUrl = selectedExercise?.videoUrl
     ? getYoutubeEmbedUrl(selectedExercise.videoUrl)
@@ -275,7 +297,12 @@ export function ChallengeDaySheet({
                           <strong>{ejercicio.nombre}</strong>
                           <span>
                             Descanso {formatDescanso(ejercicio.descansoSegundos)} ·{" "}
-                            {ejercicio.series} x {ejercicio.repeticiones}
+                            {formatSeriesReps(
+                              ejercicio.series,
+                              ejercicio.repeticiones,
+                              ejercicio.repeticionesPorSerie,
+                              "x",
+                            )}
                           </span>
                         </div>
                         <div className="challenge-sheet__exercise-actions">
@@ -326,6 +353,18 @@ export function ChallengeDaySheet({
                 Este día queda reservado para sumar contenido.
               </p>
             )}
+
+            {canSkipDay ? (
+              <div className="challenge-sheet__skip">
+                <button
+                  type="button"
+                  className="btn btn--ghost challenge-sheet__skip-btn"
+                  onClick={handleSkipDay}
+                >
+                  No entrené este día
+                </button>
+              </div>
+            ) : null}
 
             {outroSteps.length > 0
               ? outroSteps.map((step) => (

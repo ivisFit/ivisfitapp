@@ -6,22 +6,20 @@ import { useAlimentacionPlan } from "@/features/profe/context/AlimentacionPlanPr
 
 export function useAlimentacionStepSave() {
   const router = useRouter();
-  const { hasUnsavedChanges, saveDraft } = useAlimentacionPlan();
+  const { flushAndSaveIfDirty, persistBeforeNavigation } = useAlimentacionPlan();
 
   const saveIfNeeded = useCallback(async (): Promise<boolean> => {
-    if (!hasUnsavedChanges) return true;
-    const saved = await saveDraft();
-    return saved !== null;
-  }, [hasUnsavedChanges, saveDraft]);
+    const result = await persistBeforeNavigation();
+    return result.ok;
+  }, [persistBeforeNavigation]);
 
   const navigateWithSave = useCallback(
     async (href: string): Promise<boolean> => {
-      const ok = await saveIfNeeded();
-      if (!ok) return false;
+      flushAndSaveIfDirty();
       router.push(href);
       return true;
     },
-    [router, saveIfNeeded],
+    [flushAndSaveIfDirty, router],
   );
 
   const handleStepLinkClick = useCallback(
