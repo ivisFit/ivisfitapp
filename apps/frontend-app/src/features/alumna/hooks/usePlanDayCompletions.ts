@@ -52,6 +52,30 @@ export function usePlanDayCompletions(
     [getDayProgreso, rutinaId, upsertProgreso],
   );
 
+  const markDayIncomplete = useCallback(
+    async ({
+      dateKey,
+      numeroSemana,
+      nombreDia,
+      ejerciciosCompletados,
+    }: MarkDayCompleteInput) => {
+      if (!rutinaId) return;
+
+      const existing = getDayProgreso(dateKey, numeroSemana, nombreDia);
+      await upsertProgreso({
+        rutinaId,
+        dateKey,
+        numeroSemana,
+        nombreDia,
+        ejerciciosCompletados:
+          ejerciciosCompletados ?? existing?.ejerciciosCompletados ?? [],
+        diaCompletado: true,
+        diaOmitido: true,
+      });
+    },
+    [getDayProgreso, rutinaId, upsertProgreso],
+  );
+
   const markDaySkipped = useCallback(
     async ({
       dateKey,
@@ -95,6 +119,7 @@ export function usePlanDayCompletions(
   return {
     completedDateKeys,
     markDayComplete,
+    markDayIncomplete,
     markDaySkipped,
     isDayComplete,
     isPlanDayDone,

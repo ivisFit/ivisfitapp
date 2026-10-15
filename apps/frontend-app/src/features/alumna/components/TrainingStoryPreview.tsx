@@ -24,12 +24,16 @@ import { formatSeriesReps } from "@/lib/rutina-reps";
 
 import type { RutinaProgresoRecord } from "@/features/alumna/types/rutina-progreso";
 
+const INCOMPLETE_DAY_CONFIRM =
+  "Todavía te faltan ejercicios. ¿Marcar el día como incompleto? Vas a pasar al siguiente día sin sumar XP ni racha. Se guardan los que ya marcaste.";
+
 type TrainingStoryPreviewProps = {
   rutina: RutinaDetail;
   dayInfo: RutinaDay;
   dayDateKey: string;
   isDayCompleted: boolean;
   onFinishDay: () => void;
+  onFinishIncomplete?: () => void;
   onSkipDay?: () => void;
   getDayProgreso?: (
     dateKey: string,
@@ -128,6 +132,7 @@ export function TrainingStoryPreview({
   dayDateKey,
   isDayCompleted,
   onFinishDay,
+  onFinishIncomplete,
   onSkipDay,
   getDayProgreso: getDayProgresoProp,
   upsertProgreso: upsertProgresoProp,
@@ -222,6 +227,19 @@ export function TrainingStoryPreview({
     if (confirmed) onSkipDay();
   }
 
+  function handleFinishDay() {
+    if (isDayCompleted) return;
+    if (!allExercisesCompleted) {
+      const confirmed = window.confirm(INCOMPLETE_DAY_CONFIRM);
+      if (!confirmed) return;
+      if (onFinishIncomplete) {
+        onFinishIncomplete();
+        return;
+      }
+    }
+    onFinishDay();
+  }
+
   async function toggleCompleted(ejercicioId: string) {
     const current = [
       ...(getDayProgreso(dayDateKey, dayInfo.numeroSemana, dayInfo.nombreDia)
@@ -254,7 +272,6 @@ export function TrainingStoryPreview({
 
   function goNext() {
     if (isLastStep) return;
-    if (isOutroStep(nextStep) && !allExercisesCompleted) return;
     setRestTimerExerciseKey(null);
     setStepIndex((current) => Math.min(current + 1, sequence.length - 1));
   }
@@ -279,7 +296,11 @@ export function TrainingStoryPreview({
     };
   });
 
-  const canAdvanceToOutro = allExercisesCompleted;
+  const finishDayLabel = isDayCompleted
+    ? "Día completado ✓"
+    : allExercisesCompleted
+      ? "Finalizar día"
+      : "Marcar como incompleto";
   const showFinishHint =
     isLastExercise &&
     !isDayCompleted &&
@@ -384,10 +405,10 @@ export function TrainingStoryPreview({
                     className={`training-story__nav-btn training-story__nav-btn--primary${
                       isDayCompleted ? " is-completed" : ""
                     }`}
-                    disabled={isDayCompleted || !allExercisesCompleted}
-                    onClick={onFinishDay}
+                    disabled={isDayCompleted}
+                    onClick={handleFinishDay}
                   >
-                    {isDayCompleted ? "Día completado ✓" : "Finalizar día"}
+                    {finishDayLabel}
                   </button>
                   {onSkipDay && !isDayCompleted ? (
                     <button
@@ -524,10 +545,10 @@ export function TrainingStoryPreview({
                     className={`training-story__nav-btn training-story__nav-btn--primary${
                       isDayCompleted ? " is-completed" : ""
                     }`}
-                    disabled={isDayCompleted || !allExercisesCompleted}
-                    onClick={onFinishDay}
+                    disabled={isDayCompleted}
+                    onClick={handleFinishDay}
                   >
-                    {isDayCompleted ? "Día completado ✓" : "Finalizar día"}
+                    {finishDayLabel}
                   </button>
                   {onSkipDay && !isDayCompleted ? (
                     <button
@@ -539,15 +560,6 @@ export function TrainingStoryPreview({
                     </button>
                   ) : null}
                 </div>
-              ) : isOutroStep(nextStep) ? (
-                <button
-                  type="button"
-                  className="training-story__nav-btn training-story__nav-btn--primary"
-                  disabled={!canAdvanceToOutro}
-                  onClick={goNext}
-                >
-                  Siguiente
-                </button>
               ) : (
                 <button
                   type="button"
@@ -560,9 +572,9 @@ export function TrainingStoryPreview({
             </nav>
             {showFinishHint ? (
               <p className="training-story__finish-hint">
-                {isOutroStep(nextStep)
-                  ? "Marcá todos los ejercicios para ver la despedida."
-                  : "Marcá todos los ejercicios para finalizar el día."}
+                {onSkipDay
+                  ? "Podés marcar el día como incompleto aunque te falten ejercicios, o indicar que no entrenaste hoy."
+                  : "Podés marcar el día como incompleto aunque te falten ejercicios."}
               </p>
             ) : null}
           </div>

@@ -36,6 +36,7 @@ export function VistaRutina() {
   const {
     completedDateKeys,
     markDayComplete,
+    markDayIncomplete,
     markDaySkipped,
     isDayComplete,
     isPlanDayDone,
@@ -78,6 +79,15 @@ export function VistaRutina() {
     if (!rutina || !dayInfo) return;
     void markDaySkipped(buildTodayCompletionInput(rutina, dayInfo));
   }, [dayInfo, markDaySkipped, rutina]);
+
+  const handleFinishIncomplete = useCallback(() => {
+    if (!rutina || !dayInfo) return;
+    void markDayIncomplete({
+      dateKey: getRutinaDayDateKey(rutina, dayInfo),
+      numeroSemana: dayInfo.numeroSemana,
+      nombreDia: dayInfo.nombreDia,
+    });
+  }, [dayInfo, markDayIncomplete, rutina]);
 
   const loading = authLoading || rutinaLoading;
   const error = rutinaError;
@@ -152,6 +162,7 @@ export function VistaRutina() {
                 onFinishDay={() =>
                   void markDayComplete(buildTodayCompletionInput(rutina, dayInfo))
                 }
+                onFinishIncomplete={handleFinishIncomplete}
                 onSkipDay={handleSkipDay}
               />
             ) : null}
@@ -162,6 +173,25 @@ export function VistaRutina() {
                 days={planDays}
                 getDayProgreso={getDayProgreso}
                 upsertProgreso={upsertProgreso}
+                onFinishDay={(day) => {
+                  if (!day.numeroSemana || !day.nombreDia) return;
+                  void markDayComplete({
+                    dateKey: day.dateKey,
+                    numeroSemana: day.numeroSemana,
+                    nombreDia: day.nombreDia,
+                    ejerciciosCompletados: day.ejercicios
+                      .map((ejercicio) => ejercicio.id)
+                      .filter(Boolean),
+                  });
+                }}
+                onFinishIncomplete={(day) => {
+                  if (!day.numeroSemana || !day.nombreDia) return;
+                  void markDayIncomplete({
+                    dateKey: day.dateKey,
+                    numeroSemana: day.numeroSemana,
+                    nombreDia: day.nombreDia,
+                  });
+                }}
                 onSkipDay={(day) => {
                   if (!day.numeroSemana || !day.nombreDia) return;
                   void markDaySkipped({

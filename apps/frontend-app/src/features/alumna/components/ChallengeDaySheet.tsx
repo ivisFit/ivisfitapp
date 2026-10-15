@@ -56,8 +56,13 @@ type ChallengeDaySheetProps = {
   upsertProgreso?: (
     payload: UpsertRutinaProgresoPayload,
   ) => Promise<RutinaProgresoRecord>;
+  onFinishDay?: (day: ChallengeDay) => void;
+  onFinishIncomplete?: (day: ChallengeDay) => void;
   onSkipDay?: (day: ChallengeDay) => void;
 };
+
+const INCOMPLETE_DAY_CONFIRM =
+  "Todavía te faltan ejercicios. ¿Marcar el día como incompleto? Vas a pasar al siguiente día sin sumar XP ni racha. Se guardan los que ya marcaste.";
 
 export function ChallengeDaySheet({
   day,
@@ -67,6 +72,8 @@ export function ChallengeDaySheet({
   containment = "fullscreen",
   getDayProgreso: getDayProgresoProp,
   upsertProgreso: upsertProgresoProp,
+  onFinishDay,
+  onFinishIncomplete,
   onSkipDay,
 }: ChallengeDaySheetProps) {
   const isContained = containment === "viewport";
@@ -163,12 +170,16 @@ export function ChallengeDaySheet({
 
   const dayIsDone =
     dayProgreso?.diaCompletado === true || dayProgreso?.diaOmitido === true;
-  const canSkipDay =
-    Boolean(onSkipDay) &&
-    day.state !== "locked" &&
-    !dayIsDone &&
-    day.numeroSemana &&
-    day.nombreDia?.trim();
+  const dayHasSlot = Boolean(day.numeroSemana && day.nombreDia?.trim());
+  const allExercisesCompleted =
+    day.ejercicios.length === 0 ||
+    day.ejercicios.every((ejercicio) => completedIds.has(ejercicio.id));
+  const canCloseDay =
+    day.state !== "locked" && !dayIsDone && dayHasSlot;
+  const canFinishDay =
+    canCloseDay &&
+    (allExercisesCompleted ? Boolean(onFinishDay) : Boolean(onFinishIncomplete));
+  const canSkipDay = Boolean(onSkipDay) && canCloseDay;
 
   function handleSkipDay() {
     if (!canSkipDay || !onSkipDay) return;
@@ -176,6 +187,16 @@ export function ChallengeDaySheet({
       "¿Marcar este día como no entrenado? Vas a pasar al siguiente día del plan sin sumar XP ni racha.",
     );
     if (confirmed) onSkipDay(activeDay);
+  }
+
+  function handleFinishDay() {
+    if (!canFinishDay) return;
+    if (!allExercisesCompleted) {
+      const confirmed = window.confirm(INCOMPLETE_DAY_CONFIRM);
+      if (confirmed) onFinishIncomplete?.(activeDay);
+      return;
+    }
+    onFinishDay?.(activeDay);
   }
 
   const selectedExerciseEmbedUrl = selectedExercise?.videoUrl
@@ -354,15 +375,28 @@ export function ChallengeDaySheet({
               </p>
             )}
 
-            {canSkipDay ? (
+            {canFinishDay || canSkipDay ? (
               <div className="challenge-sheet__skip">
-                <button
-                  type="button"
-                  className="btn btn--ghost challenge-sheet__skip-btn"
-                  onClick={handleSkipDay}
-                >
-                  No entrené este día
-                </button>
+                {canFinishDay ? (
+                  <button
+                    type="button"
+                    className="btn btn--primary challenge-sheet__finish-btn"
+                    onClick={handleFinishDay}
+                  >
+                    {allExercisesCompleted
+                      ? "Finalizar día"
+                      : "Marcar como incompleto"}
+                  </button>
+                ) : null}
+                {canSkipDay ? (
+                  <button
+                    type="button"
+                    className="btn btn--ghost challenge-sheet__skip-btn"
+                    onClick={handleSkipDay}
+                  >
+                    No entrené este día
+                  </button>
+                ) : null}
               </div>
             ) : null}
 
