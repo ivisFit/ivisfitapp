@@ -1,5 +1,4 @@
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 
 function getBackendOrigin(): string {
   return (
@@ -35,15 +34,23 @@ function forwardUpstreamHeaders(upstream: Response): Headers {
   return responseHeaders;
 }
 
-async function proxy(
-  request: NextRequest,
-  context: { params: Promise<{ path: string[] }> },
-) {
-  let pathSegments: string[] = [];
+export function shouldProxyBackendApi(pathname: string): boolean {
+  if (!pathname.startsWith("/api/")) return false;
+  if (pathname.startsWith("/api/site-content")) return false;
+  if (pathname.startsWith("/api/uploads")) return false;
+  return true;
+}
+
+export async function proxyApiRequest(request: NextRequest): Promise<NextResponse> {
+  const pathname = request.nextUrl.pathname;
+  const apiPrefix = "/api/";
+  const relativePath = pathname.startsWith(apiPrefix)
+    ? pathname.slice(apiPrefix.length)
+    : "";
+  const pathSegments = relativePath ? relativePath.split("/") : [];
+
   try {
-    const { path } = await context.params;
-    pathSegments = path;
-    const targetUrl = `${getBackendOrigin()}/api/${path.join("/")}${request.nextUrl.search}`;
+    const targetUrl = `${getBackendOrigin()}/api/${pathSegments.join("/")}${request.nextUrl.search}`;
 
     const headers = new Headers(request.headers);
     headers.delete("host");
@@ -100,12 +107,3 @@ async function proxy(
     );
   }
 }
-
-export const GET = proxy;
-export const POST = proxy;
-export const PUT = proxy;
-export const PATCH = proxy;
-export const DELETE = proxy;
-export const OPTIONS = proxy;
-
-export const dynamic = "force-dynamic";

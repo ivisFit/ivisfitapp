@@ -140,4 +140,14 @@ export const medicionesController = {
 
     res.status(201).json(medicion);
   },
+
+  async updateFotos(req: Request, res: Response) {
+    const usuario = await getUsuarioForSession(req);
+    if (usuario.rol !== "profe") {
+      throw new AppError(403, "No tenés permiso para esta acción");
+    }
+
+    const medicion = await medicionesService.updateFotos(getParamId(req), req.body);
+    res.json(medicion);
+  },
 };

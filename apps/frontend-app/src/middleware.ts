@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { proxyApiRequest, shouldProxyBackendApi } from "@/lib/backend-api-proxy";
 import {
   authRateLimiter,
   apiRateLimiter,
@@ -13,7 +14,6 @@ function applySecurityHeaders(
   response: NextResponse,
 ): NextResponse {
   response.headers.set("X-Content-Type-Options", "nosniff");
-  // La preview del CMS se embebe en un iframe same-origin (/web-config).
   response.headers.set(
     "X-Frame-Options",
     isCmsPreviewPath(request.nextUrl.pathname) ? "SAMEORIGIN" : "DENY",
@@ -28,7 +28,7 @@ function applySecurityHeaders(
   return response;
 }
 
-export function authMiddleware(request: NextRequest) {
+function applyApiRateLimits(request: NextRequest): NextResponse | null {
   const pathname = request.nextUrl.pathname;
   const isAuthRoute = pathname.startsWith("/api/auth/");
   const isTwoFactorRoute = pathname.startsWith("/api/auth/two-factor/");
@@ -45,6 +45,26 @@ export function authMiddleware(request: NextRequest) {
     if (rateLimitResponse) return rateLimitResponse;
   }
 
+  return null;
+}
+
+export async function middleware(request: NextRequest) {
+  const rateLimited = applyApiRateLimits(request);
+  if (rateLimited) {
+    return applySecurityHeaders(request, rateLimited);
+  }
+
+  if (shouldProxyBackendApi(request.nextUrl.pathname)) {
+    const proxied = await proxyApiRequest(request);
+    return applySecurityHeaders(request, proxied);
+  }
+
+  return applySecurityHeaders(request, NextResponse.next());
+}
+
+export function authMiddleware(request: NextRequest) {
+  const rateLimited = applyApiRateLimits(request);
+  if (rateLimited) return rateLimited;
   return applySecurityHeaders(request, NextResponse.next());
 }
 
@@ -52,17 +72,10 @@ export function securityHeadersMiddleware(request: NextRequest) {
   return applySecurityHeaders(request, NextResponse.next());
 }
 
-export default authMiddleware;
+export default middleware;
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico, manifest.json, sw.js, robots.txt, sitemap.xml
-     * - public folder assets (images, fonts, etc.)
-     */
     "/((?!_next/static|_next/image|favicon.ico|manifest.json|sw.js|pwa-dev-sw.js|robots.txt|sitemap.xml|.*\\.png$|.*\\.jpg$|.*\\.jpeg$|.*\\.gif$|.*\\.svg$|.*\\.webp$|.*\\.ico$|.*\\.woff$|.*\\.woff2$|.*\\.mp4$|.*\\.webm$).*)",
   ],
 };

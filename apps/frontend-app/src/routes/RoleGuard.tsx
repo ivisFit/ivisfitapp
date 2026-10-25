@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { RouteSkeleton } from "@/components/skeletons/AppSkeleton";
 import { useAuth } from "@/context/AuthContext";
 import { buildLoginUrl } from "@/routes/auth-redirect";
@@ -17,23 +17,22 @@ export function RoleGuard({ allowedRoles, children }: RoleGuardProps) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const [mounted, setMounted] = useState(false);
+
+  const pendingAdmission =
+    user?.role === "alumna" && user.admissionStatus !== "admitida";
+  const authorized =
+    Boolean(user) && !pendingAdmission && allowedRoles.includes(user!.role);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted || loading) return;
+    if (loading) return;
 
     if (!user) {
-      const search = typeof window !== "undefined" ? window.location.search : "";
-      const returnTo = `${pathname ?? ""}${search}`;
+      const returnTo = `${window.location.pathname}${window.location.search}`;
       router.replace(buildLoginUrl(returnTo));
       return;
     }
 
-    if (user.role === "alumna" && user.admissionStatus !== "admitida") {
+    if (pendingAdmission) {
       router.replace(publicRoutes.solicitudPendiente);
       return;
     }
@@ -41,9 +40,9 @@ export function RoleGuard({ allowedRoles, children }: RoleGuardProps) {
     if (!allowedRoles.includes(user.role)) {
       router.replace(getHomeRouteForRole(user.role));
     }
-  }, [allowedRoles, loading, pathname, router, user, mounted]);
+  }, [allowedRoles, loading, pendingAdmission, router, user]);
 
-  if (!mounted || loading) {
+  if (loading || !authorized) {
     const skeletonRole: "profe" | "alumna" | "generic" = allowedRoles.includes(
       "profe",
     )
@@ -57,14 +56,6 @@ export function RoleGuard({ allowedRoles, children }: RoleGuardProps) {
         <RouteSkeleton role={skeletonRole} pathname={pathname ?? ""} />
       </div>
     );
-  }
-
-  if (
-    !user ||
-    !allowedRoles.includes(user.role) ||
-    (user.role === "alumna" && user.admissionStatus !== "admitida")
-  ) {
-    return null;
   }
 
   return children;

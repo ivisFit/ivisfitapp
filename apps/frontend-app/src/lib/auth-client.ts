@@ -3,7 +3,7 @@ import { twoFactorClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 import { notifyTwoFactorRedirect } from "./two-factor-redirect";
 
-/** Rutas relativas → mismo origen; el proxy en app/api/[...path] reenvía al backend. */
+/** Rutas relativas → mismo origen; el proxy en middleware reenvía al backend. */
 export const authClient = createAuthClient({
   baseURL: "",
   fetchOptions: {

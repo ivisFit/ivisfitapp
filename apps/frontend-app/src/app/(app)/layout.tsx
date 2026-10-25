@@ -1,15 +1,8 @@
 import type { ReactNode } from "react";
-import { Poppins } from "next/font/google";
 import { AppShell } from "@/components/layout/AppShell";
+import { poppins } from "@/lib/fonts/local-fonts";
 import { AppProviders } from "./AppProviders";
 import "@/styles/app-features.css";
-
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["400", "600", "700"],
-  display: "swap",
-  variable: "--font-rutina",
-});
 
 export default function AppGroupLayout({ children }: { children: ReactNode }) {
   return (

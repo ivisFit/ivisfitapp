@@ -3,7 +3,7 @@
  *
  * En el navegador siempre usamos el mismo origen (`""`) para que:
  * - las cookies de Better Auth viajen con la request
- * - el proxy `app/api/[...path]` reenvíe al backend
+ * - el proxy en `middleware` reenvíe `/api/*` al backend
  * - el CSP (`connect-src 'self'`) no bloquee el fetch
  *
  * `NEXT_PUBLIC_API_URL` / `API_URL` solo sirven en el servidor (proxy / SSR).

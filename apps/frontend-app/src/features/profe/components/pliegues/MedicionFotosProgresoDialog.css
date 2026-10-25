@@ -78,3 +78,9 @@
   object-fit: cover;
   max-height: 16rem;
 }
+
+.medicion-fotos-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}

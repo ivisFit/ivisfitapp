@@ -211,9 +211,11 @@ export {
   createMedicionSchema,
   fotosProgresoSchema,
   medicionImagenSchema,
+  updateFotosProgresoSchema,
   type CreateMedicionInput,
   type FotosProgresoInput,
   type MedicionImagenInput,
+  type UpdateFotosProgresoInput,
 } from "./schemas/medicion.schema";
 
 export {

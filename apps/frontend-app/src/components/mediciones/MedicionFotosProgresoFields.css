@@ -53,12 +53,18 @@
   border: 0;
 }
 
-.medicion-fotos__empty,
+.medicion-fotos__picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
 .medicion-fotos__file-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 7rem;
+  min-height: 2.75rem;
+  flex: 1;
   border: 1px dashed var(--color-border);
   border-radius: var(--radius-md);
   background: rgb(255 255 255 / 3%);
@@ -67,17 +73,10 @@
   font-size: 0.85rem;
   font-weight: 600;
   text-align: center;
-  padding: 0.5rem;
+  padding: 0.45rem 0.65rem;
   color: inherit;
 }
 
-.medicion-fotos__file-btn {
-  min-height: auto;
-  flex: 1;
-  padding: 0.45rem 0.65rem;
-}
-
-.medicion-fotos__empty:disabled,
 .medicion-fotos__file-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -99,6 +98,7 @@
 
 .medicion-fotos__slot-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
 }
 

@@ -383,6 +383,16 @@
   color: #f0f0f0;
 }
 
+.pliegues-history-table__fotos-cell {
+  white-space: normal;
+}
+
+.pliegues-history-table__fotos-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+}
+
 .pliegues-history-table__fotos-btn {
   border: 0;
   background: transparent;

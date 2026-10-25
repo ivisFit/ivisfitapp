@@ -35,6 +35,21 @@ export const fotosProgresoSchema = z.object({
   perfilDerecho: medicionImagenSchema.optional(),
 });
 
+const fotosProgresoSlotUpdateSchema = medicionImagenSchema.nullable().optional();
+
+export const updateFotosProgresoSchema = z.object({
+  fotosProgreso: z
+    .object({
+      frente: fotosProgresoSlotUpdateSchema,
+      espalda: fotosProgresoSlotUpdateSchema,
+      perfilIzquierdo: fotosProgresoSlotUpdateSchema,
+      perfilDerecho: fotosProgresoSlotUpdateSchema,
+    })
+    .refine((slots) => Object.keys(slots).length > 0, {
+      message: "Indicá al menos un ángulo",
+    }),
+});
+
 export const createMedicionSchema = z.object({
   alumnaId: objectIdSchema.optional(),
   metodoCalculo: metodoCalculoSchema,
@@ -49,3 +64,4 @@ export const createMedicionSchema = z.object({
 export type MedicionImagenInput = z.infer<typeof medicionImagenSchema>;
 export type FotosProgresoInput = z.infer<typeof fotosProgresoSchema>;
 export type CreateMedicionInput = z.infer<typeof createMedicionSchema>;
+export type UpdateFotosProgresoInput = z.infer<typeof updateFotosProgresoSchema>;

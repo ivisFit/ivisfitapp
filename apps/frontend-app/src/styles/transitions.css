@@ -3,10 +3,6 @@
   --page-transition-enter: 220ms;
 }
 
-.page-transition {
-  view-transition-name: page-content;
-}
-
 @keyframes page-fade-out {
   from {
     opacity: 1;
@@ -29,15 +25,6 @@
   }
 }
 
-::view-transition-old(page-content) {
-  animation: var(--page-transition-exit) ease-out both page-fade-out;
-}
-
-::view-transition-new(page-content) {
-  animation:
-    var(--page-transition-enter) ease-out var(--page-transition-exit) both page-fade-in;
-}
-
 ::view-transition-group(app-header),
 ::view-transition-group(app-sidebar),
 ::view-transition-group(app-bottom-nav) {
@@ -57,17 +44,7 @@
   animation: none;
 }
 
-@supports not (view-transition-name: none) {
-  .page-transition {
-    animation: page-fade-in var(--page-transition-enter) ease-out both;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .page-transition {
-    animation: none;
-  }
-
   ::view-transition-old(*),
   ::view-transition-new(*),
   ::view-transition-group(*) {

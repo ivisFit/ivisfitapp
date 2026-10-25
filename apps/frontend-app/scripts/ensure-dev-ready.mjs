@@ -49,6 +49,37 @@ function shouldCleanNextForDev() {
     };
   }
 
+  const appPathsManifest = path.join(nextDir, "server", "app-paths-manifest.json");
+  const pagesAppDir = path.join(nextDir, "server", "pages", "_app");
+  const pagesAppManifest = path.join(pagesAppDir, "build-manifest.json");
+  if (
+    existsSync(pagesAppDir) &&
+    !existsSync(pagesAppManifest) &&
+    existsSync(appPathsManifest)
+  ) {
+    return {
+      clean: true,
+      reason:
+        "caché de desarrollo inconsistente (manifests de pages router incompletos)",
+    };
+  }
+
+  const staleCatchAllMetadata = path.join(
+    nextDir,
+    "server",
+    "app",
+    "api",
+    "[...path]",
+    "[__metadata_id__]",
+  );
+  if (existsSync(staleCatchAllMetadata)) {
+    return {
+      clean: true,
+      reason:
+        "quedó caché de la ruta api/[...path] eliminada (reiniciá dev tras actualizar)",
+    };
+  }
+
   return { clean: false };
 }
 

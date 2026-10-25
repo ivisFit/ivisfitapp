@@ -6,7 +6,6 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -71,10 +70,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   } = authClient.useSession();
   const [mounted, setMounted] = useState(false);
   const [pending2fa, setPending2fa] = useState(false);
-  const [profileLoading, setProfileLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [retryingSession, setRetryingSession] = useState(false);
-  const sessionRetriesRef = useRef(0);
+  const [sessionRetried, setSessionRetried] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -82,19 +80,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!sessionError) {
-      sessionRetriesRef.current = 0;
+      setSessionRetried(false);
       return;
     }
 
-    if (retryingSession || sessionRetriesRef.current >= 1) return;
+    if (retryingSession || sessionRetried) return;
 
-    sessionRetriesRef.current += 1;
+    setSessionRetried(true);
     setRetryingSession(true);
 
     setTimeout(() => {
       void refetch().finally(() => setRetryingSession(false));
     }, 700);
-  }, [sessionError, refetch, retryingSession]);
+  }, [sessionError, refetch, retryingSession, sessionRetried]);
 
   useEffect(() => {
     setTwoFactorRedirectHandler(() => {
@@ -109,32 +107,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const sessionUser = session?.user ?? null;
 
   useEffect(() => {
-    if (!mounted || pending2fa || !sessionUser) {
-      setCurrentUser(null);
-      setProfileLoading(false);
+    if (!mounted) return;
+
+    if (pending2fa || !sessionUser) {
+      if (!isPending) setCurrentUser(null);
       return;
     }
 
     let cancelled = false;
-    setProfileLoading(true);
 
-    loadUserWithAdmission(sessionUser)
-      .then((userWithAdmission) => {
-        if (!cancelled) {
-          setCurrentUser(userWithAdmission);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setProfileLoading(false);
-        }
-      });
+    void loadUserWithAdmission(sessionUser).then((userWithAdmission) => {
+      if (!cancelled) {
+        setCurrentUser(userWithAdmission);
+      }
+    });
 
     return () => {
       cancelled = true;
     };
   }, [
     mounted,
+    isPending,
     pending2fa,
     sessionUser?.id,
     sessionUser?.email,
@@ -255,36 +248,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await authClient.signOut();
   }, []);
 
-  const refreshProfile = useCallback(async (options?: { silent?: boolean }) => {
+  const refreshProfile = useCallback(async (_options?: { silent?: boolean }) => {
     if (!sessionUser) return;
 
-    if (!options?.silent) {
-      setProfileLoading(true);
-    }
-    try {
-      invalidateCache("/api/me");
-      const userWithAdmission = await loadUserWithAdmission(sessionUser);
-      if (userWithAdmission) {
-        setCurrentUser(userWithAdmission);
-      }
-    } finally {
-      if (!options?.silent) {
-        setProfileLoading(false);
-      }
+    invalidateCache("/api/me");
+    const userWithAdmission = await loadUserWithAdmission(sessionUser);
+    if (userWithAdmission) {
+      setCurrentUser(userWithAdmission);
     }
   }, [sessionUser]);
 
   const needsProfileResolution =
     Boolean(sessionUser) && !currentUser && !pending2fa;
+  const sessionErrorUnresolved =
+    Boolean(sessionError) && !sessionUser && !sessionRetried;
 
   const value = useMemo(
     () => ({
       user: currentUser,
       loading:
         !mounted ||
-        isPending ||
+        (isPending && !currentUser) ||
         retryingSession ||
-        profileLoading ||
+        sessionErrorUnresolved ||
         needsProfileResolution,
       pending2fa: mounted && pending2fa,
       login,
@@ -299,7 +285,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isPending,
       mounted,
       retryingSession,
-      profileLoading,
+      sessionErrorUnresolved,
       pending2fa,
       needsProfileResolution,
       login,

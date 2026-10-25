@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createMedicionSchema } from "@ivisfit/database";
+import { createMedicionSchema, updateFotosProgresoSchema } from "@ivisfit/database";
 import { medicionesController } from "../controllers/mediciones.controller.js";
 import { validateBody } from "../middleware/validate.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -13,4 +13,9 @@ medicionesRouter.post(
   "/",
   validateBody(createMedicionSchema),
   asyncHandler(medicionesController.create),
+);
+medicionesRouter.patch(
+  "/:id/fotos",
+  validateBody(updateFotosProgresoSchema),
+  asyncHandler(medicionesController.updateFotos),
 );

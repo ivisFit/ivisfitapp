@@ -1,23 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Inter } from "next/font/google";
 import type { ReactNode } from "react";
 import Script from "next/script";
 import { Providers } from "@/providers/Providers";
+import { cormorantGaramond, inter } from "@/lib/fonts/local-fonts";
 import * as Sentry from "@sentry/nextjs";
 import "@/styles/global.css";
-
-const inter = Inter({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-sans",
-});
-
-const cormorant = Cormorant_Garamond({
-  subsets: ["latin"],
-  weight: ["400", "600"],
-  display: "swap",
-  variable: "--font-display",
-});
 
 export const metadata: Metadata = {
   title: "IVIS Fit",
@@ -41,7 +28,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="es"
-      className={`${inter.variable} ${cormorant.variable}`}
+      className={`${inter.variable} ${cormorantGaramond.variable}`}
       suppressHydrationWarning
     >
       <head>

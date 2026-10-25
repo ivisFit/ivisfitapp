@@ -18,11 +18,13 @@ import {
   countFotosProgreso,
   MedicionFotosProgresoDialog,
 } from "@/features/profe/components/pliegues/MedicionFotosProgresoDialog";
+import { MedicionFotosEditDialog } from "@/features/profe/components/pliegues/MedicionFotosEditDialog";
 
 type PlieguesHistoryTableProps = {
   mediciones: Medicion[];
   sexo: Sexo;
   metodo: MetodoCalculo;
+  onFotosUpdated?: () => void;
 };
 
 type Column = { key: string; label: string; source: "pliegues" | "circ" };
@@ -76,10 +78,12 @@ export const PlieguesHistoryTable = memo(function PlieguesHistoryTable({
   mediciones,
   sexo,
   metodo,
+  onFotosUpdated,
 }: PlieguesHistoryTableProps) {
   const [fotosDialogMedicion, setFotosDialogMedicion] = useState<Medicion | null>(
     null,
   );
+  const [editMedicion, setEditMedicion] = useState<Medicion | null>(null);
   const columns = getColumns(metodo, sexo);
   const sumUnit = metodo === "us-navy" ? "cm" : "mm";
   const showFotosColumn = metodo !== "us-navy";
@@ -145,15 +149,28 @@ export const PlieguesHistoryTable = memo(function PlieguesHistoryTable({
                   )}
                 </td>
                 {showFotosColumn ? (
-                  <td data-label="Fotos">
-                    {fotosCount > 0 ? (
-                      <button
-                        type="button"
-                        className="pliegues-history-table__fotos-btn"
-                        onClick={() => setFotosDialogMedicion(medicion)}
-                      >
-                        Ver fotos ({fotosCount}/4)
-                      </button>
+                  <td className="pliegues-history-table__fotos-cell" data-label="Fotos">
+                    {fotosCount > 0 || onFotosUpdated ? (
+                      <div className="pliegues-history-table__fotos-actions">
+                        {fotosCount > 0 ? (
+                          <button
+                            type="button"
+                            className="pliegues-history-table__fotos-btn"
+                            onClick={() => setFotosDialogMedicion(medicion)}
+                          >
+                            Ver fotos ({fotosCount}/4)
+                          </button>
+                        ) : null}
+                        {onFotosUpdated ? (
+                          <button
+                            type="button"
+                            className="pliegues-history-table__fotos-btn"
+                            onClick={() => setEditMedicion(medicion)}
+                          >
+                            {fotosCount > 0 ? "Editar" : "Agregar fotos"}
+                          </button>
+                        ) : null}
+                      </div>
                     ) : (
                       "—"
                     )}
@@ -171,6 +188,14 @@ export const PlieguesHistoryTable = memo(function PlieguesHistoryTable({
           fotos={fotosDialogMedicion.fotosProgreso}
           fechaLabel={formatMedicionDate(fotosDialogMedicion.fecha)}
           onClose={() => setFotosDialogMedicion(null)}
+        />
+      ) : null}
+      {editMedicion && onFotosUpdated ? (
+        <MedicionFotosEditDialog
+          key={editMedicion.id}
+          medicion={editMedicion}
+          onClose={() => setEditMedicion(null)}
+          onSaved={onFotosUpdated}
         />
       ) : null}
     </section>

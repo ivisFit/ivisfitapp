@@ -214,6 +214,7 @@ export function PlieguesContent({
           mediciones={filteredMediciones}
           sexo={sexo}
           metodo={metodoCalculo}
+          onFotosUpdated={() => void refetch()}
         />
       </div>
     </>
