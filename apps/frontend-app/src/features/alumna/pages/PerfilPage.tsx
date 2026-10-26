@@ -55,7 +55,11 @@ export function PerfilPage() {
 
       switch (field) {
         case "nombre":
-          payload.nombre = value;
+          if (!value.trim()) throw new Error("El nombre es requerido");
+          payload.nombre = value.trim();
+          break;
+        case "apellido":
+          payload.apellido = value.trim();
           break;
         case "telefono":
           payload.telefono = value;

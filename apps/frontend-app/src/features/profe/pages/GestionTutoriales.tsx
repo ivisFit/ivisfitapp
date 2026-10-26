@@ -17,6 +17,7 @@ function getEmptyForm(): TutorialPayload {
   return {
     titulo: "",
     videoUrl: "",
+    videoUrlMovil: "",
     descripcion: "",
     activo: true,
   };
@@ -91,6 +92,7 @@ export function GestionTutoriales({
     setForm({
       titulo: tutorial.titulo,
       videoUrl: tutorial.videoUrl.trim(),
+      videoUrlMovil: tutorial.videoUrlMovil.trim(),
       descripcion: tutorial.descripcion,
       activo: tutorial.activo,
     });
@@ -112,6 +114,7 @@ export function GestionTutoriales({
     const payload: TutorialPayload = {
       titulo: form.titulo.trim(),
       videoUrl: form.videoUrl.trim(),
+      videoUrlMovil: form.videoUrlMovil.trim(),
       descripcion: form.descripcion.trim(),
       activo: form.activo,
     };
@@ -179,7 +182,7 @@ export function GestionTutoriales({
           />
           <div>
             <Input
-              label="Link de YouTube"
+              label="Video de escritorio"
               name={`tutorial-video-${formKey}`}
               type="text"
               inputMode="url"
@@ -195,8 +198,29 @@ export function GestionTutoriales({
               }
             />
             <p className="field__hint">
-              Visibilidad <strong>No listado</strong>, no Privado. Así se ve en
-              la app y no aparece en el canal.
+              Se muestra en pantallas grandes. Visibilidad <strong>No listado</strong>,
+              no Privado.
+            </p>
+          </div>
+          <div>
+            <Input
+              label="Video de móvil"
+              name={`tutorial-video-movil-${formKey}`}
+              type="text"
+              inputMode="url"
+              autoComplete="off"
+              placeholder="https://www.youtube.com/watch?v=..."
+              value={form.videoUrlMovil}
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  videoUrlMovil: event.target.value,
+                }))
+              }
+            />
+            <p className="field__hint">
+              Opcional. En el celular se usa este video. Si lo dejás vacío, se
+              muestra el de escritorio.
             </p>
           </div>
           <label className="field" htmlFor={`tutorial-descripcion-${formKey}`}>

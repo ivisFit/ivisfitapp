@@ -9,6 +9,7 @@ import {
 import { InlineEditableSheetRow } from "@/components/sheet/InlineEditableSheetRow";
 import { UserAvatar } from "@/components/UserAvatar";
 import { GamificacionWidget } from "@/features/gamificacion/components/GamificacionWidget";
+import { partirNombre } from "@/lib/nombre-alumno";
 import type { AlumnaDetail, HealthChangesPendingApiDoc } from "@/types/usuario";
 import { fechaToDateInputValue } from "@/types/usuario";
 import "./PerfilSections.css";
@@ -133,6 +134,7 @@ export function PerfilSections({
       : alumna.sexo === "mujer"
         ? "Mujer"
         : undefined;
+  const partesNombre = partirNombre(alumna.nombre, alumna.apellido);
 
   const admissionFields: SheetField[] = [
     { label: "Rol", value: alumna.rol },
@@ -176,8 +178,14 @@ export function PerfilSections({
               <dl className="alumna-sheet__rows">
                 <InlineEditableSheetRow
                   label="Nombre"
-                  value={alumna.nombre}
+                  value={partesNombre.nombre}
                   onSave={(v) => onSavePersonalField("nombre", v)}
+                />
+                <InlineEditableSheetRow
+                  label="Apellido"
+                  value={partesNombre.apellido}
+                  emptyLabel="Sin apellido"
+                  onSave={(v) => onSavePersonalField("apellido", v)}
                 />
                 <InlineEditableSheetRow
                   label="Teléfono"

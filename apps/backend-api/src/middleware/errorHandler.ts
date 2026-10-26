@@ -14,6 +14,13 @@ export function errorHandler(
     "type" in error &&
     (error as { type?: string }).type === "entity.too.large"
   ) {
+    const path = _req.originalUrl ?? "";
+    if (path.includes("/mediciones/fotos")) {
+      return res.status(413).json({
+        error: "La foto es demasiado grande. Probá con otra imagen.",
+      });
+    }
+
     return res.status(413).json({
       error: `La solicitud es demasiado grande (máximo ${JSON_BODY_LIMIT_LABEL} para datos JSON). Si es un plan nutricional, probá guardar por partes o contactá soporte.`,
     });

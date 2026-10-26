@@ -6,7 +6,7 @@ import { Button, Select } from "@/components";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/api";
 import { invalidateCache } from "@/lib/apiCache";
-import { alumnaRoutes } from "@/routes/paths";
+import { alumnaRoutes, getHomeRouteForRole } from "@/routes/paths";
 import type { UsuarioApiDoc } from "@/types/usuario";
 
 type OnboardingApiResponse = UsuarioApiDoc;
@@ -29,6 +29,9 @@ export function BienvenidaPage() {
   const [error, setError] = useState<string | null>(null);
 
   const nombre = user?.name?.split(" ")[0] ?? "";
+  const soloAlimentacion = user?.soloAlimentacion === true;
+  const pasosVisibles = soloAlimentacion ? [0, 2, 3] : [0, 1, 2, 3];
+  const indiceVisible = Math.max(0, pasosVisibles.indexOf(paso));
 
   async function finalizar() {
     setSubmitting(true);
@@ -38,7 +41,9 @@ export function BienvenidaPage() {
         method: "POST",
         body: JSON.stringify({
           horaEntrenamiento,
-          recordatoriosEntrenamiento,
+          recordatoriosEntrenamiento: soloAlimentacion
+            ? false
+            : recordatoriosEntrenamiento,
           recordatoriosPush,
         }),
       });
@@ -48,7 +53,9 @@ export function BienvenidaPage() {
 
       const nextRoute =
         profile.tutorialesVistos === true
-          ? alumnaRoutes.rutina
+          ? getHomeRouteForRole("alumna", {
+              soloAlimentacion: user?.soloAlimentacion,
+            })
           : alumnaRoutes.tutoriales;
 
       window.location.assign(nextRoute);
@@ -65,7 +72,7 @@ export function BienvenidaPage() {
   function siguiente() {
     setError(null);
     if (paso < PASOS.length - 1) {
-      setPaso((current) => current + 1);
+      setPaso((current) => (soloAlimentacion && current === 0 ? 2 : current + 1));
       return;
     }
     void finalizar();
@@ -73,7 +80,9 @@ export function BienvenidaPage() {
 
   function anterior() {
     setError(null);
-    if (paso > 0) setPaso((current) => current - 1);
+    if (paso > 0) {
+      setPaso((current) => (soloAlimentacion && current === 2 ? 0 : current - 1));
+    }
   }
 
   return (
@@ -82,17 +91,19 @@ export function BienvenidaPage() {
         <div className="onboarding-card__logo">IVIS Fit</div>
 
         <div className="onboarding-progress">
-          {PASOS.map((_, index) => (
+          {pasosVisibles.map((index) => (
             <span
               key={index}
               aria-hidden
               className={`onboarding-progress__dot ${
-                index <= paso ? "onboarding-progress__dot--active" : ""
+                pasosVisibles.indexOf(index) <= indiceVisible
+                  ? "onboarding-progress__dot--active"
+                  : ""
               }`}
             />
           ))}
           <p className="onboarding-progress__label" aria-live="polite">
-            Paso {paso + 1} de {PASOS.length}
+            Paso {indiceVisible + 1} de {pasosVisibles.length}
           </p>
         </div>
 
@@ -105,9 +116,9 @@ export function BienvenidaPage() {
               </span>
             </h1>
             <p className="onboarding-step__text">
-              Te damos la bienvenida a tu espacio. Acá vas a encontrar tu
-              rutina, tu plan de alimentación y todo el acompañamiento para
-              avanzar con tu objetivo.
+              {soloAlimentacion
+                ? "Te damos la bienvenida a tu espacio. Acá vas a encontrar tu plan de alimentación y el acompañamiento para avanzar con tu objetivo."
+                : "Te damos la bienvenida a tu espacio. Acá vas a encontrar tu rutina, tu plan de alimentación y todo el acompañamiento para avanzar con tu objetivo."}
             </p>
             <p className="onboarding-step__text">
               Vamos a configurar un par de cosas para empezar con todo.
@@ -156,6 +167,7 @@ export function BienvenidaPage() {
               Elegí cómo querés que te acompañemos.
             </p>
 
+            {soloAlimentacion ? null : (
             <label className="onboarding-switch">
               <span className="onboarding-switch__text">
                 <strong>Recordatorio por email</strong>
@@ -176,6 +188,7 @@ export function BienvenidaPage() {
                 <span className="onboarding-switch__thumb" />
               </span>
             </label>
+            )}
 
             <label className="onboarding-switch">
               <span className="onboarding-switch__text">
@@ -211,6 +224,7 @@ export function BienvenidaPage() {
           <section className="onboarding-step">
             <h1 className="onboarding-step__title">Tu lugar, de un vistazo</h1>
             <div className="onboarding-tour">
+              {soloAlimentacion ? null : (
               <div className="onboarding-tour__item">
                 <span className="onboarding-tour__icon" aria-hidden>
                   <Dumbbell size={22} />
@@ -220,6 +234,7 @@ export function BienvenidaPage() {
                   <p>Tu entrenamiento día a día con videos y seguimiento.</p>
                 </div>
               </div>
+              )}
               <div className="onboarding-tour__item">
                 <span className="onboarding-tour__icon" aria-hidden>
                   <UtensilsCrossed size={22} />
@@ -229,6 +244,7 @@ export function BienvenidaPage() {
                   <p>Tu plan nutricional y el check-in diario de comidas.</p>
                 </div>
               </div>
+              {soloAlimentacion ? null : (
               <div className="onboarding-tour__item">
                 <span className="onboarding-tour__icon" aria-hidden>
                   <ChartLine size={22} />
@@ -238,6 +254,7 @@ export function BienvenidaPage() {
                   <p>Tu evolución, logros y rachas para no perder el ritmo.</p>
                 </div>
               </div>
+              )}
             </div>
             {error ? (
               <p className="auth-error" role="alert">

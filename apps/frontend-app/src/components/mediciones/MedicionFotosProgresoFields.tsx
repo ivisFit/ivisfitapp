@@ -1,7 +1,15 @@
 "use client";
 import { FeedbackModal } from "@/components/FeedbackModal";
 
-import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
+import {
+  ChangeEvent,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+import { createPortal } from "react-dom";
 import { apiFetch, ApiError } from "@/lib/api";
 import { prepareProgressPhoto } from "@/lib/image-upload";
 import type {
@@ -71,6 +79,11 @@ export function MedicionFotosProgresoFields({
     Partial<Record<FotosProgresoSlot, HTMLInputElement | null>>
   >({});
   const fotosRef = useRef(fotos);
+  const [inputsReady, setInputsReady] = useState(false);
+
+  useLayoutEffect(() => {
+    setInputsReady(true);
+  }, []);
 
   const resolvedFotos = value ?? fotos;
   fotosRef.current = resolvedFotos;
@@ -109,7 +122,7 @@ export function MedicionFotosProgresoFields({
         body: prepared,
         headers: {
           "Content-Type": "image/jpeg",
-          "X-File-Name": prepared.name,
+          "X-File-Name": "progreso.jpg",
         },
       });
       updateFotos({ ...fotosRef.current, [slot]: uploaded });
@@ -138,11 +151,65 @@ export function MedicionFotosProgresoFields({
       source === "camera"
         ? cameraInputRefs.current[slot]
         : galleryInputRefs.current[slot];
-    input?.click();
+    if (!input) return;
+    try {
+      input.click();
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "No se pudo abrir la cámara o la galería.",
+      );
+    }
   }
+
+  const fileInputs = SLOTS.flatMap(({ key }) => {
+    const isUploading = uploadingSlot === key;
+    return [
+      <input
+        key={`${key}-camera`}
+        ref={(el) => {
+          cameraInputRefs.current[key] = el;
+        }}
+        type="file"
+        accept={ACCEPT}
+        capture="environment"
+        className="medicion-fotos__file-input"
+        disabled={disabled || isUploading}
+        onChange={(event) => {
+          event.stopPropagation();
+          void handleFileChange(key, event);
+        }}
+        tabIndex={-1}
+        aria-hidden="true"
+      />,
+      <input
+        key={`${key}-gallery`}
+        ref={(el) => {
+          galleryInputRefs.current[key] = el;
+        }}
+        type="file"
+        accept={ACCEPT}
+        className="medicion-fotos__file-input"
+        disabled={disabled || isUploading}
+        onChange={(event) => {
+          event.stopPropagation();
+          void handleFileChange(key, event);
+        }}
+        tabIndex={-1}
+        aria-hidden="true"
+      />,
+    ];
+  });
 
   return (
     <fieldset className="medicion-fotos" disabled={disabled}>
+      {inputsReady
+        ? createPortal(
+            <div className="medicion-fotos__inputs">{fileInputs}</div>,
+            document.body,
+          )
+        : null}
       <legend className="medicion-fotos__legend">Fotos de progreso (opcional)</legend>
       <p className="medicion-fotos__hint">
         Frente, espalda y perfiles al momento de la medición de pliegues.
@@ -155,31 +222,6 @@ export function MedicionFotosProgresoFields({
           return (
             <div className="medicion-fotos__slot" key={key}>
               <span className="medicion-fotos__slot-label">{label}</span>
-              <input
-                ref={(el) => {
-                  cameraInputRefs.current[key] = el;
-                }}
-                type="file"
-                accept={ACCEPT}
-                capture="environment"
-                className="medicion-fotos__file-input"
-                disabled={disabled || isUploading}
-                onChange={(event) => void handleFileChange(key, event)}
-                tabIndex={-1}
-                aria-hidden="true"
-              />
-              <input
-                ref={(el) => {
-                  galleryInputRefs.current[key] = el;
-                }}
-                type="file"
-                accept={ACCEPT}
-                className="medicion-fotos__file-input"
-                disabled={disabled || isUploading}
-                onChange={(event) => void handleFileChange(key, event)}
-                tabIndex={-1}
-                aria-hidden="true"
-              />
               {imagen ? (
                 <div className="medicion-fotos__preview">
                   <img src={imagen.url} alt={label} loading="lazy" />

@@ -8,19 +8,20 @@ import {
   PageHeaderSkeleton,
   SkeletonStack,
 } from "@/components/skeletons/AppSkeleton";
-import { PlieguesFotosComparisonGrid } from "@/features/profe/components/pliegues/PlieguesFotosComparisonGrid";
+import {
+  FotosAgrupacionToggle,
+  PlieguesFotosComparisonGrid,
+} from "@/features/profe/components/pliegues/PlieguesFotosComparisonGrid";
 import { PlieguesPeriodFilter } from "@/features/profe/components/pliegues/PlieguesPeriodFilter";
 import { useAlumna } from "@/features/profe/hooks/useAlumna";
 import { useAlumnaMediciones } from "@/features/profe/hooks/useAlumnaMediciones";
 import {
+  columnasFotosComparacion,
   countMedicionesConFotosProgreso,
   getMedicionesConFotosProgreso,
+  type FotosAgrupacion,
 } from "@/features/profe/lib/pliegues-fotos-historial";
-import {
-  formatMedicionDate,
-  formatMedicionDateShort,
-  type PlieguesPeriod,
-} from "@/features/profe/utils/pliegues-period";
+import { type PlieguesPeriod } from "@/features/profe/utils/pliegues-period";
 import {
   profeAlumnaPlieguesRoute,
   profeRoutes,
@@ -84,11 +85,16 @@ function FotosHistorialContent({
   alumnaNombre: string;
 }) {
   const [period, setPeriod] = useState<PlieguesPeriod>("365d");
+  const [agrupacion, setAgrupacion] = useState<FotosAgrupacion>("mes");
   const { mediciones, loading, error } = useAlumnaMediciones(alumnaId);
 
   const medicionesConFotos = useMemo(
     () => getMedicionesConFotosProgreso(mediciones, period),
     [mediciones, period],
+  );
+  const columnas = useMemo(
+    () => columnasFotosComparacion(medicionesConFotos, agrupacion),
+    [medicionesConFotos, agrupacion],
   );
 
   const totalConFotos = useMemo(
@@ -97,26 +103,25 @@ function FotosHistorialContent({
   );
 
   const summary = useMemo(() => {
-    const first = medicionesConFotos[0];
-    const last = medicionesConFotos[medicionesConFotos.length - 1];
+    const first = columnas[0];
+    const last = columnas[columnas.length - 1];
     if (!first || !last) return null;
 
-    const grasaFirst = first.metricas.porcentajeGrasaCorporal;
-    const grasaLast = last.metricas.porcentajeGrasaCorporal;
+    const grasaFirst = first.porcentajeGrasaCorporal;
+    const grasaLast = last.porcentajeGrasaCorporal;
     const delta =
-      medicionesConFotos.length > 1 && grasaFirst != null && grasaLast != null
+      columnas.length > 1 && grasaFirst != null && grasaLast != null
         ? grasaLast - grasaFirst
         : null;
 
     return {
-      count: medicionesConFotos.length,
+      count: columnas.length,
+      countLabel: agrupacion === "mes" ? "Meses con fotos" : "Mediciones con fotos",
       range:
-        medicionesConFotos.length > 1
-          ? `${formatMedicionDateShort(first.fecha)} → ${formatMedicionDateShort(last.fecha)}`
-          : formatMedicionDate(first.fecha),
+        columnas.length > 1 ? `${first.titulo} → ${last.titulo}` : first.titulo,
       delta,
     };
-  }, [medicionesConFotos]);
+  }, [agrupacion, columnas]);
 
   if (loading) {
     return (
@@ -141,8 +146,9 @@ function FotosHistorialContent({
             </span>
             <h1>{alumnaNombre}</h1>
             <p>
-              Compará la evolución por ángulo: cada columna es una medición con
-              fotos, de la más antigua a la más reciente.
+              Compará la evolución mes a mes. Cada fila es un ángulo — frente,
+              espalda, perfil izquierdo y perfil derecho — y cada columna un
+              mes.
             </p>
           </div>
           <PlieguesPeriodFilter value={period} onChange={setPeriod} />
@@ -152,7 +158,7 @@ function FotosHistorialContent({
           <div className="pliegues-fotos-historial-summary">
             <div className="pliegues-fotos-historial-summary__card">
               <span className="pliegues-fotos-historial-summary__label">
-                Mediciones con fotos
+                {summary.countLabel}
               </span>
               <span className="pliegues-fotos-historial-summary__value">
                 {summary.count}
@@ -194,10 +200,18 @@ function FotosHistorialContent({
       <section className="pliegues-fotos-historial__card">
         {medicionesConFotos.length > 0 ? (
           <div className="pliegues-fotos-historial__card-head">
-            <h2>Evolución por ángulo</h2>
-            <p className="pliegues-fotos-historial__card-hint">
-              Deslizá para ver más fechas · tocá una foto para ampliarla
-            </p>
+            <div>
+              <h2>Evolución por ángulo</h2>
+              <p className="pliegues-fotos-historial__card-hint">
+                {agrupacion === "mes"
+                  ? "Cada fila es un ángulo y cada columna un mes. Tocá una foto para verla junto a la anterior."
+                  : "Cada fila es un ángulo y cada columna una medición. Tocá una foto para verla junto a la anterior."}
+              </p>
+            </div>
+            <FotosAgrupacionToggle
+              value={agrupacion}
+              onChange={setAgrupacion}
+            />
           </div>
         ) : null}
         {totalConFotos === 0 ? (
@@ -223,7 +237,11 @@ function FotosHistorialContent({
             </p>
           </div>
         ) : (
-          <PlieguesFotosComparisonGrid mediciones={medicionesConFotos} />
+          <PlieguesFotosComparisonGrid
+            key={agrupacion}
+            columnas={columnas}
+            modo={agrupacion}
+          />
         )}
       </section>
     </>

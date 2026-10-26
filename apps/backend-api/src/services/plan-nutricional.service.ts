@@ -1,3 +1,4 @@
+import { randomInt } from "node:crypto";
 import {
   Alimento,
   CoachInsight,
@@ -27,11 +28,19 @@ import {
 import {
   buildTokensExcluidos,
   filtrarCatalogoPorCondicionesSemana,
+  claveDiaSemana,
+  esReglaDeArmado,
   filtrarDiasPlanPorCondiciones,
   parseCondicionesSemana,
+  planDeArmadoSemana,
 } from "../lib/plan-condiciones-semana.js";
 import { AppError, assertFound } from "../utils/errors.js";
 import { medicionesService } from "./mediciones.service.js";
+import {
+  ajustarDiaAObjetivo,
+  recalcularDiaConCatalogo,
+  type AlimentoPorcion,
+} from "../lib/plan-porciones.js";
 import {
   nutritionGeminiService,
   sanitizePlanDias,
@@ -61,23 +70,14 @@ function roundMacro(value: number): number {
   return Math.round(value * 10) / 10;
 }
 
-function sumMacros(macros: (MacrosObjetivo | undefined)[]): MacrosObjetivo | undefined {
-  const validos = macros.filter((macro): macro is MacrosObjetivo => Boolean(macro));
-  if (validos.length === 0) return undefined;
-
-  return validos.reduce(
-    (total, macro) => ({
-      kcal: Math.round(total.kcal + macro.kcal),
-      proteinaG: roundMacro(total.proteinaG + macro.proteinaG),
-      carbohidratosG: roundMacro(total.carbohidratosG + macro.carbohidratosG),
-      grasasG: roundMacro(total.grasasG + macro.grasasG),
-    }),
-    { kcal: 0, proteinaG: 0, carbohidratosG: 0, grasasG: 0 },
-  );
-}
-
 async function enrichDiasConMacros(
   dias: DiaPlanNutricional[],
+  options?: {
+    /** Si el día queda muy lejos de este objetivo, se escalan las porciones. */
+    ajustarAObjetivo?: MacrosObjetivo;
+    /** Tope de porciones de referencia por ingrediente antes de escalar. */
+    maxPorciones?: number;
+  },
 ): Promise<DiaPlanNutricional[]> {
   const alimentoIds = new Set<string>();
   for (const dia of dias) {
@@ -91,44 +91,30 @@ async function enrichDiasConMacros(
   const alimentos =
     alimentoIds.size > 0
       ? await Alimento.find({ _id: { $in: Array.from(alimentoIds) } })
+          .select("nombre categoria porcionReferencia macrosPorPorcion")
+          .lean()
       : [];
-  const alimentoMap = new Map(alimentos.map((alimento) => [String(alimento._id), alimento]));
+  const alimentoMap = new Map<string, AlimentoPorcion>(
+    alimentos.map((alimento) => [
+      String(alimento._id),
+      {
+        nombre: alimento.nombre,
+        categoria: alimento.categoria,
+        porcionReferencia: alimento.porcionReferencia,
+        macrosPorPorcion: alimento.macrosPorPorcion,
+      },
+    ]),
+  );
 
-  return dias.map((dia) => ({
-    ...dia,
-    comidas: dia.comidas.map((comida) => {
-      const ingredientes = comida.ingredientes.map((ingrediente) => {
-        if (!ingrediente.alimentoId) return ingrediente;
+  const porcionOptions = options?.maxPorciones
+    ? { maxPorciones: options.maxPorciones }
+    : undefined;
 
-        const alimento = alimentoMap.get(String(ingrediente.alimentoId));
-        if (!alimento) return ingrediente;
-
-        const factor = ingrediente.cantidad / alimento.porcionReferencia.cantidad;
-        return {
-          ...ingrediente,
-          kcal: Math.round(alimento.macrosPorPorcion.kcal * factor),
-          proteinaG: roundMacro(alimento.macrosPorPorcion.proteinaG * factor),
-          carbohidratosG: roundMacro(alimento.macrosPorPorcion.carbohidratosG * factor),
-          grasasG: roundMacro(alimento.macrosPorPorcion.grasasG * factor),
-        };
-      });
-
-      const macrosComida = sumMacros(
-        ingredientes.map((ingrediente) =>
-          ingrediente.kcal !== undefined
-            ? {
-                kcal: ingrediente.kcal,
-                proteinaG: ingrediente.proteinaG ?? 0,
-                carbohidratosG: ingrediente.carbohidratosG ?? 0,
-                grasasG: ingrediente.grasasG ?? 0,
-              }
-            : undefined,
-        ),
-      );
-
-      return { ...comida, ingredientes, macrosComida };
-    }),
-  }));
+  return dias.map((dia) =>
+    options?.ajustarAObjetivo
+      ? ajustarDiaAObjetivo(dia, alimentoMap, options.ajustarAObjetivo, porcionOptions)
+      : recalcularDiaConCatalogo(dia, alimentoMap, porcionOptions),
+  );
 }
 
 async function matchIngredientesConCatalogo(
@@ -242,6 +228,16 @@ function buildEmptyWeek(
       ingredientes: comida.ingredientes.map((ing) => ({ ...ing })),
     })),
   }));
+}
+
+function clonarDiaComo(origen: DiaPlanNutricional, nombre: string): DiaPlanNutricional {
+  return {
+    nombre,
+    comidas: origen.comidas.map((comida) => ({
+      ...comida,
+      ingredientes: comida.ingredientes.map((ingrediente) => ({ ...ingrediente })),
+    })),
+  };
 }
 
 function summarizeDia(dia: DiaPlanNutricional): string {
@@ -667,7 +663,7 @@ export const planNutricionalService = {
       }
       const reglas = Array.from(
         new Set([...parseadas.reglas, ...interpretadas.reglas]),
-      );
+      ).filter((regla) => !esReglaDeArmado(regla));
       condicionesDia = {
         texto: textoCondiciones,
         reglas,
@@ -675,24 +671,55 @@ export const planNutricionalService = {
       };
     }
 
+    const armado = planDeArmadoSemana(
+      textoCondiciones,
+      skeleton.map((dia: { nombre: string }) => dia.nombre),
+    );
+
     const comidasSlots = buildComidasSlots(estructura, macrosObjetivo);
     const diasGenerados: DiaPlanNutricional[] = [];
     const resumenes: string[] = [];
 
-    for (let diaIndex = 0; diaIndex < skeleton.length; diaIndex += 1) {
-      const { nombre } = skeleton[diaIndex];
-      const dia = await nutritionGeminiService.generateDayPlan(evalObj, {
-        diaNombre: nombre,
+    const generarUno = (
+      diaIndex: number,
+      resumenPrevio: string[],
+      variedad?: "exigir" | "evitar",
+    ) =>
+      nutritionGeminiService.generateDayPlan(evalObj, {
+        diaNombre: skeleton[diaIndex].nombre,
         macrosObjetivo,
         estructuraComidas: estructura,
         comidasConObjetivo: comidasSlots,
-        diasPreviosResumen: resumenes,
+        diasPreviosResumen: resumenPrevio,
         catalog,
         diaSeed: diaIndex,
         condiciones: condicionesDia,
+        variedad,
       });
-      diasGenerados.push(dia);
-      resumenes.push(summarizeDia(dia));
+
+    if (armado.repetirBase && skeleton.length > 0) {
+      const variar = new Set(armado.diasVariar);
+      let indiceBase = skeleton.findIndex((dia: { nombre: string }) => {
+        const clave = claveDiaSemana(dia.nombre);
+        return !clave || !variar.has(clave);
+      });
+      if (indiceBase < 0) indiceBase = 0;
+      const base = await generarUno(indiceBase, [], "evitar");
+      const resumenBase = summarizeDia(base);
+      for (let diaIndex = 0; diaIndex < skeleton.length; diaIndex += 1) {
+        const clave = claveDiaSemana(skeleton[diaIndex].nombre);
+        if (clave && variar.has(clave)) {
+          diasGenerados.push(await generarUno(diaIndex, [resumenBase], "exigir"));
+        } else {
+          diasGenerados.push(clonarDiaComo(base, skeleton[diaIndex].nombre));
+        }
+      }
+    } else {
+      for (let diaIndex = 0; diaIndex < skeleton.length; diaIndex += 1) {
+        const dia = await generarUno(diaIndex, resumenes);
+        diasGenerados.push(dia);
+        resumenes.push(summarizeDia(dia));
+      }
     }
 
     const draftBase = await nutritionGeminiService.generatePlanDraft(evalObj, catalog);
@@ -720,7 +747,10 @@ export const planNutricionalService = {
         catalog,
       );
     }
-    const diasEnriched = await enrichDiasConMacros(diasMatched);
+    const diasEnriched = await enrichDiasConMacros(diasMatched, {
+      ajustarAObjetivo: macrosObjetivo,
+      maxPorciones: 4,
+    });
     const toSave = { ...finalizedDraft, dias: diasEnriched };
 
     if (planFromDb) {
@@ -784,13 +814,19 @@ export const planNutricionalService = {
       ...input,
       comidaObjetivo,
       catalog,
-      comidaSeed: input.diaIndex * 10 + input.comidaIndex,
+      comidaSeed:
+        input.modo === "ajustar"
+          ? input.diaIndex * 10 + input.comidaIndex
+          : randomInt(1, 100_000),
     });
 
     const matched = await matchIngredientesConCatalogo([
       { nombre: "tmp", comidas: [comida] },
     ]);
-    const enriched = await enrichDiasConMacros(matched);
+    const enriched = await enrichDiasConMacros(matched, {
+      ...(comidaObjetivo ? { ajustarAObjetivo: comidaObjetivo } : {}),
+      maxPorciones: 4,
+    });
     return enriched[0]?.comidas[0] ?? comida;
   },
 

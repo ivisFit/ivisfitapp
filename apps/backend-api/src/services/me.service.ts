@@ -10,6 +10,7 @@ import {
   uploadFotoPerfil,
 } from "./cloudinary.service.js";
 import { AppError } from "../utils/errors.js";
+import { aplicarNombreApellido } from "../lib/nombre-alumno.js";
 import { syncBetterAuthName } from "./auth-user-sync.service.js";
 
 const NOTIFICACIONES_DEFAULT = {
@@ -31,6 +32,7 @@ export function resolveEstadoAdmision(usuario: {
 function serializeUsuario(usuario: {
   _id: { toString(): string };
   nombre: string;
+  apellido?: string | null;
   correo: string;
   telefono: string;
   rol: string;
@@ -38,6 +40,7 @@ function serializeUsuario(usuario: {
   sexo?: string;
   alturaCm?: number;
   circunferenciasHabilitadas?: boolean;
+  soloAlimentacion?: boolean;
   fechaNacimiento?: Date;
   coberturaEmergenciaMedica?: string;
   lesionesPatologias?: string;
@@ -93,6 +96,7 @@ function serializeUsuario(usuario: {
   return {
     id: usuario._id.toString(),
     nombre: usuario.nombre,
+    apellido: usuario.apellido?.trim() || undefined,
     correo: usuario.correo,
     telefono: usuario.telefono,
     rol: usuario.rol,
@@ -100,6 +104,7 @@ function serializeUsuario(usuario: {
     sexo: usuario.sexo,
     alturaCm: usuario.alturaCm,
     circunferenciasHabilitadas: usuario.circunferenciasHabilitadas === true,
+    soloAlimentacion: usuario.soloAlimentacion === true,
     tutorialesVistos: usuario.tutorialesVistos === true,
     onboardingCompletado: usuario.onboarding?.completado === true,
     notificaciones,
@@ -218,8 +223,16 @@ export async function updatePerfilForSession(
   const usuario = await findUsuarioBySession(req);
   const previousNombre = usuario.nombre;
 
-  if (input.nombre !== undefined) {
-    usuario.nombre = input.nombre.trim();
+  if (input.nombre !== undefined || input.apellido !== undefined) {
+    const aplicado = aplicarNombreApellido(usuario, {
+      nombre: input.nombre,
+      apellido: input.apellido,
+    });
+    if (!aplicado) {
+      throw new AppError(400, "El nombre es requerido");
+    }
+    usuario.nombre = aplicado.nombre;
+    usuario.apellido = aplicado.apellido ?? "";
   }
   if (input.telefono !== undefined) {
     usuario.telefono = input.telefono.trim();
@@ -239,10 +252,7 @@ export async function updatePerfilForSession(
 
   await usuario.save();
 
-  if (
-    input.nombre !== undefined &&
-    usuario.nombre.trim() !== previousNombre.trim()
-  ) {
+  if (usuario.nombre.trim() !== previousNombre.trim()) {
     await syncBetterAuthName({
       email: usuario.correo,
       name: usuario.nombre,

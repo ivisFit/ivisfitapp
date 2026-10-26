@@ -12,8 +12,13 @@ export const sharedRoutes = {
   ajustes: "/ajustes",
 } as const;
 
-export function getHomeRouteForRole(role: UserRole): string {
-  return role === "profe" ? profeRoutes.panel : alumnaRoutes.rutina;
+export function getHomeRouteForRole(
+  role: UserRole,
+  options?: { soloAlimentacion?: boolean },
+): string {
+  if (role === "profe") return profeRoutes.panel;
+  if (options?.soloAlimentacion) return alumnaRoutes.alimentacion;
+  return alumnaRoutes.rutina;
 }
 
 export const alumnaRoutes = {

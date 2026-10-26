@@ -1,20 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components";
 import { getYoutubeEmbedUrl } from "@/features/alumna/lib/rutina-day";
-import { useTutorialesActivos } from "@/features/alumna/hooks/useTutorialesActivos";
+import {
+  useTutorialesActivos,
+  type TutorialAlumna,
+} from "@/features/alumna/hooks/useTutorialesActivos";
 import { useAuth } from "@/context/AuthContext";
+import { isMobileQuery, useMediaQuery } from "@/hooks/useMediaQuery";
 import { apiFetch } from "@/lib/api";
-import { alumnaRoutes, getHomeRouteForRole } from "@/routes/paths";
+import { getHomeRouteForRole } from "@/routes/paths";
+
+function elegirVideoTutorial(tutorial: TutorialAlumna, isMobile: boolean) {
+  const movil = tutorial.videoUrlMovil.trim();
+  const escritorio = tutorial.videoUrl.trim();
+  if (isMobile && movil) return { url: movil, variante: "movil" as const };
+  if (escritorio) return { url: escritorio, variante: "escritorio" as const };
+  return { url: movil, variante: "movil" as const };
+}
 
 export function TutorialesPage() {
   const router = useRouter();
   const { user, refreshProfile } = useAuth();
   const { tutoriales, loading, error } = useTutorialesActivos();
+  const isMobile = useMediaQuery(isMobileQuery);
+  const [viewportListo, setViewportListo] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [marking, setMarking] = useState(false);
+
+  useEffect(() => {
+    setViewportListo(true);
+  }, []);
 
   const isOnboarding = user?.tutorialesVistos !== true;
   const current = tutoriales[activeIndex];
@@ -26,11 +44,15 @@ export function TutorialesPage() {
     try {
       await apiFetch("/api/me/tutoriales-vistos", { method: "POST" });
       await refreshProfile();
-      router.replace(getHomeRouteForRole("alumna"));
+      router.replace(
+        getHomeRouteForRole("alumna", { soloAlimentacion: user?.soloAlimentacion }),
+      );
       router.refresh();
     } catch {
       // Si falla, igual dejamos avanzar a la alumna.
-      router.replace(getHomeRouteForRole("alumna"));
+      router.replace(
+        getHomeRouteForRole("alumna", { soloAlimentacion: user?.soloAlimentacion }),
+      );
       router.refresh();
     } finally {
       setMarking(false);
@@ -38,7 +60,9 @@ export function TutorialesPage() {
   }
 
   function goBack() {
-    router.replace(alumnaRoutes.rutina);
+    router.replace(
+      getHomeRouteForRole("alumna", { soloAlimentacion: user?.soloAlimentacion }),
+    );
   }
 
   if (loading) {
@@ -86,7 +110,8 @@ export function TutorialesPage() {
     );
   }
 
-  const embedUrl = getYoutubeEmbedUrl(current.videoUrl);
+  const elegido = viewportListo ? elegirVideoTutorial(current, isMobile) : null;
+  const embedUrl = elegido ? getYoutubeEmbedUrl(elegido.url) : null;
 
   return (
     <div className="tutoriales-shell__inner">
@@ -126,10 +151,16 @@ export function TutorialesPage() {
       </div>
 
       <main className="tutoriales-player">
-        <div className="tutoriales-player__media">
-          {embedUrl ? (
+        <div
+          className={`tutoriales-player__media${
+            elegido?.variante === "movil" ? " tutoriales-player__media--movil" : ""
+          }`}
+        >
+          {!viewportListo ? (
+            <div className="tutoriales-skeleton tutoriales-skeleton--video" />
+          ) : embedUrl ? (
             <iframe
-              key={current.id}
+              key={`${current.id}-${elegido?.url ?? ""}`}
               title={current.titulo}
               src={embedUrl}
               loading="lazy"

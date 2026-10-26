@@ -12,6 +12,7 @@ import {
   usePlanTemplateDetail,
 } from "@/features/profe/hooks/usePlanTemplateDetail";
 import type { PlanTemplate } from "@/features/profe/hooks/usePlanTemplates";
+import { CopiarComidaADiasModal } from "@/features/profe/components/alimentacion-plan/CopiarComidaADiasModal";
 import { PlanContentPreviewLab } from "@/features/profe/components/PlanContentPreviewLab";
 import { RutinaDiaCard } from "@/features/profe/components/RutinaDiaCard";
 import { RutinaSemanaTabs } from "@/features/profe/components/RutinaSemanaTabs";
@@ -255,6 +256,10 @@ export function RutinaBuilder({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [selectedDiaId, setSelectedDiaId] = useState<string | null>(null);
   const [alumnaEditorReady, setAlumnaEditorReady] = useState(false);
+  const [copyDiaModal, setCopyDiaModal] = useState<{
+    weekNumber: number;
+    diaLocalId: string;
+  } | null>(null);
 
   const duracionOptions = useMemo(
     () =>
@@ -907,6 +912,15 @@ export function RutinaBuilder({
   }
 
   function copyDiaToAllWeeks(weekNumber: number, diaLocalId: string) {
+    if (semanasDraft.length <= 1) {
+      setSuccessMessage(null);
+      setSaveError(
+        "El plan tiene una sola semana. Para copiar este día a otros días de la semana usá «Copiar a otros días».",
+      );
+      return;
+    }
+    setSaveError(null);
+    setSuccessMessage("Día copiado al mismo día de todas las semanas.");
     setSemanasDraft((current) => {
       const sourceWeek = current.find((sem) => sem.numeroSemana === weekNumber);
       const sourceDia = sourceWeek?.dias.find((dia) => dia.localId === diaLocalId);
@@ -927,6 +941,36 @@ export function RutinaBuilder({
         };
       });
     });
+  }
+
+  function copyDiaToDias(
+    weekNumber: number,
+    diaLocalId: string,
+    targetDiaIndexes: number[],
+  ) {
+    const targetSet = new Set(targetDiaIndexes);
+    setSemanasDraft((current) => {
+      const sourceWeek = current.find((sem) => sem.numeroSemana === weekNumber);
+      const sourceDia = sourceWeek?.dias.find((dia) => dia.localId === diaLocalId);
+      if (!sourceWeek || !sourceDia) return current;
+
+      return current.map((sem) => {
+        if (sem.numeroSemana !== weekNumber) return sem;
+        return {
+          ...sem,
+          dias: sem.dias.map((dia, index) => {
+            if (!targetSet.has(index) || dia.localId === diaLocalId) return dia;
+            return { ...cloneDiaContent(sourceDia, dia), nombreDia: dia.nombreDia };
+          }),
+        };
+      });
+    });
+    setSaveError(null);
+    setSuccessMessage(
+      targetDiaIndexes.length === 1
+        ? "Día copiado a 1 día."
+        : `Día copiado a ${targetDiaIndexes.length} días.`,
+    );
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -1034,6 +1078,13 @@ export function RutinaBuilder({
     isAlumnaMode &&
     !loadingAlumnaRutina &&
     (Boolean(existingRutina) || alumnaEditorReady);
+  const copyDiaModalWeek = copyDiaModal
+    ? semanasDraft.find((sem) => sem.numeroSemana === copyDiaModal.weekNumber)
+    : undefined;
+  const copyDiaModalSourceIndex =
+    copyDiaModalWeek?.dias.findIndex(
+      (dia) => dia.localId === copyDiaModal?.diaLocalId,
+    ) ?? -1;
   const canAddDiaToActiveWeek = Boolean(
     semanaActiva && semanaActiva.dias.length < MAX_DIAS_POR_SEMANA,
   );
@@ -1066,6 +1117,10 @@ export function RutinaBuilder({
         onRemoveDia={() => removeDia(weekNumber, dia.localId)}
         onDuplicateDia={() => duplicateDia(weekNumber, dia.localId)}
         onCopyDiaToAllWeeks={() => copyDiaToAllWeeks(weekNumber, dia.localId)}
+        onCopyDiaToDias={() =>
+          setCopyDiaModal({ weekNumber, diaLocalId: dia.localId })
+        }
+        canCopyDiaToDias={semanaActiva.dias.length > 1}
         onUpdatePlanDay={(patch) => updatePlanDayByNumber(planDayNumber, patch)}
         onAddDraft={() => addDraft(weekNumber, dia.localId)}
         onUpdateDraft={(draftLocalId, patch) =>
@@ -1628,6 +1683,37 @@ export function RutinaBuilder({
           </div>
         ) : null}
       </form>
+      ) : null}
+      {copyDiaModalWeek && copyDiaModalSourceIndex >= 0 ? (
+        <CopiarComidaADiasModal
+          open
+          dias={copyDiaModalWeek.dias.map((dia, index) => ({
+            nombre: dia.nombreDia.trim() || `Día ${index + 1}`,
+          }))}
+          fromDiaIndex={copyDiaModalSourceIndex}
+          title="Copiar día a otros días"
+          description={
+            <>
+              Se copian los ejercicios y el comentario de{" "}
+              <strong>
+                {copyDiaModalWeek.dias[copyDiaModalSourceIndex]?.nombreDia.trim() ||
+                  `Día ${copyDiaModalSourceIndex + 1}`}
+              </strong>{" "}
+              a los días que elijas de la semana {copyDiaModalWeek.numeroSemana}.
+              Los días elegidos conservan su nombre y se reemplazan sus ejercicios.
+            </>
+          }
+          onCancel={() => setCopyDiaModal(null)}
+          onConfirm={(targetDiaIndexes) => {
+            if (!copyDiaModal) return;
+            copyDiaToDias(
+              copyDiaModal.weekNumber,
+              copyDiaModal.diaLocalId,
+              targetDiaIndexes,
+            );
+            setCopyDiaModal(null);
+          }}
+        />
       ) : null}
     </section>
   );

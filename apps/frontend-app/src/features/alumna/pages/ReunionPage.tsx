@@ -2,13 +2,21 @@
 
 import Link from "next/link";
 import { CalendarClock, Video } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 import { useProximaReunion } from "@/features/alumna/hooks/useProximaReunion";
 import { formatReunionDate, parseReunionLinkHref } from "@/features/profe/types/reunion";
 import { CardSkeleton } from "@/components/skeletons/AppSkeleton";
-import { alumnaRoutes } from "@/routes/paths";
+import { getHomeRouteForRole } from "@/routes/paths";
 
 export function ReunionPage() {
+  const { user } = useAuth();
   const { reunion, esHoy, loading, error } = useProximaReunion();
+  const home = getHomeRouteForRole("alumna", {
+    soloAlimentacion: user?.soloAlimentacion,
+  });
+  const volverLabel = user?.soloAlimentacion
+    ? "Volver a alimentación"
+    : "Volver a mi rutina";
 
   if (loading) {
     return (
@@ -31,8 +39,8 @@ export function ReunionPage() {
         </header>
         <div className="reunion-page__card reunion-page__card--error" role="alert">
           <p>{error}</p>
-          <Link className="btn btn--ghost" href={alumnaRoutes.rutina}>
-            Volver a mi rutina
+          <Link className="btn btn--ghost" href={home}>
+            {volverLabel}
           </Link>
         </div>
       </div>
@@ -52,8 +60,8 @@ export function ReunionPage() {
           </span>
           <h2>Todavía no tenés reuniones agendadas</h2>
           <p>Cuando tu profe agende la próxima reunión, va a aparecer acá.</p>
-          <Link className="btn btn--ghost" href={alumnaRoutes.rutina}>
-            Volver a mi rutina
+          <Link className="btn btn--ghost" href={home}>
+            {volverLabel}
           </Link>
         </div>
       </div>
@@ -99,7 +107,7 @@ export function ReunionPage() {
             <strong>Link de reunión:</strong> {reunion.meetLink}
           </p>
         )}
-        <Link className="btn btn--ghost" href={alumnaRoutes.rutina}>
+        <Link className="btn btn--ghost" href={home}>
           Volver
         </Link>
       </section>

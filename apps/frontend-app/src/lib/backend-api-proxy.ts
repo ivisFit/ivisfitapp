@@ -9,7 +9,10 @@ function getBackendOrigin(): string {
 }
 
 /** Fetch API colapsa varios Set-Cookie en uno; hay que reenviarlos uno por uno. */
-function forwardUpstreamHeaders(upstream: Response): Headers {
+function forwardUpstreamHeaders(
+  upstream: Response,
+  omitSetCookie = false,
+): Headers {
   const responseHeaders = new Headers();
 
   upstream.headers.forEach((value, key) => {
@@ -17,15 +20,17 @@ function forwardUpstreamHeaders(upstream: Response): Headers {
     responseHeaders.set(key, value);
   });
 
-  const setCookies = upstream.headers.getSetCookie?.() ?? [];
-  if (setCookies.length > 0) {
-    for (const cookie of setCookies) {
-      responseHeaders.append("set-cookie", cookie);
-    }
-  } else {
-    const single = upstream.headers.get("set-cookie");
-    if (single) {
-      responseHeaders.set("set-cookie", single);
+  if (!omitSetCookie) {
+    const setCookies = upstream.headers.getSetCookie?.() ?? [];
+    if (setCookies.length > 0) {
+      for (const cookie of setCookies) {
+        responseHeaders.append("set-cookie", cookie);
+      }
+    } else {
+      const single = upstream.headers.get("set-cookie");
+      if (single) {
+        responseHeaders.set("set-cookie", single);
+      }
     }
   }
 
@@ -82,7 +87,10 @@ export async function proxyApiRequest(request: NextRequest): Promise<NextRespons
     }
 
     const body = await upstream.arrayBuffer();
-    const responseHeaders = forwardUpstreamHeaders(upstream);
+    const responseHeaders = forwardUpstreamHeaders(
+      upstream,
+      pathname === "/api/mediciones/fotos",
+    );
     if (body.byteLength > 0) {
       responseHeaders.set("content-length", String(body.byteLength));
     } else {

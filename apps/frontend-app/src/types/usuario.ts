@@ -83,6 +83,7 @@ export type AlumnaListItem = {
     fechaVencimiento?: string | null;
   };
   tieneRutina?: boolean;
+  soloAlimentacion?: boolean;
   tieneEvaluacionNutricional?: boolean;
   tienePlanNutricional?: boolean;
 };
@@ -90,6 +91,7 @@ export type AlumnaListItem = {
 export type AlumnaDetail = {
   id: string;
   nombre: string;
+  apellido?: string;
   email: string;
   telefono: string;
   mutualista?: string;
@@ -109,6 +111,7 @@ export type AlumnaDetail = {
   fechaAdmision?: string;
   fechaRechazo?: string;
   circunferenciasHabilitadas?: boolean;
+  soloAlimentacion?: boolean;
   healthChangesPending?: HealthChangesPendingApiDoc;
   gamificacion?: GamificacionApiDoc;
   notificaciones?: NotificacionesApiDoc;
@@ -122,6 +125,7 @@ export type UsuarioApiDoc = {
   _id?: string;
   id?: string;
   nombre: string;
+  apellido?: string;
   correo: string;
   telefono: string;
   rol: string;
@@ -142,6 +146,7 @@ export type UsuarioApiDoc = {
   fechaRegistro?: string;
   createdAt?: string;
   circunferenciasHabilitadas?: boolean;
+  soloAlimentacion?: boolean;
   tutorialesVistos?: boolean;
   onboardingCompletado?: boolean;
   notificaciones?: NotificacionesApiDoc;
@@ -224,6 +229,7 @@ export function mapUsuarioFromApi(doc: UsuarioApiDoc): AlumnaListItem {
         }
       : undefined,
     tieneRutina: doc.tieneRutina === true,
+    soloAlimentacion: doc.soloAlimentacion === true,
     tieneEvaluacionNutricional: doc.tieneEvaluacionNutricional === true,
     tienePlanNutricional: doc.tienePlanNutricional === true,
   };
@@ -233,6 +239,7 @@ export function mapUsuarioDetailFromApi(doc: UsuarioApiDoc): AlumnaDetail {
   return {
     id: doc._id ?? doc.id ?? "",
     nombre: doc.nombre?.trim() || "Sin nombre",
+    apellido: doc.apellido?.trim() || undefined,
     email: doc.correo?.trim() || "",
     telefono: doc.telefono?.trim() || "",
     mutualista: doc.mutualista || undefined,
@@ -256,6 +263,7 @@ export function mapUsuarioDetailFromApi(doc: UsuarioApiDoc): AlumnaDetail {
     fechaAdmision: formatFechaRegistro(doc.fechaAdmision),
     fechaRechazo: formatFechaRegistro(doc.fechaRechazo),
     circunferenciasHabilitadas: doc.circunferenciasHabilitadas === true,
+    soloAlimentacion: doc.soloAlimentacion === true,
     healthChangesPending: doc.healthChangesPending,
     gamificacion: doc.gamificacion,
     notificaciones: doc.notificaciones,

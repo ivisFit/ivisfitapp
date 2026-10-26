@@ -165,6 +165,7 @@ function SkinfoldPlieguesForm({
   const [fotosProgreso, setFotosProgreso] = useState<
     Partial<Record<FotosProgresoSlot, MedicionImagen | null>>
   >(emptyFotosProgresoState);
+  const [fotosUploading, setFotosUploading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -184,6 +185,7 @@ function SkinfoldPlieguesForm({
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (fotosUploading) return;
     setError(null);
     setSuccessMessage(null);
 
@@ -319,6 +321,7 @@ function SkinfoldPlieguesForm({
         disabled={isLoading}
         value={fotosProgreso}
         onChange={setFotosProgreso}
+        onUploadingChange={setFotosUploading}
       />
 
       <label className="field" htmlFor="notas">
@@ -339,8 +342,8 @@ function SkinfoldPlieguesForm({
       <FeedbackModal message={successMessage} tone="success" />
 
       <div className="skinfold-form__actions">
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? "Guardando..." : "Registrar medición"}
+        <Button type="submit" disabled={isLoading || fotosUploading}>
+          {isLoading ? "Guardando..." : fotosUploading ? "Subiendo foto..." : "Registrar medición"}
         </Button>
       </div>
     </form>

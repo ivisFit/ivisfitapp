@@ -28,20 +28,76 @@ function canvasToJpeg(canvas: HTMLCanvasElement, quality: number): Promise<Blob>
   });
 }
 
+const MAX_SOURCE_BYTES = 25 * 1024 * 1024;
+const FULL_DECODE_MAX_BYTES = 8 * 1024 * 1024;
+const MAX_BITMAP_PIXELS = 18_000_000;
+const DECODE_TIMEOUT_MS = 15_000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(message)), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error: unknown) => {
+        clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
+
 async function decodeProgressPhoto(file: File): Promise<ImageBitmap> {
-  try {
-    return await createImageBitmap(file, { imageOrientation: "from-image" });
-  } catch {
+  if (file.size > MAX_SOURCE_BYTES) {
+    throw new Error(
+      "La foto original es demasiado pesada. Elegí otra o sacala de nuevo.",
+    );
+  }
+
+  const attempts: ImageBitmapOptions[] = [
+    {
+      imageOrientation: "from-image",
+      resizeWidth: MAX_EDGE_PX,
+      resizeQuality: "high",
+    },
+    { resizeWidth: MAX_EDGE_PX },
+  ];
+  if (file.size <= FULL_DECODE_MAX_BYTES) {
+    attempts.push({ imageOrientation: "from-image" }, {});
+  }
+
+  let bitmap: ImageBitmap | null = null;
+  for (const options of attempts) {
     try {
-      return await createImageBitmap(file);
-    } catch {
-      throw new Error(
-        isHeicLike(file)
-          ? PROGRESS_PHOTO_HEIC_ERROR
-          : "No se pudo leer la foto. Probá con otra imagen.",
+      bitmap = await withTimeout(
+        createImageBitmap(file, options),
+        DECODE_TIMEOUT_MS,
+        "La foto tardó demasiado en prepararse. Probá con otra imagen.",
       );
+      break;
+    } catch {
+      bitmap = null;
     }
   }
+
+  if (!bitmap) {
+    throw new Error(
+      isHeicLike(file)
+        ? PROGRESS_PHOTO_HEIC_ERROR
+        : "No se pudo leer la foto. Probá con otra imagen.",
+    );
+  }
+
+  if (bitmap.width * bitmap.height > MAX_BITMAP_PIXELS) {
+    bitmap.close();
+    throw new Error(
+      "La foto es demasiado grande para procesarla acá. Probá con otra imagen.",
+    );
+  }
+
+  return bitmap;
 }
 
 /** Baja la foto a JPEG chico. En el iPhone, Safari decodifica HEIC con createImageBitmap. */

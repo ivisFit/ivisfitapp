@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const personalProfileSchema = z.object({
   nombre: z.string().trim().min(1, "Nombre requerido"),
+  apellido: z.string().trim().max(80, "Apellido demasiado largo").optional(),
   telefono: z.string().min(1, "Teléfono requerido"),
   cedula: z
     .string()

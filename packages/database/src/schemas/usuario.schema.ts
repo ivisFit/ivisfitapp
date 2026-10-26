@@ -24,6 +24,7 @@ const fotoPerfilSchema = z.object({
 
 const usuarioBaseSchema = z.object({
   nombre: z.string().min(1),
+  apellido: z.string().trim().max(80).optional(),
   correo: z.string().email(),
   telefono: z.string().min(1),
   rol: rolSchema,
@@ -46,6 +47,7 @@ const usuarioBaseSchema = z.object({
   fechaRechazo: z.coerce.date().optional(),
   fechaRegistro: z.coerce.date().optional(),
   circunferenciasHabilitadas: z.boolean().optional(),
+  soloAlimentacion: z.boolean().optional(),
   tutorialesVistos: z.boolean().optional(),
   onboarding: z
     .object({

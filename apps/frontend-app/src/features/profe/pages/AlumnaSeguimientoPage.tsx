@@ -34,6 +34,20 @@ function BackIcon() {
   );
 }
 
+function SeguimientoFotosLink({ alumnaId }: { alumnaId: string }) {
+  return (
+    <Link
+      href={`${profeAlumnaDetailTabRoute(alumnaId, "historial")}#evolucion-fotos`}
+      className="seguimiento-fotos-link"
+    >
+      <span className="seguimiento-fotos-link__kicker">Historial visual</span>
+      <strong>Evolución en fotos</strong>
+      <p>Compará frente, espalda y perfiles, mes a mes.</p>
+      <span className="seguimiento-fotos-link__cta">Ver comparación</span>
+    </Link>
+  );
+}
+
 function SeguimientoNav({ alumnaId, alumnaNombre }: { alumnaId: string; alumnaNombre?: string }) {
   return (
     <nav className="alumna-detail-hero__nav" aria-label="Navegación de seguimiento">
@@ -92,22 +106,26 @@ export function SeguimientoContent({
 
   if (!rutina) {
     return (
-      <section className="seguimiento-empty">
-        <h2>Sin rutina asignada</h2>
-        <p>
-          {alumnaNombre} todavía no tiene un plan activo. Asignale una rutina desde
-          su perfil para empezar a seguir su progreso.
-        </p>
-        <Link href={profeAlumnaDetailTabRoute(alumnaId, "rutina")} className="btn btn--primary">
-          Ir a rutina
-        </Link>
-      </section>
+      <>
+        <section className="seguimiento-empty">
+          <h2>Sin rutina asignada</h2>
+          <p>
+            {alumnaNombre} todavía no tiene un plan activo. Asignale una rutina desde
+            su perfil para empezar a seguir su progreso.
+          </p>
+          <Link href={profeAlumnaDetailTabRoute(alumnaId, "rutina")} className="btn btn--primary">
+            Ir a rutina
+          </Link>
+        </section>
+        <SeguimientoFotosLink alumnaId={alumnaId} />
+      </>
     );
   }
 
   return (
     <div className="seguimiento-content">
       <SeguimientoHero stats={stats} />
+      <SeguimientoFotosLink alumnaId={alumnaId} />
       <SeguimientoDayTimeline dayViews={dayViews} pesosBySlot={pesosBySlot} />
     </div>
   );

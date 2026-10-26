@@ -13,6 +13,7 @@ import { Input } from "@/components/Input";
 import { Select } from "@/components/Select";
 import { useRequestHealthChanges } from "@/features/alumna/hooks/usePerfil";
 import { apiFetch } from "@/lib/api";
+import { partirNombre } from "@/lib/nombre-alumno";
 import { invalidateCache } from "@/lib/apiCache";
 import type { HealthChangesRequestInput } from "@/types/usuario";
 import "./PerfilEditForm.css";
@@ -146,6 +147,7 @@ function FormShell({
 async function patchMeProfile(data: PersonalForm) {
   const payload: Record<string, unknown> = {
     nombre: data.nombre.trim(),
+    apellido: data.apellido?.trim() ?? "",
     telefono: data.telefono.trim(),
     cedula: data.cedula,
     sexo: data.sexo || undefined,
@@ -186,7 +188,10 @@ function PersonalEditForm({
     formState: { errors },
   } = useForm<PersonalForm>({
     resolver: zodResolver(personalSchema),
-    defaultValues: personalSchema.parse(initialData),
+    defaultValues: (() => {
+      const partes = partirNombre(initialData.nombre, initialData.apellido);
+      return personalSchema.parse({ ...initialData, ...partes });
+    })(),
     mode: "onBlur",
   });
 
@@ -214,17 +219,31 @@ function PersonalEditForm({
       onSubmit={handleSubmit(onSubmit)}
     >
       <div className="perfil-edit__field">
-        <FieldLabel htmlFor="nombre">Nombre y apellido</FieldLabel>
+        <FieldLabel htmlFor="nombre">Nombre</FieldLabel>
         <Input
           label=""
           id="nombre"
           type="text"
-          placeholder="Tu nombre"
-          autoComplete="name"
+          placeholder="Nombre"
+          autoComplete="given-name"
           {...register("nombre")}
           disabled={submitting}
         />
         <FieldError message={errors.nombre?.message} />
+      </div>
+
+      <div className="perfil-edit__field">
+        <FieldLabel htmlFor="apellido">Apellido</FieldLabel>
+        <Input
+          label=""
+          id="apellido"
+          type="text"
+          placeholder="Apellido"
+          autoComplete="family-name"
+          {...register("apellido")}
+          disabled={submitting}
+        />
+        <FieldError message={errors.apellido?.message} />
       </div>
 
       <div className="perfil-edit__field">

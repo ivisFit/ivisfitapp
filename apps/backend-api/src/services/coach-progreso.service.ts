@@ -7,6 +7,7 @@ import {
   PlanNutricional,
   Rutina,
   RutinaProgreso,
+  Usuario,
 } from "@ivisfit/database";
 import { coachGeminiService, type CoachPerfilTono } from "./coach-gemini.service.js";
 
@@ -364,11 +365,14 @@ export const coachProgresoService = {
       if (horasDesdeUltimo < COOLDOWN_HORAS) return null;
     }
 
+    const alumna = await Usuario.findById(alumnaId).select("soloAlimentacion");
+    const soloAlimentacion = alumna?.soloAlimentacion === true;
+
     const [senalesRutina, senalesMedicion, senalesRecord, senalesAlimentacion] =
       await Promise.all([
-        detectarSenalesRutina(alumnaId),
+        soloAlimentacion ? Promise.resolve([]) : detectarSenalesRutina(alumnaId),
         detectarSenalesMedicion(alumnaId),
-        detectarSenalesRecord(alumnaId),
+        soloAlimentacion ? Promise.resolve([]) : detectarSenalesRecord(alumnaId),
         detectarSenalesAlimentacion(alumnaId),
       ]);
 

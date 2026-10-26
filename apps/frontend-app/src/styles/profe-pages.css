@@ -304,6 +304,17 @@
   overflow-wrap: anywhere;
 }
 
+.tutorial-previews {
+  display: grid;
+  gap: 0.75rem;
+}
+
+@media (min-width: 720px) {
+  .tutorial-previews:has(> :nth-child(2)) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 .ejercicio-item__info > .auth-link,
 .ejercicio-item__content > .auth-link {
   justify-self: start;

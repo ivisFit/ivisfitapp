@@ -26,6 +26,7 @@ export interface AuthUser {
   admissionStatus: AdmissionStatus;
   photoUrl?: string | null;
   circunferenciasHabilitadas?: boolean;
+  soloAlimentacion?: boolean;
   tutorialesVistos?: boolean;
   onboardingCompletado?: boolean;
   notificaciones?: NotificacionesPreferencias;

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCoachInsights } from "@/features/alumna/hooks/useCoachInsights";
 import type { CoachInsightTipo } from "@/features/alumna/types/coach-insight";
+import { useAuth } from "@/context/AuthContext";
 import { alumnaRoutes } from "@/routes/paths";
 
 const ICONS: Partial<Record<CoachInsightTipo, string>> = {
@@ -43,10 +44,21 @@ function hrefForInsight(tipo: CoachInsightTipo): string | null {
   }
 }
 
+const RUTINA_INSIGHTS = new Set<CoachInsightTipo>([
+  "nuevo_record",
+  "racha_positiva",
+  "desafio_semanal",
+  "dias_sin_entrenar",
+  "cumplimiento_bajo",
+  "rutina_asignada",
+]);
+
 export function CoachInsightBanner() {
+  const { user } = useAuth();
   const { insight, dismiss } = useCoachInsights();
 
   if (!insight) return null;
+  if (user?.soloAlimentacion && RUTINA_INSIGHTS.has(insight.tipo)) return null;
 
   const accionHref = hrefForInsight(insight.tipo);
 

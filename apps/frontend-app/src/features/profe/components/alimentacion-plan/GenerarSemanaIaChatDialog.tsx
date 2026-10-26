@@ -17,9 +17,13 @@ import "./GenerarSemanaIaChatDialog.css";
 const INSTRUCCION_MAX = 2000;
 
 const GREETING =
-  "Contame qué condiciones tiene que cumplir esta semana. Podés elegir sugerencias o escribirlas con tus palabras. Si no hace falta nada extra, generá directo.";
+  "Antes de generar, dejanos las indicaciones de esta semana. Podés pedir que todos los días sean iguales, que varíen solo algunos, o sumar restricciones. Si no hace falta nada extra, generá directo.";
 
 const SUGERENCIAS = [
+  "Armar todos los días iguales",
+  "Variar las comidas entre los días",
+  "Iguales, pero variar el sábado",
+  "Variar martes y jueves",
   "Sin pescado",
   "Sin lácteos",
   "Meal prep: cocinar una vez para varios días",
@@ -46,6 +50,7 @@ export function GenerarSemanaIaChatDialog({
   onGenerate,
 }: GenerarSemanaIaChatDialogProps) {
   const titleId = useId();
+  const inputId = useId();
   const restoreFocusRef = useRef<HTMLElement | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -192,7 +197,7 @@ export function GenerarSemanaIaChatDialog({
                   type="button"
                   className="generar-semana-ia-dialog__remove"
                   disabled={locked}
-                  aria-label={`Quitar condición: ${condicion}`}
+                  aria-label={`Quitar indicación: ${condicion}`}
                   onClick={() => removeCondicion(index)}
                 >
                   <X size={13} />
@@ -220,7 +225,7 @@ export function GenerarSemanaIaChatDialog({
           </p>
         ) : null}
 
-        <div className="generar-semana-ia-dialog__suggestions" aria-label="Sugerencias">
+        <div className="generar-semana-ia-dialog__suggestions" aria-label="Indicaciones sugeridas">
           {SUGERENCIAS.map((sugerencia) => {
             const usada = condiciones.some(
               (c) => c.toLowerCase() === sugerencia.toLowerCase(),
@@ -240,33 +245,39 @@ export function GenerarSemanaIaChatDialog({
         </div>
 
         <form className="generar-semana-ia-dialog__composer" onSubmit={handleSend}>
-          <textarea
-            ref={inputRef}
-            className="generar-semana-ia-dialog__input"
-            rows={2}
-            value={draft}
-            maxLength={500}
-            placeholder="Otra condición… (Enter para agregar)"
-            disabled={locked}
-            aria-label="Agregar condición"
-            onChange={(event) => setDraft(event.target.value)}
-            onKeyDown={handleKeyDown}
-          />
-          <button
-            type="submit"
-            className="generar-semana-ia-dialog__send"
-            disabled={locked || !draft.trim()}
-            aria-label="Agregar condición"
-          >
-            <Send size={16} />
-          </button>
+          <label className="generar-semana-ia-dialog__field-label" htmlFor={inputId}>
+            Indicaciones para la semana
+          </label>
+          <div className="generar-semana-ia-dialog__composer-row">
+            <textarea
+              id={inputId}
+              ref={inputRef}
+              className="generar-semana-ia-dialog__input"
+              rows={3}
+              value={draft}
+              maxLength={500}
+              placeholder='Ej: "Armar todos los días iguales" o "Variar martes y jueves"'
+              disabled={locked}
+              aria-label="Indicaciones para la semana"
+              onChange={(event) => setDraft(event.target.value)}
+              onKeyDown={handleKeyDown}
+            />
+            <button
+              type="submit"
+              className="generar-semana-ia-dialog__send"
+              disabled={locked || !draft.trim()}
+              aria-label="Agregar indicación"
+            >
+              <Send size={16} />
+            </button>
+          </div>
         </form>
 
         <div className="generar-semana-ia-dialog__actions">
           <span className="generar-semana-ia-dialog__count">
             {cantidad === 0
-              ? "Sin condiciones extra"
-              : `${cantidad} ${cantidad === 1 ? "condición" : "condiciones"}`}
+              ? "Sin indicaciones"
+              : `${cantidad} ${cantidad === 1 ? "indicación" : "indicaciones"}`}
           </span>
           <Button type="button" variant="ghost" disabled={locked} onClick={onCancel}>
             Cancelar

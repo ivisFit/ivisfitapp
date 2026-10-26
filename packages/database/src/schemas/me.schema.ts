@@ -13,6 +13,7 @@ export const completarOnboardingSchema = z.object({
 
 export const updateMeProfileSchema = z.object({
   nombre: z.string().trim().min(1, "Nombre requerido").optional(),
+  apellido: z.string().trim().max(80, "Apellido demasiado largo").optional(),
   telefono: z.string().trim().min(1, "Teléfono requerido").optional(),
   cedula: z
     .string()

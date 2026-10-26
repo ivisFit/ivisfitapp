@@ -1,14 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import type {
-  FotosProgresoSlot,
-  Medicion,
-} from "@/features/profe/types/medicion";
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
+import type { FotosProgresoSlot } from "@/features/profe/types/medicion";
 import {
   PLIEGUES_FOTOS_SLOT_LABELS,
   PLIEGUES_FOTOS_SLOT_ORDER,
 } from "@/features/profe/components/pliegues/pliegues-fotos-slots";
+import type {
+  FotoComparacionColumna,
+  FotosAgrupacion,
+} from "@/features/profe/lib/pliegues-fotos-historial";
 import {
   formatGrasaCorporal,
   formatMedicionDate,
@@ -17,41 +18,82 @@ import {
 import "./MedicionFotosProgresoDialog.css";
 
 type PlieguesFotosComparisonGridProps = {
-  mediciones: Medicion[];
+  columnas: FotoComparacionColumna[];
+  modo?: FotosAgrupacion;
+  compact?: boolean;
 };
 
-type LightboxState = { slot: FotosProgresoSlot; medicionId: string } | null;
+type LightboxState = { slot: FotosProgresoSlot; columnaId: string } | null;
 
 function formatPeso(value?: number) {
   if (value == null) return null;
   return `${value.toLocaleString("es-UY", { maximumFractionDigits: 1 })} kg`;
 }
 
+export function FotosAgrupacionToggle({
+  value,
+  onChange,
+}: {
+  value: FotosAgrupacion;
+  onChange: (value: FotosAgrupacion) => void;
+}) {
+  return (
+    <div
+      className="pliegues-period-filter"
+      role="group"
+      aria-label="Cómo agrupar las fotos"
+    >
+      {(
+        [
+          ["mes", "Por mes"],
+          ["medicion", "Cada medición"],
+        ] as const
+      ).map(([id, label]) => (
+        <button
+          key={id}
+          type="button"
+          className={`pliegues-period-filter__chip${value === id ? " pliegues-period-filter__chip--active" : ""}`}
+          aria-pressed={value === id}
+          onClick={() => onChange(id)}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function PlieguesFotosComparisonGrid({
-  mediciones,
+  columnas,
+  modo = "mes",
+  compact = false,
 }: PlieguesFotosComparisonGridProps) {
   const [lightbox, setLightbox] = useState<LightboxState>(null);
-  const lastId = mediciones[mediciones.length - 1]?.id;
+  const [compare, setCompare] = useState(true);
+  const lastId = columnas[columnas.length - 1]?.id;
+  const recienteLabel = modo === "mes" ? "Último mes" : "Más reciente";
 
   const lightboxItems = useMemo(() => {
     if (!lightbox) return [];
-    return mediciones.filter(
-      (medicion) => medicion.fotosProgreso?.[lightbox.slot]?.url,
-    );
-  }, [lightbox, mediciones]);
+    return columnas.filter((columna) => columna.fotos[lightbox.slot]?.url);
+  }, [lightbox, columnas]);
 
   const lightboxIndex = lightbox
-    ? lightboxItems.findIndex((item) => item.id === lightbox.medicionId)
+    ? lightboxItems.findIndex((item) => item.id === lightbox.columnaId)
     : -1;
   const current = lightboxIndex >= 0 ? lightboxItems[lightboxIndex] : null;
+  const previous = lightboxIndex > 0 ? lightboxItems[lightboxIndex - 1] : null;
   const currentImage =
-    current && lightbox ? current.fotosProgreso?.[lightbox.slot] : undefined;
+    current && lightbox ? current.fotos[lightbox.slot] : undefined;
+  const previousImage =
+    previous && lightbox ? previous.fotos[lightbox.slot] : undefined;
+  const showCompare = Boolean(compare && currentImage && previousImage);
 
   const step = useCallback(
     (direction: -1 | 1) => {
       if (!lightbox || lightboxIndex < 0) return;
       const next = lightboxItems[lightboxIndex + direction];
-      if (next) setLightbox({ slot: lightbox.slot, medicionId: next.id });
+      if (next) setLightbox({ slot: lightbox.slot, columnaId: next.id });
     },
     [lightbox, lightboxIndex, lightboxItems],
   );
@@ -60,51 +102,78 @@ export function PlieguesFotosComparisonGrid({
     if (!lightbox) return;
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") setLightbox(null);
-      if (event.key === "ArrowLeft") step(-1);
-      if (event.key === "ArrowRight") step(1);
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        step(-1);
+      }
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        step(1);
+      }
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [lightbox, step]);
 
+  if (columnas.length === 0) return null;
+
+  const dialogLabel =
+    lightbox && current && currentImage
+      ? showCompare && previous && previousImage
+        ? `${PLIEGUES_FOTOS_SLOT_LABELS[lightbox.slot]}: ${formatMedicionDate(previousImage.fecha)} y ${formatMedicionDate(currentImage.fecha)}`
+        : `${PLIEGUES_FOTOS_SLOT_LABELS[lightbox.slot]} · ${formatMedicionDate(currentImage.fecha)}`
+      : "Foto de progreso";
+
   return (
     <>
       <div className="pliegues-fotos-historial__scroll">
-        <table className="pliegues-fotos-historial__table">
+        <table
+          className={[
+            "pliegues-fotos-historial__table",
+            modo === "mes" ? "pliegues-fotos-historial__table--mes" : "",
+            compact ? "pliegues-fotos-historial__table--compact" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          style={{ "--foto-cols": columnas.length } as CSSProperties}
+        >
+          <caption className="pliegues-fotos-historial__caption">
+            Evolución física por ángulo y por{" "}
+            {modo === "mes" ? "mes" : "medición"}
+          </caption>
           <thead>
             <tr>
               <th scope="col" className="pliegues-fotos-historial__corner">
                 Ángulo
               </th>
-              {mediciones.map((medicion) => {
-                const peso = formatPeso(medicion.pesoCorporalKg);
-                const isLatest = medicion.id === lastId && mediciones.length > 1;
+              {columnas.map((columna) => {
+                const peso = formatPeso(columna.pesoCorporalKg);
+                const isLatest = columna.id === lastId && columnas.length > 1;
                 return (
                   <th
-                    key={medicion.id}
+                    key={columna.id}
                     scope="col"
                     className="pliegues-fotos-historial__col-head"
                   >
-                    <span className="pliegues-fotos-historial__col-date">
-                      {formatMedicionDate(medicion.fecha)}
-                    </span>
-                    <span className="pliegues-fotos-historial__col-chips">
-                      <span className="pliegues-fotos-historial__chip pliegues-fotos-historial__chip--gold">
-                        {formatGrasaCorporal(
-                          medicion.metricas.porcentajeGrasaCorporal,
-                        )}
-                      </span>
-                      {peso ? (
-                        <span className="pliegues-fotos-historial__chip">
-                          {peso}
+                    <div className="pliegues-fotos-historial__frame">
+                      {isLatest ? (
+                        <span className="pliegues-fotos-historial__latest">
+                          {recienteLabel}
                         </span>
                       ) : null}
-                    </span>
-                    {isLatest ? (
-                      <span className="pliegues-fotos-historial__latest">
-                        Más reciente
+                      <span className="pliegues-fotos-historial__col-date">
+                        {columna.titulo}
                       </span>
-                    ) : null}
+                      {columna.detalle ? (
+                        <span className="pliegues-fotos-historial__col-detail">
+                          {columna.detalle}
+                        </span>
+                      ) : null}
+                      <p className="pliegues-fotos-historial__col-meta">
+                        <span>{formatGrasaCorporal(columna.porcentajeGrasaCorporal)}</span>
+                        {peso ? <span>{peso}</span> : null}
+                      </p>
+                    </div>
                   </th>
                 );
               })}
@@ -113,26 +182,25 @@ export function PlieguesFotosComparisonGrid({
           <tbody>
             {PLIEGUES_FOTOS_SLOT_ORDER.map((slot) => (
               <tr key={slot}>
-                <th
-                  scope="row"
-                  className="pliegues-fotos-historial__row-label"
-                >
+                <th scope="row" className="pliegues-fotos-historial__row-label">
                   {PLIEGUES_FOTOS_SLOT_LABELS[slot]}
                 </th>
-                {mediciones.map((medicion) => {
-                  const imagen = medicion.fotosProgreso?.[slot];
-                  const fechaLabel = formatMedicionDate(medicion.fecha);
+                {columnas.map((columna) => {
+                  const imagen = columna.fotos[slot];
+                  const fechaLabel = imagen
+                    ? formatMedicionDate(imagen.fecha)
+                    : columna.titulo;
                   const label = PLIEGUES_FOTOS_SLOT_LABELS[slot];
 
                   if (!imagen?.url) {
                     return (
                       <td
-                        key={`${medicion.id}-${slot}`}
+                        key={`${columna.id}-${slot}`}
                         className="pliegues-fotos-historial__cell"
                       >
                         <span
-                          className="pliegues-fotos-historial__placeholder"
-                          aria-label={`Sin foto de ${label}`}
+                          className="pliegues-fotos-historial__placeholder pliegues-fotos-historial__frame"
+                          aria-label={`Sin foto de ${label}, ${columna.titulo}`}
                         >
                           Sin foto
                         </span>
@@ -142,15 +210,15 @@ export function PlieguesFotosComparisonGrid({
 
                   return (
                     <td
-                      key={`${medicion.id}-${slot}`}
+                      key={`${columna.id}-${slot}`}
                       className="pliegues-fotos-historial__cell"
                     >
                       <button
                         type="button"
-                        className="pliegues-fotos-historial__thumb-btn"
+                        className="pliegues-fotos-historial__thumb-btn pliegues-fotos-historial__frame"
                         aria-label={`Ampliar ${label}, ${fechaLabel}`}
                         onClick={() =>
-                          setLightbox({ slot, medicionId: medicion.id })
+                          setLightbox({ slot, columnaId: columna.id })
                         }
                       >
                         <img
@@ -179,7 +247,7 @@ export function PlieguesFotosComparisonGrid({
           className="medicion-fotos-dialog pliegues-fotos-lightbox"
           role="dialog"
           aria-modal="true"
-          aria-label={`${PLIEGUES_FOTOS_SLOT_LABELS[lightbox.slot]} · ${formatMedicionDate(current.fecha)}`}
+          aria-label={dialogLabel}
         >
           <button
             type="button"
@@ -187,27 +255,45 @@ export function PlieguesFotosComparisonGrid({
             aria-label="Cerrar"
             onClick={() => setLightbox(null)}
           />
-          <article className="pliegues-fotos-lightbox__panel">
+          <article
+            className={`pliegues-fotos-lightbox__panel${showCompare ? " pliegues-fotos-lightbox__panel--compare" : ""}`}
+          >
             <header className="pliegues-fotos-lightbox__header">
               <div>
                 <p className="pliegues-fotos-lightbox__kicker">
                   {PLIEGUES_FOTOS_SLOT_LABELS[lightbox.slot]}
                 </p>
-                <h2>{formatMedicionDate(current.fecha)}</h2>
+                <h2>
+                  {showCompare && previousImage
+                    ? `${formatMedicionDate(previousImage.fecha)} → ${formatMedicionDate(currentImage.fecha)}`
+                    : formatMedicionDate(currentImage.fecha)}
+                </h2>
                 <p className="pliegues-fotos-lightbox__meta">
-                  {formatGrasaCorporal(current.metricas.porcentajeGrasaCorporal)}
+                  {formatGrasaCorporal(current.porcentajeGrasaCorporal)}
                   {formatPeso(current.pesoCorporalKg)
                     ? ` · ${formatPeso(current.pesoCorporalKg)}`
                     : ""}
                 </p>
               </div>
-              <button
-                type="button"
-                className="pliegues-fotos-lightbox__close"
-                onClick={() => setLightbox(null)}
-              >
-                Cerrar
-              </button>
+              <div className="pliegues-fotos-lightbox__actions">
+                {previousImage ? (
+                  <button
+                    type="button"
+                    className="pliegues-fotos-lightbox__close"
+                    aria-pressed={showCompare}
+                    onClick={() => setCompare((value) => !value)}
+                  >
+                    {showCompare ? "Una foto" : "Comparar"}
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  className="pliegues-fotos-lightbox__close"
+                  onClick={() => setLightbox(null)}
+                >
+                  Cerrar
+                </button>
+              </div>
             </header>
 
             <div className="pliegues-fotos-lightbox__stage">
@@ -220,10 +306,32 @@ export function PlieguesFotosComparisonGrid({
               >
                 ‹
               </button>
-              <img
-                src={currentImage.url}
-                alt={`${PLIEGUES_FOTOS_SLOT_LABELS[lightbox.slot]}, ${formatMedicionDate(current.fecha)}`}
-              />
+              {showCompare && previous && previousImage ? (
+                <div className="pliegues-fotos-lightbox__pair">
+                  <figure>
+                    <figcaption>Antes · {previous.titulo}</figcaption>
+                    <img
+                      src={previousImage.url}
+                      alt={`${PLIEGUES_FOTOS_SLOT_LABELS[lightbox.slot]}, ${formatMedicionDate(previousImage.fecha)}`}
+                    />
+                  </figure>
+                  <span className="pliegues-fotos-lightbox__vs" aria-hidden>
+                    vs
+                  </span>
+                  <figure>
+                    <figcaption>Ahora · {current.titulo}</figcaption>
+                    <img
+                      src={currentImage.url}
+                      alt={`${PLIEGUES_FOTOS_SLOT_LABELS[lightbox.slot]}, ${formatMedicionDate(currentImage.fecha)}`}
+                    />
+                  </figure>
+                </div>
+              ) : (
+                <img
+                  src={currentImage.url}
+                  alt={`${PLIEGUES_FOTOS_SLOT_LABELS[lightbox.slot]}, ${formatMedicionDate(currentImage.fecha)}`}
+                />
+              )}
               <button
                 type="button"
                 className="pliegues-fotos-lightbox__nav"
@@ -237,6 +345,7 @@ export function PlieguesFotosComparisonGrid({
 
             <p className="pliegues-fotos-lightbox__counter">
               {lightboxIndex + 1} de {lightboxItems.length}
+              {modo === "mes" ? " meses con esta foto" : ""}
             </p>
           </article>
         </div>

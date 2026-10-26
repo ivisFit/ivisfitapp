@@ -34,7 +34,7 @@ export function createApp() {
   app.use("/api/comprobantes-pago", comprobantesRouter);
   app.use("/api/chatbot", chatbotPublicRouter);
   app.use("/api/landing-planes", landingPlanesPublicRouter);
-  app.use("/api/mediciones/fotos", requireAuth, medicionesFotosRouter);
+  app.use("/api/mediciones/fotos", medicionesFotosRouter);
 
   app.use(express.json({ limit: JSON_BODY_LIMIT }));
 

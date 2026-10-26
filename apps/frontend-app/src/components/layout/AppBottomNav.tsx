@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   alumnaBottomNav,
   alumnaMobileMoreNav,
+  omitRutinaNav,
   profeBottomNav,
   profeMobileMoreNav,
   type NavItem,
@@ -41,10 +42,12 @@ export function AppBottomNav() {
   if (!mounted || !user) return null;
 
   const isAlumna = user.role === "alumna";
+  const soloAlimentacion = isAlumna && user.soloAlimentacion === true;
   const moreItems = isAlumna ? alumnaMobileMoreNav : profeMobileMoreNav;
-  const nav = (isAlumna ? alumnaBottomNav : profeBottomNav).filter(
-    (item) => item.href !== sharedRoutes.ajustes,
-  );
+  const nav = omitRutinaNav(
+    isAlumna ? alumnaBottomNav : profeBottomNav,
+    soloAlimentacion,
+  ).filter((item) => item.href !== sharedRoutes.ajustes);
   const moreActive = isMoreNavActive(pathname, moreItems);
   const showMensajesBadge = isAlumna && mensajesUnread > 0;
 

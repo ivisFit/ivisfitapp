@@ -498,6 +498,39 @@ export function AlimentacionComidasStep() {
     );
   }
 
+  async function copyDiaCompletoAlResto() {
+    const fromDia = selectedDiaIndex;
+    const origen = dias[fromDia];
+    if (!origen || !diaPlanTieneContenido(origen)) {
+      setMessage(null);
+      setError("Este día no tiene comidas para copiar.");
+      return;
+    }
+
+    const targets = dias
+      .map((_, index) => index)
+      .filter((index) => index !== fromDia);
+    if (targets.length === 0) return;
+
+    const hayDestinoConContenido = targets.some((index) => {
+      const dia = dias[index];
+      return dia && diaPlanTieneContenido(dia);
+    });
+    if (hayDestinoConContenido) {
+      const confirmed = await dialog.confirm({
+        title: "Copiar día completo",
+        message: `Se van a copiar todas las comidas de ${origen.nombre} al resto de la semana. Los días que ya tienen comidas se reemplazan. ¿Continuar?`,
+        tone: "warning",
+        confirmLabel: "Copiar al resto",
+      });
+      if (!confirmed) return;
+    }
+
+    copyDiaToDays(fromDia, targets);
+    setError(null);
+    setMessage(`Comidas de ${origen.nombre} copiadas al resto de la semana.`);
+  }
+
   async function saveComidaAsTemplate(comida: ComidaPlan) {
     const titulo = await dialog.prompt({
       title: "Guardar plantilla",
@@ -773,15 +806,27 @@ export function AlimentacionComidasStep() {
               </div>
             </div>
             {dias.length > 1 ? (
-              <Button
-                type="button"
-                variant="ghost"
-                className="ap-btn-sm"
-                onClick={() => setCopyModal({ kind: "dia" })}
-              >
-                <Copy size={15} aria-hidden="true" />
-                Copiar día a otros días
-              </Button>
+              <div className="ap-day-summary__actions">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="ap-btn-sm"
+                  title={`Copia todas las comidas de ${selectedDia.nombre} al resto de la semana`}
+                  onClick={() => void copyDiaCompletoAlResto()}
+                >
+                  <Copy size={15} aria-hidden="true" />
+                  Copiar día completo
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="ap-btn-sm"
+                  onClick={() => setCopyModal({ kind: "dia" })}
+                >
+                  <Copy size={15} aria-hidden="true" />
+                  Copiar día a otros días
+                </Button>
+              </div>
             ) : null}
           </div>
           <MacrosProgressBar objetivo={macrosObjetivo} actual={selectedDiaMacros} />

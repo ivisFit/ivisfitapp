@@ -119,7 +119,9 @@ export const GestorAlumnasPanel = memo(function GestorAlumnasPanel({
           alumna.email.toLowerCase().includes(q);
         if (!hay) return false;
       }
-      if (filtro === "sin_rutina") return alumna.tieneRutina === false;
+      if (filtro === "sin_rutina") {
+        return alumna.tieneRutina === false && alumna.soloAlimentacion !== true;
+      }
       if (filtro === "eval_sin_plan") {
         return (
           alumna.tieneEvaluacionNutricional === true &&
@@ -217,7 +219,9 @@ export const GestorAlumnasPanel = memo(function GestorAlumnasPanel({
                           {membresia}
                         </span>
                       ) : null}
-                      {alumna.tieneRutina === false ? (
+                      {alumna.soloAlimentacion ? (
+                        <span className="alumnas-list__badge">Solo alimentación</span>
+                      ) : alumna.tieneRutina === false ? (
                         <span className="alumnas-list__badge">Sin rutina</span>
                       ) : null}
                       {alumna.tieneEvaluacionNutricional &&

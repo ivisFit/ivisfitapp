@@ -89,6 +89,7 @@ async function runRecordatorios() {
       { estadoAdmision: "admitida" },
       { estadoAdmision: { $exists: false } },
     ],
+    soloAlimentacion: { $ne: true },
     "notificaciones.recordatoriosEntrenamiento": { $ne: false },
     "notificaciones.horaEntrenamiento": hora,
   }).select("nombre correo notificaciones");
@@ -127,6 +128,7 @@ async function runInactividad() {
 
   const alumnas = await Usuario.find({
     rol: "alumna",
+    soloAlimentacion: { $ne: true },
     $or: [
       { estadoAdmision: "admitida" },
       { estadoAdmision: { $exists: false } },
@@ -331,6 +333,7 @@ export async function getAutomatizacionesStatus() {
   cutoff.setUTCDate(cutoff.getUTCDate() - 7);
   const inactive = await Usuario.find({
     rol: "alumna",
+    soloAlimentacion: { $ne: true },
     $or: [
       { estadoAdmision: "admitida" },
       { estadoAdmision: { $exists: false } },

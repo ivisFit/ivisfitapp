@@ -37,6 +37,7 @@ export function mapAuthUser(
     admissionStatus: resolveAdmissionStatus(role, profile?.estadoAdmision),
     photoUrl: profile?.fotoPerfil?.url ?? null,
     circunferenciasHabilitadas: profile?.circunferenciasHabilitadas === true,
+    soloAlimentacion: profile?.soloAlimentacion === true,
     tutorialesVistos: profile?.tutorialesVistos === true,
     onboardingCompletado: profile?.onboardingCompletado === true,
     notificaciones: profile?.notificaciones,

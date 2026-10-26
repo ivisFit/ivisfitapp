@@ -38,7 +38,11 @@ export function RoleGuard({ allowedRoles, children }: RoleGuardProps) {
     }
 
     if (!allowedRoles.includes(user.role)) {
-      router.replace(getHomeRouteForRole(user.role));
+      router.replace(
+        getHomeRouteForRole(user.role, {
+          soloAlimentacion: user.soloAlimentacion,
+        }),
+      );
     }
   }, [allowedRoles, loading, pendingAdmission, router, user]);
 

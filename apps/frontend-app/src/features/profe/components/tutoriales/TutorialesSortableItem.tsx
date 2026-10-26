@@ -102,6 +102,7 @@ export function TutorialesSortableItem({
           ) : null}
           <p className="tutorial-meta">
             {tutorial.activo ? "Visible" : "Oculto"}
+            {tutorial.videoUrlMovil ? " · Con versión móvil" : ""}
           </p>
           <a
             className="auth-link"
@@ -109,12 +110,31 @@ export function TutorialesSortableItem({
             target="_blank"
             rel="noreferrer"
           >
-            Abrir en YouTube
+            Video de escritorio
           </a>
+          {tutorial.videoUrlMovil ? (
+            <a
+              className="auth-link"
+              href={tutorial.videoUrlMovil}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Video de móvil
+            </a>
+          ) : null}
         </div>
 
-        <div className="ejercicio-item__media">
-          <YoutubePreview videoUrl={tutorial.videoUrl} title={tutorial.titulo} />
+        <div className="ejercicio-item__media tutorial-previews">
+          <YoutubePreview
+            videoUrl={tutorial.videoUrl}
+            title={`${tutorial.titulo} en escritorio`}
+          />
+          {tutorial.videoUrlMovil ? (
+            <YoutubePreview
+              videoUrl={tutorial.videoUrlMovil}
+              title={`${tutorial.titulo} en móvil`}
+            />
+          ) : null}
         </div>
       </div>
     </li>

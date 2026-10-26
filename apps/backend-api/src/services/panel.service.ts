@@ -469,7 +469,7 @@ export const panelService = {
     const todayKey = isoDateLabel(new Date());
 
     const admitted = await Usuario.find(ADMITTED_ALUMNA_FILTER)
-      .select("_id nombre membresia")
+      .select("_id nombre membresia soloAlimentacion")
       .lean();
     const admittedIds = admitted.map((a) => a._id);
 
@@ -512,7 +512,7 @@ export const panelService = {
     const conPlan = new Set(planesPublicados.map((p) => String(p.alumnaId)));
 
     const sinRutina = admitted
-      .filter((a) => !conRutina.has(String(a._id)))
+      .filter((a) => a.soloAlimentacion !== true && !conRutina.has(String(a._id)))
       .map((a) => ({ id: String(a._id), nombre: a.nombre }));
 
     const evalSinPlan = admitted

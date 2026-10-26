@@ -172,11 +172,27 @@ export const profeNav: NavItem[] = [
   },
 ];
 
+const RUTINA_NAV_HREFS = new Set<string>([
+  alumnaRoutes.rutina,
+  alumnaRoutes.progreso,
+]);
+
+export function omitRutinaNav(items: NavItem[], soloAlimentacion?: boolean): NavItem[] {
+  if (!soloAlimentacion) return items;
+  return items.filter((item) => !RUTINA_NAV_HREFS.has(item.href));
+}
+
 export function getSidebarNav(
   role: "profe" | "alumna",
-  options?: { circunferenciasHabilitadas?: boolean | undefined },
+  options?: {
+    circunferenciasHabilitadas?: boolean | undefined;
+    soloAlimentacion?: boolean | undefined;
+  },
 ): NavItem[] {
-  const items = role === "profe" ? [...profeNav] : [...alumnaNav];
+  const items =
+    role === "profe"
+      ? [...profeNav]
+      : omitRutinaNav([...alumnaNav], options?.soloAlimentacion);
 
   if (role === "alumna" && options?.circunferenciasHabilitadas) {
     items.push(alumnaCircunferenciasNavItem);

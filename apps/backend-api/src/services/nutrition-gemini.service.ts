@@ -54,14 +54,14 @@ async function generateNutritionText(
   instruction: string,
   fallback: string,
   maxTokens = 2048,
-  options?: { jsonMode?: boolean },
+  options?: { jsonMode?: boolean; temperature?: number },
 ): Promise<string> {
   return generateGeminiText({
     instruction,
     systemInstruction: NUTRITION_SYSTEM_PROMPT,
     fallback,
     maxOutputTokens: maxTokens,
-    temperature: 0.6,
+    temperature: options?.temperature ?? 0.6,
     responseMimeType: options?.jsonMode ? "application/json" : undefined,
     logLabel: "nutrition-gemini",
   });
@@ -91,7 +91,12 @@ function catalogInstructionBlock(catalog: CatalogAlimentoMacros[]): string {
 CATÁLOGO OBLIGATORIO (solo estos alimentos; usá nombre EXACTO o alimentoId):
 ${JSON.stringify(items)}
 PROHIBIDO: nombres genéricos ("Proteína magra", "Carbohidrato", "Vegetales") o alimentos fuera del catálogo.
-Formato ingrediente: { "alimentoId": "opcional", "nombre": "del catálogo", "cantidad": number, "unidad": "g|ml|unidad" }`;
+Formato ingrediente: { "alimentoId": "opcional", "nombre": "del catálogo", "cantidad": number, "unidad": "g|ml|unidad" }
+CANTIDADES (obligatorio):
+- Usá la unidad de "porcion" del catálogo. Si dice "1 unidad", cantidad es el número de piezas (1, 2 o 3) y unidad es "unidad". Nunca pongas gramos en un alimento por unidad: 2 huevos es { "cantidad": 2, "unidad": "unidad" }, no 100 o 150.
+- Si la porción es en g o ml, cantidad va en esa unidad y entre media y 3 porciones de referencia.
+- No copies las kcal ni los gramos de proteína del objetivo como cantidad.
+- La suma del día tiene que acercarse a los macros del día, sin superarlos en más de un 20%.`;
 }
 
 export type CondicionesSemana = {
@@ -140,6 +145,7 @@ function buildDayInstruction(
     diasPreviosResumen: string[];
     catalog: CatalogAlimentoMacros[];
     condiciones?: CondicionesDia;
+    variedad?: "exigir" | "evitar";
   },
   feedback: string[],
 ): string {
@@ -153,6 +159,16 @@ ${feedback.length ? `Tu intento anterior fue rechazado por: ${feedback.join("; "
 
 `
     : "";
+
+  const resumen = input.diasPreviosResumen.join(" | ");
+  const bloqueVariedad =
+    input.variedad === "evitar"
+      ? "La profesional pidió repetir este menú en otros días. Armá un día completo y equilibrado."
+      : input.variedad === "exigir"
+        ? `Este día TIENE que ser distinto de los ya armados${resumen ? `: ${resumen}` : ""}. Cambiá la proteína principal y el carbohidrato de las comidas principales.`
+        : resumen
+          ? `Días ya armados (variá proteínas y carbos, no repitas menús): ${resumen}`
+          : "";
 
   return `${bloqueCondiciones}Generá UN día del plan nutricional (${input.diaNombre}) en JSON:
 {
@@ -169,16 +185,14 @@ ${feedback.length ? `Tu intento anterior fue rechazado por: ${feedback.join("; "
 Evaluación: ${JSON.stringify(evaluacion)}
 Macros del día: ${JSON.stringify(input.macrosObjetivo)}
 Estructura de comidas (respetá nombres y horarios): ${JSON.stringify(input.estructuraComidas)}
-Metas por comida (aproximá ingredientes en gramos para llegar): ${JSON.stringify(
+Metas por comida (aproximá las cantidades, en la unidad de cada alimento, sin pasarte): ${JSON.stringify(
     input.comidasConObjetivo.map((c) => ({
       nombre: c.nombre,
       horario: c.horario,
       macrosObjetivo: c.macrosObjetivo,
     })),
   )}
-${input.diasPreviosResumen.length ? `Días ya armados (variá proteínas y carbos, no repitas menús): ${input.diasPreviosResumen.join(" | ")}` : ""}
-Tiempo máximo cocina: ${evaluacion.tiempoCocinaMinutos} min.
-Cantidades en gramos exactos.
+${bloqueVariedad ? `${bloqueVariedad}\n` : ""}Tiempo máximo cocina: ${evaluacion.tiempoCocinaMinutos} min.
 ${catalogInstructionBlock(input.catalog)}
 Devolvé SOLO JSON válido.`;
 }
@@ -231,6 +245,17 @@ function normalizeIngredientesList(raw: unknown): ComidaPlan["ingredientes"] {
   return list
     .map(normalizeIngredienteRaw)
     .filter((ing): ing is ComidaPlan["ingredientes"][number] => ing !== null);
+}
+
+function mismosAlimentos(a: ComidaPlan, b: ComidaPlan): boolean {
+  const key = (comida: ComidaPlan) =>
+    comida.ingredientes
+      .map((ing) => normalizeAlimentoNombre(ing.nombre ?? ""))
+      .filter(Boolean)
+      .sort()
+      .join("|");
+  const keyA = key(a);
+  return keyA.length > 0 && keyA === key(b);
 }
 
 function normalizeComidaFromIa(comida: ComidaPlan, slot?: ComidaPlan): ComidaPlan {
@@ -444,6 +469,7 @@ Devolvé SOLO JSON válido.`;
       catalog: CatalogAlimentoMacros[];
       diaSeed: number;
       condiciones?: CondicionesDia;
+      variedad?: "exigir" | "evitar";
     },
   ): Promise<DiaPlanNutricional> {
     const fallback: DiaPlanNutricional = {
@@ -589,20 +615,44 @@ ${diasPreviosResumen.length ? `Días anteriores (para reglas de variedad): ${dia
       nombre: "Comida",
       ingredientes: [],
     };
+    const seed = input.comidaSeed ?? 0;
+    const buscaVariedad = input.modo !== "ajustar";
+    const alimentosActuales = base.ingredientes
+      .map((ing) => ing.nombre?.trim())
+      .filter((nombre): nombre is string => Boolean(nombre));
+    const idsActuales = new Set(
+      base.ingredientes
+        .map((ing) => ing.alimentoId)
+        .filter((id): id is string => Boolean(id)),
+    );
+    const catalogSinActuales = input.catalog.filter(
+      (item) => !idsActuales.has(String(item._id)),
+    );
+    const fallbackCatalog =
+      buscaVariedad && catalogSinActuales.length >= 3
+        ? catalogSinActuales
+        : input.catalog;
     const fallbackComida = resolverComidaAlCatalogo(
-      buildComidaFallbackDesdeCatalogo(base, input.catalog, input.comidaSeed ?? 0),
-      input.catalog,
-      input.comidaSeed ?? 0,
+      buildComidaFallbackDesdeCatalogo(base, fallbackCatalog, seed),
+      fallbackCatalog,
+      seed,
     );
 
     const modoLabel =
       input.modo === "sugerir"
-        ? "Sugerí una comida completa"
+        ? "Sugerí una comida completa nueva"
         : input.modo === "alternativa"
           ? "Proponé una alternativa distinta"
           : `Ajustá la comida para acercarte a ${input.proteinaObjetivoG ?? "la"} g de proteína`;
 
-    const instruction = `${modoLabel} en JSON con esta estructura:
+    const variedadBlock =
+      buscaVariedad && alimentosActuales.length > 0
+        ? `VARIEDAD OBLIGATORIA: la propuesta tiene que ser claramente distinta a la comida actual. Cambiá al menos la fuente principal de proteína y la de carbohidrato; no repitas estos alimentos salvo que sea imprescindible: ${alimentosActuales.join(", ")}.`
+        : buscaVariedad
+          ? "Elegí una combinación variada y poco obvia dentro del catálogo."
+          : "";
+
+    const buildInstruction = (extra: string) => `${modoLabel} en JSON con esta estructura:
 {
   "nombre": "string",
   "horario": "opcional",
@@ -612,33 +662,44 @@ ${diasPreviosResumen.length ? `Días anteriores (para reglas de variedad): ${dia
 }
 Evaluación: ${JSON.stringify(evaluacion)}
 Comida actual: ${JSON.stringify(base)}
+${variedadBlock}
+${extra}
+${buscaVariedad ? `Variante solicitada #${seed} (cada pedido debe dar una opción diferente).` : ""}
 ${input.instruccion ? `Instrucción extra: ${input.instruccion}` : ""}
 ${input.comidaObjetivo ? `Meta de la comida: ${JSON.stringify(input.comidaObjetivo)}` : ""}
-Cantidades en gramos exactos.
+La suma de esta comida tiene que acercarse a su meta, sin superarla en más de un 20%.
 ${catalogInstructionBlock(input.catalog)}
 Devolvé SOLO JSON.`;
 
-    const text = await generateNutritionText(
-      instruction,
-      JSON.stringify(fallbackComida),
-      2048,
-      { jsonMode: true },
+    const generar = async (extra: string): Promise<ComidaPlan | null> => {
+      const text = await generateNutritionText(
+        buildInstruction(extra),
+        JSON.stringify(fallbackComida),
+        2048,
+        { jsonMode: true, temperature: buscaVariedad ? 0.95 : 0.6 },
+      );
+      const parsed = extractJson<ComidaPlan>(text);
+      if (!parsed) return null;
+      const merged = normalizeComidaFromIa(
+        {
+          ...base,
+          ...parsed,
+          macrosObjetivo: input.comidaObjetivo ?? base.macrosObjetivo,
+        },
+        base,
+      );
+      return resolverComidaAlCatalogo(merged, input.catalog, seed);
+    };
+
+    const primera = await generar("");
+    if (!primera) return fallbackComida;
+    if (!buscaVariedad || !mismosAlimentos(primera, base)) return primera;
+
+    const segunda = await generar(
+      "Tu propuesta anterior repitió exactamente los mismos alimentos. Usá alimentos distintos.",
     );
-    const parsed = extractJson<ComidaPlan>(text);
-    if (!parsed) return fallbackComida;
-    const merged = normalizeComidaFromIa(
-      {
-        ...base,
-        ...parsed,
-        macrosObjetivo: input.comidaObjetivo ?? base.macrosObjetivo,
-      },
-      base,
-    );
-    return resolverComidaAlCatalogo(
-      merged,
-      input.catalog,
-      input.comidaSeed ?? 0,
-    );
+    if (segunda && !mismosAlimentos(segunda, base)) return segunda;
+    return fallbackComida;
   },
 
   async chat(

@@ -8,6 +8,7 @@ export type TutorialAlumna = {
   id: string;
   titulo: string;
   videoUrl: string;
+  videoUrlMovil: string;
   descripcion: string;
 };
 
@@ -16,6 +17,7 @@ type TutorialApiDoc = {
   id?: unknown;
   titulo: string;
   videoUrl: string;
+  videoUrlMovil?: string;
   descripcion?: string;
 };
 
@@ -26,6 +28,7 @@ function mapTutorialFromApi(doc: TutorialApiDoc): TutorialAlumna | null {
     id,
     titulo: doc.titulo,
     videoUrl: doc.videoUrl,
+    videoUrlMovil: doc.videoUrlMovil?.trim() ?? "",
     descripcion: doc.descripcion ?? "",
   };
 }

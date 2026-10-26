@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import {
   AlertTriangle,
   ClipboardList,
@@ -16,6 +16,7 @@ import { MembresiaEditor } from "./MembresiaEditor";
 import { CoachNotaComposer } from "./CoachNotaComposer";
 import { UserAvatar } from "@/components/UserAvatar";
 import { patchAlumnaField } from "@/features/profe/lib/patch-alumna-field";
+import { partirNombre } from "@/lib/nombre-alumno";
 import type { AlumnaDetail } from "@/types/usuario";
 import { fechaToDateInputValue } from "@/types/usuario";
 
@@ -105,6 +106,63 @@ function SheetGroup({
   );
 }
 
+function SoloAlimentacionSwitch({
+  alumna,
+  onUpdated,
+}: {
+  alumna: AlumnaDetail;
+  onUpdated?: () => void;
+}) {
+  const [checked, setChecked] = useState(alumna.soloAlimentacion === true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setChecked(alumna.soloAlimentacion === true);
+  }, [alumna.soloAlimentacion]);
+
+  async function handleChange(next: boolean) {
+    setChecked(next);
+    setSaving(true);
+    setError(null);
+    try {
+      await patchAlumnaField(alumna.id, { soloAlimentacion: next });
+      onUpdated?.();
+    } catch (err) {
+      setChecked(!next);
+      setError(err instanceof Error ? err.message : "No se pudo guardar el cambio");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="alumna-sheet__plan-toggle">
+      <div className="alumna-sheet__plan-toggle-copy">
+        <strong>Solo alimentación</strong>
+        <span>
+          Oculta rutina, seguimiento y progreso de entrenos. La alumna entra
+          directo a su plan nutricional.
+        </span>
+        {error ? <span className="auth-error">{error}</span> : null}
+      </div>
+      <label className="alumna-sheet__switch">
+        <input
+          type="checkbox"
+          role="switch"
+          checked={checked}
+          disabled={saving}
+          aria-label="Solo alimentación"
+          onChange={(event) => void handleChange(event.target.checked)}
+        />
+        <span className="alumna-sheet__switch-track" aria-hidden>
+          <span className="alumna-sheet__switch-thumb" />
+        </span>
+      </label>
+    </div>
+  );
+}
+
 export function AlumnaProfileSections({
   alumna,
   onReviewHealthChanges,
@@ -153,6 +211,7 @@ export function AlumnaProfileSections({
       : alumna.sexo === "mujer"
         ? "Mujer"
         : undefined;
+  const partesNombre = partirNombre(alumna.nombre, alumna.apellido);
 
   return (
     <div className="alumna-sheet">
@@ -202,13 +261,24 @@ export function AlumnaProfileSections({
           </button>
         </div>
 
+        <SoloAlimentacionSwitch alumna={alumna} onUpdated={onAlumnaUpdated} />
+
         <div className="alumna-sheet__body">
           <SheetGroup title="Contacto e identificación" icon={<Phone size={15} />}>
             <dl className="alumna-sheet__rows">
               <InlineEditableSheetRow
                 label="Nombre"
-                value={alumna.nombre}
-                onSave={(v) => saveField({ nombre: v })}
+                value={partesNombre.nombre}
+                onSave={async (v) => {
+                  if (!v.trim()) throw new Error("El nombre es requerido");
+                  await saveField({ nombre: v.trim() });
+                }}
+              />
+              <InlineEditableSheetRow
+                label="Apellido"
+                value={partesNombre.apellido}
+                emptyLabel="Sin apellido"
+                onSave={(v) => saveField({ apellido: v.trim() })}
               />
               <InlineEditableSheetRow
                 label="Email"

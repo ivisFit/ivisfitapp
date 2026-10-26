@@ -25,6 +25,7 @@ export function AppSidebar() {
 
   const nav = getSidebarNav(user.role, {
     circunferenciasHabilitadas: user.circunferenciasHabilitadas ?? undefined,
+    soloAlimentacion: user.soloAlimentacion === true,
   });
 
   async function handleLogout() {

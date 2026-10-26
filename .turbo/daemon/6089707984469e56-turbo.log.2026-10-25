@@ -7,3 +7,5 @@
 2026-10-25T04:41:18.117708Z  WARN turborepo_filewatch: failed to remove cookie file failed to remove file `C:\Users\Gastu\Desktop\RepoIvis\.turbo\cookies\.turbo-cookie`
 2026-10-25T04:41:18.306945Z  WARN daemon_server: turborepo_lib::commands::daemon: daemon already running
 2026-10-25T04:41:18.446554Z  WARN daemon_server: turborepo_lib::commands::daemon: daemon already running
+2026-10-25T19:12:51.714316Z  WARN daemon_server: turborepo_lib::commands::daemon: daemon already running
+2026-10-25T19:12:52.110380Z  WARN daemon_server: turborepo_lib::commands::daemon: daemon already running

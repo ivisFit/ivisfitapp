@@ -125,5 +125,7 @@ export function resolvePostAuthRoute(user: AuthUser, returnTo?: string | null): 
     return `${path}${suffix}`;
   }
 
-  return getHomeRouteForRole(user.role);
+  return getHomeRouteForRole(user.role, {
+    soloAlimentacion: user.soloAlimentacion,
+  });
 }

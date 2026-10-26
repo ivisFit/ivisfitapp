@@ -20,6 +20,7 @@ export type CatalogoPromptItem = {
   id: string;
   nombre: string;
   categoria: AlimentoCategoria | string;
+  porcion: string;
 };
 
 const PLACEHOLDER_IA = new Set([
@@ -70,6 +71,7 @@ export function formatCatalogoParaPrompt(
     id: String(item._id),
     nombre: item.nombre,
     categoria: item.categoria,
+    porcion: `${item.porcionReferencia.cantidad} ${item.porcionReferencia.unidad}`,
   }));
 }
 

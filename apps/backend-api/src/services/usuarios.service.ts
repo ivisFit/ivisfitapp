@@ -15,6 +15,7 @@ import {
   syncBetterAuthEmail,
   syncBetterAuthName,
 } from "./auth-user-sync.service.js";
+import { aplicarNombreApellido } from "../lib/nombre-alumno.js";
 
 const HEALTH_FIELDS = [
   "mutualista",
@@ -122,6 +123,18 @@ export const usuariosService = {
         data.correo = normalizeEmail(data.correo);
       }
 
+      if (data.nombre !== undefined || data.apellido !== undefined) {
+        const aplicado = aplicarNombreApellido(usuario, {
+          nombre: data.nombre,
+          apellido: data.apellido,
+        });
+        if (!aplicado) {
+          throw new AppError(400, "El nombre es requerido");
+        }
+        usuario.nombre = aplicado.nombre;
+        usuario.apellido = aplicado.apellido ?? "";
+      }
+
       if (
         data.correo !== undefined &&
         normalizeEmail(previousCorreo) !== data.correo
@@ -129,14 +142,11 @@ export const usuariosService = {
         await syncBetterAuthEmail({
           fromEmail: previousCorreo,
           toEmail: data.correo,
-          name: data.nombre?.trim() ?? usuario.nombre,
+          name: usuario.nombre,
         });
         usuario.correo = data.correo;
       }
 
-      if (data.nombre !== undefined) {
-        usuario.nombre = data.nombre.trim();
-      }
       if (data.telefono !== undefined) {
         usuario.telefono = data.telefono.trim();
       }
@@ -154,6 +164,9 @@ export const usuariosService = {
       }
       if (data.circunferenciasHabilitadas !== undefined) {
         usuario.circunferenciasHabilitadas = data.circunferenciasHabilitadas;
+      }
+      if (data.soloAlimentacion !== undefined) {
+        usuario.soloAlimentacion = data.soloAlimentacion;
       }
       if (data.membresia !== undefined) {
         usuario.membresia = {
@@ -182,7 +195,6 @@ export const usuariosService = {
       await usuario.save();
 
       if (
-        data.nombre !== undefined &&
         usuario.nombre.trim() !== previousNombre.trim() &&
         (data.correo === undefined ||
           normalizeEmail(previousCorreo) === usuario.correo)

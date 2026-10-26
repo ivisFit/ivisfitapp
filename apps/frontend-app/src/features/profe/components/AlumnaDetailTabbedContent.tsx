@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CardSkeleton, SkeletonStack } from "@/components/skeletons/AppSkeleton";
 import { ProfeChromeTabs } from "@/features/profe/components/ProfeChromeTabs";
 import { AlimentacionTabSummary } from "@/features/profe/components/alimentacion-plan/AlimentacionTabSummary";
@@ -64,6 +64,8 @@ const ALUMNA_DETAIL_TABS: Array<{ id: AlumnaDetailTab; label: string }> = [
   { id: "historial", label: "Historial" },
 ];
 
+const RUTINA_TABS = new Set<AlumnaDetailTab>(["rutina", "seguimiento"]);
+
 export function AlumnaDetailTabbedContent({
   alumna,
   planTemplates,
@@ -72,6 +74,10 @@ export function AlumnaDetailTabbedContent({
   const router = useRouter();
   const searchParams = useSearchParams();
   const tab = getAlumnaDetailTabFromParam(searchParams.get("tab"));
+  const soloAlimentacion = alumna.soloAlimentacion === true;
+  const visibleTabs = soloAlimentacion
+    ? ALUMNA_DETAIL_TABS.filter((item) => !RUTINA_TABS.has(item.id))
+    : ALUMNA_DETAIL_TABS;
   const { reportSectionDirty } = useAlumnaUnsavedReporter();
   const [showHealthReview, setShowHealthReview] = useState(false);
 
@@ -79,6 +85,12 @@ export function AlumnaDetailTabbedContent({
     if (next === tab) return;
     router.replace(profeAlumnaDetailTabRoute(alumna.id, next));
   }
+
+  useEffect(() => {
+    if (soloAlimentacion && RUTINA_TABS.has(tab)) {
+      router.replace(profeAlumnaDetailTabRoute(alumna.id, "perfil"));
+    }
+  }, [alumna.id, router, soloAlimentacion, tab]);
 
   function handleReviewHealthChanges() {
     setShowHealthReview(true);
@@ -93,6 +105,7 @@ export function AlumnaDetailTabbedContent({
   }
 
   function renderActiveTab() {
+    if (soloAlimentacion && RUTINA_TABS.has(tab)) return null;
     switch (tab) {
       case "perfil":
         return (
@@ -208,7 +221,7 @@ export function AlumnaDetailTabbedContent({
           tabIdPrefix="alumna-detail-tab"
           activeTab={tab}
           onTabChange={(next) => setTab(next as AlumnaDetailTab)}
-          tabs={ALUMNA_DETAIL_TABS.map(({ id, label }) => ({
+          tabs={visibleTabs.map(({ id, label }) => ({
             id,
             label,
             controls: `alumna-detail-panel-${id}`,

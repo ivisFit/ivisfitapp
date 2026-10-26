@@ -366,6 +366,86 @@
   border-bottom: 1px solid rgb(255 255 255 / 8%);
 }
 
+.alumna-sheet__plan-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem clamp(1.1rem, 3vw, 1.6rem);
+  border-bottom: 1px solid rgb(255 255 255 / 8%);
+}
+
+.alumna-sheet__plan-toggle-copy {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.alumna-sheet__plan-toggle-copy strong {
+  font-size: 0.92rem;
+}
+
+.alumna-sheet__plan-toggle-copy span {
+  color: var(--color-text-muted, rgb(255 255 255 / 62%));
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.alumna-sheet__switch {
+  position: relative;
+  flex: 0 0 auto;
+  width: 2.75rem;
+  height: 1.55rem;
+}
+
+.alumna-sheet__switch input {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.alumna-sheet__switch input:disabled {
+  cursor: wait;
+}
+
+.alumna-sheet__switch-track {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 14%);
+  border: 1px solid rgb(255 255 255 / 18%);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.alumna-sheet__switch-thumb {
+  position: absolute;
+  top: 0.16rem;
+  left: 0.16rem;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 999px;
+  background: #fff;
+  transition: transform 0.15s ease;
+}
+
+.alumna-sheet__switch input:checked + .alumna-sheet__switch-track {
+  background: var(--color-gold, #e1aa43);
+  border-color: var(--color-gold, #e1aa43);
+}
+
+.alumna-sheet__switch input:checked + .alumna-sheet__switch-track .alumna-sheet__switch-thumb {
+  transform: translateX(1.18rem);
+}
+
+.alumna-sheet__switch input:focus-visible + .alumna-sheet__switch-track {
+  outline: 2px solid var(--color-gold, #e1aa43);
+  outline-offset: 2px;
+}
+
 .alumna-sheet__action {
   display: inline-flex;
   align-items: center;
@@ -801,6 +881,20 @@
 }
 
 /* —— Historial —— */
+
+.alumna-historial__block-title {
+  margin: 0.35rem 0 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.alumna-historial__block-copy {
+  margin: -0.35rem 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
 
 .alumna-historial-filters {
   display: grid;

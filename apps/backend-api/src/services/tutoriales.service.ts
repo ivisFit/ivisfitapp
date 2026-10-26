@@ -11,6 +11,7 @@ function serializeTutorial(doc: {
   id?: unknown;
   titulo: string;
   videoUrl: string;
+  videoUrlMovil?: string | null;
   descripcion?: string | null;
   orden?: number | null;
   activo?: boolean | null;
@@ -21,6 +22,7 @@ function serializeTutorial(doc: {
     _id: id,
     titulo: doc.titulo,
     videoUrl: doc.videoUrl,
+    videoUrlMovil: doc.videoUrlMovil?.trim() || "",
     descripcion: doc.descripcion ?? "",
     orden: doc.orden ?? 0,
     activo: doc.activo !== false,

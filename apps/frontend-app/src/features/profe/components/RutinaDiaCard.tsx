@@ -18,6 +18,7 @@ type RutinaDiaCardProps = {
   onRemoveDia: () => void;
   onDuplicateDia: () => void;
   onCopyDiaToAllWeeks: () => void;
+  onCopyDiaToDias: () => void;
   onUpdatePlanDay: (patch: Partial<PlanContentDayDraft>) => void;
   onAddDraft: () => void;
   onUpdateDraft: (
@@ -28,6 +29,7 @@ type RutinaDiaCardProps = {
   onMoveDraft: (draftLocalId: string, direction: "up" | "down") => void;
   canRemoveDia: boolean;
   canDuplicateDia?: boolean;
+  canCopyDiaToDias?: boolean;
 };
 
 export function RutinaDiaCard({
@@ -41,6 +43,7 @@ export function RutinaDiaCard({
   onRemoveDia,
   onDuplicateDia,
   onCopyDiaToAllWeeks,
+  onCopyDiaToDias,
   onUpdatePlanDay,
   onAddDraft,
   onUpdateDraft,
@@ -48,6 +51,7 @@ export function RutinaDiaCard({
   onMoveDraft,
   canRemoveDia,
   canDuplicateDia = true,
+  canCopyDiaToDias = true,
 }: RutinaDiaCardProps) {
   const [showContent, setShowContent] = useState(false);
 
@@ -108,6 +112,16 @@ export function RutinaDiaCard({
               </button>
               <button
                 type="button"
+                disabled={!canCopyDiaToDias}
+                onClick={(event) => {
+                  event.currentTarget.closest("details")?.removeAttribute("open");
+                  onCopyDiaToDias();
+                }}
+              >
+                Copiar a otros días
+              </button>
+              <button
+                type="button"
                 onClick={(event) => {
                   event.currentTarget.closest("details")?.removeAttribute("open");
                   onCopyDiaToAllWeeks();
@@ -136,6 +150,14 @@ export function RutinaDiaCard({
               disabled={!canDuplicateDia}
             >
               Duplicar
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={onCopyDiaToDias}
+              disabled={!canCopyDiaToDias}
+            >
+              Copiar a días
             </Button>
             <Button type="button" variant="ghost" onClick={onCopyDiaToAllWeeks}>
               Copiar a todas

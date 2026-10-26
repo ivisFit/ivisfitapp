@@ -9,6 +9,7 @@ export type Tutorial = {
   id: string;
   titulo: string;
   videoUrl: string;
+  videoUrlMovil: string;
   descripcion: string;
   orden: number;
   activo: boolean;
@@ -19,6 +20,7 @@ type TutorialApiDoc = {
   id?: unknown;
   titulo: string;
   videoUrl: string;
+  videoUrlMovil?: string;
   descripcion?: string;
   orden?: number;
   activo?: boolean;
@@ -27,6 +29,7 @@ type TutorialApiDoc = {
 export type TutorialPayload = {
   titulo: string;
   videoUrl: string;
+  videoUrlMovil: string;
   descripcion: string;
   activo: boolean;
 };
@@ -39,6 +42,7 @@ function mapTutorialFromApi(doc: TutorialApiDoc | null | undefined): Tutorial | 
     id,
     titulo: doc.titulo,
     videoUrl: doc.videoUrl,
+    videoUrlMovil: doc.videoUrlMovil?.trim() ?? "",
     descripcion: doc.descripcion ?? "",
     orden: doc.orden ?? 0,
     activo: doc.activo !== false,

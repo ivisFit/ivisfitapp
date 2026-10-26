@@ -3,6 +3,7 @@ import { Schema, model, models, type InferSchemaType, type Types } from "mongoos
 const usuarioSchema = new Schema(
   {
     nombre: { type: String, required: true },
+    apellido: { type: String, trim: true },
     correo: { type: String, required: true, unique: true },
     telefono: { type: String, required: true },
     rol: { type: String, enum: ["profe", "alumna"], required: true },
@@ -40,6 +41,7 @@ const usuarioSchema = new Schema(
     fechaRechazo: { type: Date },
     fechaRegistro: { type: Date, default: Date.now },
     circunferenciasHabilitadas: { type: Boolean, default: false },
+    soloAlimentacion: { type: Boolean, default: false },
     tutorialesVistos: { type: Boolean, default: false },
     onboarding: {
       completado: { type: Boolean, default: false },

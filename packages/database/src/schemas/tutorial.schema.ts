@@ -25,9 +25,18 @@ const youtubeUrlSchema = z
   .min(1)
   .refine(isYoutubeUrl, "Debe ser una URL de YouTube");
 
+const youtubeUrlOpcionalSchema = z
+  .string()
+  .trim()
+  .refine(
+    (value) => value.length === 0 || isYoutubeUrl(value),
+    "Debe ser una URL de YouTube",
+  );
+
 export const createTutorialSchema = z.object({
   titulo: z.string().min(1),
   videoUrl: youtubeUrlSchema,
+  videoUrlMovil: youtubeUrlOpcionalSchema.optional(),
   descripcion: z.string().trim().max(500).optional(),
   orden: z.coerce.number().int().min(0).optional(),
   activo: z.boolean().optional(),

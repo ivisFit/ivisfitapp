@@ -7,7 +7,6 @@ import { useParams } from "next/navigation";
 import { Button } from "@/components/Button";
 import { CardSkeleton, ChartSkeleton, PageHeaderSkeleton, SkeletonStack } from "@/components/skeletons/AppSkeleton";
 import { CircunferenciasAlumnaToggleCard } from "@/features/profe/components/pliegues/CircunferenciasAlumnaToggleCard";
-import { MetodoCalculoSelector } from "@/features/profe/components/pliegues/MetodoCalculoSelector";
 import { SkinfoldForm } from "@/features/profe/components/SkinfoldForm";
 import { PlieguesHistoryTable } from "@/features/profe/components/pliegues/PlieguesHistoryTable";
 import { PlieguesPeriodFilter } from "@/features/profe/components/pliegues/PlieguesPeriodFilter";
@@ -15,7 +14,6 @@ import { PlieguesSummaryCards } from "@/features/profe/components/pliegues/Plieg
 import { useAlumna } from "@/features/profe/hooks/useAlumna";
 import type { AlumnaDetail } from "@/types/usuario";
 import { useAlumnaMediciones } from "@/features/profe/hooks/useAlumnaMediciones";
-import type { MetodoCalculo } from "@/features/profe/types/medicion";
 import { countMedicionesConFotosProgreso } from "@/features/profe/lib/pliegues-fotos-historial";
 import {
   profeAlumnaDetailRoute,
@@ -106,7 +104,7 @@ export function PlieguesContent({
   onPlieguesDirtyChange?: (dirty: boolean) => void;
 }) {
   const [period, setPeriod] = useState<PlieguesPeriod>("90d");
-  const [metodoCalculo, setMetodoCalculo] = useState<MetodoCalculo>("jp3");
+  const metodoCalculo = "jp7" as const;
   const { mediciones, loading, error, refetch } = useAlumnaMediciones(alumnaId);
 
   const filteredMediciones = useMemo(() => {
@@ -156,8 +154,8 @@ export function PlieguesContent({
             <span className="pliegues-hero__eyebrow">Composición corporal</span>
             <h1>{alumnaNombre}</h1>
             <p>
-              Seguimiento de grasa corporal por pliegues (Jackson-Pollock) o
-              circunferencias (US Navy). Elegí el método y registrá cada medición.
+              Seguimiento de grasa corporal con los 7 pliegues: bíceps, tríceps,
+              subescapular, supraespinal, abdominal, cuadricipital y peroneal.
             </p>
           </div>
           <div className="pliegues-hero__actions">
@@ -175,10 +173,6 @@ export function PlieguesContent({
             <PlieguesPeriodFilter value={period} onChange={setPeriod} />
           </div>
         </div>
-        <MetodoCalculoSelector
-          value={metodoCalculo}
-          onChange={setMetodoCalculo}
-        />
         <PlieguesSummaryCards
           mediciones={filteredMediciones}
           sexo={sexo}

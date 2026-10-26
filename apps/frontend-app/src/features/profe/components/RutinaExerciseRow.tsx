@@ -215,7 +215,7 @@ export function RutinaExerciseRow({
               role="group"
               aria-label="Repeticiones por serie"
             >
-              {draft.repeticionesPorSerie.map((value, serieIndex) => (
+              {(draft.repeticionesPorSerie ?? []).map((value, serieIndex) => (
                 <label
                   key={`serie-reps-${serieIndex}`}
                   className="rutina-builder__reps-por-serie-item"

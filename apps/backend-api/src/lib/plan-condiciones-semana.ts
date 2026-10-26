@@ -175,6 +175,81 @@ export function buildTokensExcluidos(
   ).filter((t) => t.length >= 2);
 }
 
+const DIAS_SEMANA = [
+  "lunes",
+  "martes",
+  "miercoles",
+  "jueves",
+  "viernes",
+  "sabado",
+  "domingo",
+] as const;
+
+const PIDE_IGUALES =
+  /\b(dias iguales|menus iguales|menu igual|mismo menu|mismos menus|menu unico|repetir el mismo|repetir los mismos|todos iguales|armar igual|copiar el dia|un solo menu|iguales)\b/;
+
+const PIDE_VARIAR =
+  /\b(variar|varia|varien|no repetir|menus distintos|comidas distintas|comidas diferentes)\b/;
+
+export type PlanArmadoSemana = {
+  /** Un día base se copia al resto de la semana. */
+  repetirBase: boolean;
+  /** Claves sin acento (martes, sabado) que deben armarse distintas del resto. */
+  diasVariar: string[];
+};
+
+export function claveDiaSemana(nombre: string): string | null {
+  const normalizado = normalizeAlimentoNombre(nombre);
+  return DIAS_SEMANA.find((clave) => normalizado.includes(clave)) ?? null;
+}
+
+/** Cómo repartir la semana según lo que escribió la profesional. */
+export function planDeArmadoSemana(
+  texto: string | undefined,
+  nombresDias: string[],
+): PlanArmadoSemana {
+  const vacio: PlanArmadoSemana = { repetirBase: false, diasVariar: [] };
+  const normalizado = normalizeAlimentoNombre(texto ?? "");
+  if (!normalizado) return vacio;
+
+  const pideIguales = PIDE_IGUALES.test(normalizado);
+  const pideVariar = PIDE_VARIAR.test(normalizado);
+  const clavesDelPlan = new Set(
+    nombresDias
+      .map((nombre) => claveDiaSemana(nombre))
+      .filter((clave): clave is string => Boolean(clave)),
+  );
+  const diasMencionados = DIAS_SEMANA.filter(
+    (clave) =>
+      normalizado.includes(clave) &&
+      (clavesDelPlan.size === 0 || clavesDelPlan.has(clave)),
+  );
+
+  if (pideIguales) {
+    return { repetirBase: true, diasVariar: pideVariar ? diasMencionados : [] };
+  }
+  if (
+    pideVariar &&
+    diasMencionados.length > 0 &&
+    diasMencionados.length < nombresDias.length
+  ) {
+    return { repetirBase: true, diasVariar: diasMencionados };
+  }
+  return vacio;
+}
+
+/** Reglas de “iguales / variar tales días”: se aplican al armar la semana, no al auditar un día suelto. */
+export function esReglaDeArmado(texto: string): boolean {
+  if (planDeArmadoSemana(texto, [...DIAS_SEMANA]).repetirBase) return true;
+  const normalizado = normalizeAlimentoNombre(texto);
+  const mencionaDia = DIAS_SEMANA.some((dia) => normalizado.includes(dia));
+  const hablaDeEstructura =
+    /\biguales?\b|\bvari|\brepet|\bdistint|\bdiferent|\bmismo menu|\bmismos menus\b/.test(
+      normalizado,
+    );
+  return mencionaDia && hablaDeEstructura;
+}
+
 export function filtrarDiasPlanPorCondiciones(
   dias: DiaPlanNutricional[],
   tokens: string[],

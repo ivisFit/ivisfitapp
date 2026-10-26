@@ -116,6 +116,18 @@
   box-shadow: var(--shadow-card);
 }
 
+.tutoriales-player__media--movil {
+  aspect-ratio: 9 / 16;
+  width: min(100%, calc(70vh * 9 / 16));
+  margin-inline: auto;
+}
+
+.tutoriales-player__media .tutoriales-skeleton--video {
+  height: 100%;
+  aspect-ratio: auto;
+  border-radius: 0;
+}
+
 .tutoriales-player__media iframe {
   width: 100%;
   height: 100%;
