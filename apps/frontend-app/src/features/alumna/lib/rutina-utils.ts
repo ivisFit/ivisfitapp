@@ -40,6 +40,13 @@ export function rutinaEndExclusiveKey(rutina: RutinaPickCandidate): string | nul
   return addCalendarDays(start, weeks * 7);
 }
 
+/** Último día civil incluido en la rutina (un día antes del fin exclusivo). */
+export function rutinaEndInclusiveKey(rutina: RutinaPickCandidate): string | null {
+  const endExclusive = rutinaEndExclusiveKey(rutina);
+  if (!endExclusive) return null;
+  return addCalendarDays(endExclusive, -1);
+}
+
 function rutinaCoversDate(rutina: RutinaPickCandidate, day: string): boolean {
   const start = rutinaStartKey(rutina);
   const end = rutinaEndExclusiveKey(rutina);
