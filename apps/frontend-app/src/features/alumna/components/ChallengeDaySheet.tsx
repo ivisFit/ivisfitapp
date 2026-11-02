@@ -14,6 +14,7 @@ import type {
 } from "@/features/alumna/types/rutina-progreso";
 import { useSaveLogPeso } from "@/features/alumna/hooks/useSaveLogPeso";
 import { VideoPlayIcon } from "@/components/icons/exercise-action-icons";
+import { YoutubeFrame } from "@/components/YoutubeFrame";
 import { DayIntroMedia } from "@/features/alumna/components/DayIntroMedia";
 import type { ChallengeDay, DayStoryStep } from "@/features/alumna/lib/rutina-day";
 import type { RutinaDetail, RutinaEjercicio } from "@/features/alumna/types/rutina";
@@ -498,12 +499,10 @@ export function ChallengeDaySheet({
               </button>
             </div>
             <div className="challenge-exercise-video__frame">
-              <iframe
+              <YoutubeFrame
                 title={`Video de ${selectedExercise.nombre}`}
                 src={selectedExerciseEmbedUrl}
-                loading="lazy"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
+                loading="eager"
               />
             </div>
           </article>

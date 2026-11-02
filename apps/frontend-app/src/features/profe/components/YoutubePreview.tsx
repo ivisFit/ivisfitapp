@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { YoutubeFrame } from "@/components/YoutubeFrame";
 import { getYoutubeEmbedUrl, getYoutubeThumbnailUrl } from "@/lib/youtube";
 
 type YoutubePreviewProps = {
@@ -53,11 +54,10 @@ export function YoutubePreview({ videoUrl, title }: YoutubePreviewProps) {
 
   return (
     <div className="ejercicio-video">
-      <iframe
+      <YoutubeFrame
         title={`Video de ${title}`}
         src={`${embedUrl}?autoplay=1`}
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowFullScreen
+        loading="eager"
       />
     </div>
   );

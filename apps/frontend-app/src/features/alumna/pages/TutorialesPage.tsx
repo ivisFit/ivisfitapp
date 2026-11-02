@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components";
+import { YoutubeFrame } from "@/components/YoutubeFrame";
 import { getYoutubeEmbedUrl } from "@/features/alumna/lib/rutina-day";
 import {
   useTutorialesActivos,
@@ -159,13 +160,10 @@ export function TutorialesPage() {
           {!viewportListo ? (
             <div className="tutoriales-skeleton tutoriales-skeleton--video" />
           ) : embedUrl ? (
-            <iframe
+            <YoutubeFrame
               key={`${current.id}-${elegido?.url ?? ""}`}
               title={current.titulo}
               src={embedUrl}
-              loading="lazy"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
             />
           ) : (
             <div className="tutoriales-player__invalid">

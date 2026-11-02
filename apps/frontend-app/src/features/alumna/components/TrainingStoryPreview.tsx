@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { VideoPlayIcon, RestTimerIcon } from "@/components/icons/exercise-action-icons";
+import { YoutubeFrame } from "@/components/YoutubeFrame";
 import { DayIntroMedia } from "@/features/alumna/components/DayIntroMedia";
 import { ExerciseWeightLog } from "@/features/alumna/components/ExerciseWeightLog";
 import { RestTimerModal } from "@/features/alumna/components/RestTimerModal";
@@ -53,6 +54,18 @@ function StoryBackground({ media }: { media?: RutinaMediaAsset }) {
         <span />
         <span />
       </div>
+    );
+  }
+
+  const youtubeEmbedUrl = getYoutubeEmbedUrl(media.url);
+  if (youtubeEmbedUrl) {
+    return (
+      <YoutubeFrame
+        className="training-story__media"
+        title={media.alt ?? "Video de la rutina"}
+        src={youtubeEmbedUrl}
+        loading="eager"
+      />
     );
   }
 
@@ -666,12 +679,10 @@ export function TrainingStoryPreview({
               </button>
             </div>
             <div className="routine-video__frame">
-              <iframe
+              <YoutubeFrame
                 title={`Video de ${selectedVideoExercise.nombre}`}
                 src={selectedVideoEmbedUrl}
-                loading="lazy"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
+                loading="eager"
               />
             </div>
           </article>

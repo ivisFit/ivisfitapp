@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Input } from "@/components/Input";
+import { YoutubeFrame } from "@/components/YoutubeFrame";
 import { IvisContentLoader } from "@/components/IvisContentLoader";
 import { apiFetch } from "@/lib/api";
 import { mapDocId, uniqueListKey } from "@/lib/map-doc-id";
@@ -121,12 +122,9 @@ export function BibliotecaPage() {
                 </div>
                 {embed ? (
                   <div className="ejercicio-video">
-                    <iframe
+                    <YoutubeFrame
                       title={`Video de ${ejercicio.nombre}`}
                       src={embed}
-                      loading="lazy"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      allowFullScreen
                     />
                   </div>
                 ) : null}

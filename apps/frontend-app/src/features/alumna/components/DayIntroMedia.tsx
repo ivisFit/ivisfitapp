@@ -1,3 +1,4 @@
+import { YoutubeFrame } from "@/components/YoutubeFrame";
 import { getYoutubeEmbedUrl } from "@/features/alumna/lib/rutina-day";
 import type { RutinaMediaAsset } from "@/features/alumna/types/rutina";
 
@@ -33,13 +34,7 @@ export function DayIntroMedia({
   if (youtubeEmbedUrl) {
     return (
       <div className={`${prefix}__media-frame`}>
-        <iframe
-          title={mediaTitle}
-          src={youtubeEmbedUrl}
-          loading="lazy"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowFullScreen
-        />
+        <YoutubeFrame title={mediaTitle} src={youtubeEmbedUrl} />
       </div>
     );
   }
