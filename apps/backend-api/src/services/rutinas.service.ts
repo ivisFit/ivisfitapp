@@ -9,6 +9,7 @@ import {
 import { sendRutinaAsignadaEmail } from "@ivisfit/mail";
 import { getAppName, getAppUrl, resolveAlumnaEmail } from "../lib/email.js";
 import {
+  addCalendarDays,
   formatRutinaDateKeyLong,
   isRutinaVisibleToday,
   rutinaStartKey,
@@ -24,6 +25,7 @@ type SemanaPlain = {
   dias: {
     nombreDia: string;
     comentario?: string;
+    fecha?: string;
     ejercicios: {
       ejercicioId: unknown;
       series: number;
@@ -178,10 +180,14 @@ export const rutinasService = {
       (s) => s.numeroSemana === data.numeroSemanaDestino,
     );
 
+    const weekShift = data.numeroSemanaDestino - data.numeroSemanaOrigen;
     const diasClonados = semanaOrigen.dias.map((dia) => ({
       nombreDia: dia.nombreDia,
       ...(dia.comentario?.trim()
         ? { comentario: dia.comentario.trim() }
+        : {}),
+      ...(dia.fecha && /^\d{4}-\d{2}-\d{2}$/.test(dia.fecha)
+        ? { fecha: addCalendarDays(dia.fecha, weekShift * 7) }
         : {}),
       ejercicios: dia.ejercicios.map((ej) => ({
         ejercicioId: ej.ejercicioId,

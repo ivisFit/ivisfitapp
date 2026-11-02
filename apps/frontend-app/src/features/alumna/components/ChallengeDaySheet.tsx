@@ -14,15 +14,15 @@ import type {
 } from "@/features/alumna/types/rutina-progreso";
 import { useSaveLogPeso } from "@/features/alumna/hooks/useSaveLogPeso";
 import { VideoPlayIcon } from "@/components/icons/exercise-action-icons";
-import { YoutubeFrame } from "@/components/YoutubeFrame";
+import { YoutubePlayer } from "@/components/YoutubePlayer";
 import { DayIntroMedia } from "@/features/alumna/components/DayIntroMedia";
 import type { ChallengeDay, DayStoryStep } from "@/features/alumna/lib/rutina-day";
 import type { RutinaDetail, RutinaEjercicio } from "@/features/alumna/types/rutina";
 import { formatSeriesReps } from "@/lib/rutina-reps";
+import { getYoutubeEmbedUrl, getYoutubeWatchUrl } from "@/lib/youtube";
 import {
   buildDayStorySequence,
   formatDescanso,
-  getYoutubeEmbedUrl,
   resolveDayInfoForPlanDayNumber,
 } from "@/features/alumna/lib/rutina-day";
 
@@ -227,6 +227,9 @@ export function ChallengeDaySheet({
 
   const selectedExerciseEmbedUrl = selectedExercise?.videoUrl
     ? getYoutubeEmbedUrl(selectedExercise.videoUrl)
+    : null;
+  const selectedExerciseWatchUrl = selectedExercise?.videoUrl
+    ? getYoutubeWatchUrl(selectedExercise.videoUrl)
     : null;
 
   async function toggleCompleted(ejercicioId: string) {
@@ -493,16 +496,27 @@ export function ChallengeDaySheet({
               <div>
                 <span>Video del ejercicio</span>
                 <h3>{selectedExercise.nombre}</h3>
+                {selectedExerciseWatchUrl ? (
+                  <a
+                    className="challenge-exercise-video__external"
+                    href={selectedExerciseWatchUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Abrir en YouTube
+                  </a>
+                ) : null}
               </div>
               <button type="button" onClick={() => setSelectedExercise(null)}>
                 Cerrar
               </button>
             </div>
             <div className="challenge-exercise-video__frame">
-              <YoutubeFrame
-                title={`Video de ${selectedExercise.nombre}`}
-                src={selectedExerciseEmbedUrl}
-                loading="eager"
+              <YoutubePlayer
+                videoUrl={selectedExercise.videoUrl}
+                title={selectedExercise.nombre}
+                fill
+                showOpenLink={false}
               />
             </div>
           </article>

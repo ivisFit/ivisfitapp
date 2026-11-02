@@ -66,14 +66,37 @@ export function RutinaDiaCard({
       <header className="rutina-builder__dia-card-header">
         <div className="rutina-builder__dia-card-title">
           <span className="rutina-builder__dia-card-badge">Día {diaIndex + 1}</span>
-          <Input
-            label="Nombre del día"
-            name={`nombreDia-${dia.localId}`}
-            required
-            placeholder="Ej: Piernas y glúteos"
-            value={dia.nombreDia}
-            onChange={(event) => onUpdateDia({ nombreDia: event.target.value })}
-          />
+          <div
+            className={
+              isAlumnaMode
+                ? "rutina-builder__dia-card-fields rutina-builder__dia-card-fields--dated"
+                : "rutina-builder__dia-card-fields"
+            }
+          >
+            <Input
+              label="Nombre del día"
+              name={`nombreDia-${dia.localId}`}
+              required
+              placeholder="Ej: Piernas y glúteos"
+              value={dia.nombreDia}
+              onChange={(event) => onUpdateDia({ nombreDia: event.target.value })}
+            />
+            {isAlumnaMode ? (
+              <Input
+                label="Fecha"
+                name={`fecha-${dia.localId}`}
+                type="date"
+                required
+                value={dia.fecha}
+                onChange={(event) =>
+                  onUpdateDia({
+                    fecha: event.target.value,
+                    fechaManual: true,
+                  })
+                }
+              />
+            ) : null}
+          </div>
           <label className="field">
             <span className="field__label">
               Comentario para la alumna (opcional)

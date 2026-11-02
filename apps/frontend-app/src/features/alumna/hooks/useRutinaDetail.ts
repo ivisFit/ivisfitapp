@@ -41,6 +41,7 @@ type EjercicioRutinaApi = {
 type RutinaDiaApi = {
   nombreDia: string;
   comentario?: string;
+  fecha?: string;
   ejercicios: EjercicioRutinaApi[];
 };
 
@@ -161,14 +162,24 @@ function mapEjercicio(
   };
 }
 
+function mapDiaFecha(value?: string): string | undefined {
+  if (!value) return undefined;
+  const match = /^(\d{4}-\d{2}-\d{2})/.exec(value.trim());
+  return match?.[1];
+}
+
 function mapSemana(semana: RutinaSemanaApi): RutinaSemana {
   return {
     numeroSemana: semana.numeroSemana,
-    dias: semana.dias.map((dia) => ({
-      nombreDia: dia.nombreDia,
-      ...(dia.comentario?.trim() ? { comentario: dia.comentario.trim() } : {}),
-      ejercicios: dia.ejercicios.map(mapEjercicio),
-    })),
+    dias: semana.dias.map((dia) => {
+      const fecha = mapDiaFecha(dia.fecha);
+      return {
+        nombreDia: dia.nombreDia,
+        ...(dia.comentario?.trim() ? { comentario: dia.comentario.trim() } : {}),
+        ...(fecha ? { fecha } : {}),
+        ejercicios: dia.ejercicios.map(mapEjercicio),
+      };
+    }),
   };
 }
 

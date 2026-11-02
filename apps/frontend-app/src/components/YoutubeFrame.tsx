@@ -18,7 +18,7 @@ export function YoutubeFrame({
       src={src}
       loading={loading}
       referrerPolicy="strict-origin-when-cross-origin"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture; web-share"
       allowFullScreen
       style={{ border: 0 }}
     />

@@ -37,19 +37,23 @@ import {
   buildSemanasDraftForPlan,
   createDiaPlanDraft,
   createDraftEjercicio,
+  fillMissingDiaFechas,
+  findDiaFechaIssues,
   formStateToBlueprint,
   formStateToRutinaPayload,
   mergeTemplateBlueprintForSave,
   planContentDefaultsFromTemplate,
+  rescheduleAutoDiaFechas,
   rutinaDetailToBlueprint,
   rutinaDocToFormState,
+  suggestNewDiaFecha,
   type DiaPlanDraft,
   type EjercicioRutinaDraft,
   type MediaType,
   type PlanTemplateBlueprint,
   type SemanaPlanDraft,
 } from "@/features/profe/lib/rutina-draft";
-import { getTodayDateKey, resolveRutinaDay } from "@/features/alumna/lib/rutina-day";
+import { getTodayDateKey } from "@/features/alumna/lib/rutina-day";
 import {
   formatRutinaDateKey,
   pickPrimaryRutina,
@@ -127,6 +131,8 @@ function cloneDiaForDuplicate(dia: DiaPlanDraft): DiaPlanDraft {
     localId: createLocalId(),
     nombreDia: `${dia.nombreDia} (copia)`,
     comentario: dia.comentario,
+    fecha: "",
+    fechaManual: false,
     drafts: dia.drafts.map((draft) => ({
       ...draft,
       localId: createLocalId(),
@@ -139,6 +145,8 @@ function cloneDiaContent(source: DiaPlanDraft, target: DiaPlanDraft): DiaPlanDra
     ...target,
     nombreDia: source.nombreDia,
     comentario: source.comentario,
+    fecha: target.fecha,
+    fechaManual: target.fechaManual,
     drafts: source.drafts.map((draft) => ({
       ...draft,
       localId: createLocalId(),
@@ -151,6 +159,15 @@ function formatDateInputValue(date: Date) {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+function todaySelectionFromDraft(semanas: SemanaPlanDraft[]) {
+  const today = getTodayDateKey();
+  for (const sem of semanas) {
+    const dayIndex = sem.dias.findIndex((dia) => dia.fecha === today);
+    if (dayIndex >= 0) return { week: sem.numeroSemana, dayIndex };
+  }
+  return { week: semanas[0]?.numeroSemana ?? 1, dayIndex: 0 };
 }
 
 function buildPlanTemplateSnapshot(plan: PlanTemplate) {
@@ -311,10 +328,12 @@ export function RutinaBuilder({
       : null;
 
   const editingExisting = Boolean(existingRutinaId) && !creatingNew;
+  const diaFechaIssue = isAlumnaMode ? findDiaFechaIssues(semanasDraft) : null;
   const canSaveAlumnaRutina =
     isAlumnaMode &&
     Boolean(alumnaIdProp) &&
     Boolean(nombrePlan.trim()) &&
+    !diaFechaIssue &&
     (editingExisting ? true : semanasValid);
 
   const totalDiasPlan = useMemo(
@@ -328,10 +347,6 @@ export function RutinaBuilder({
   const semanaActiva =
     semanaIndex >= 0 ? semanasDraft[semanaIndex] : semanasDraft[0];
   const diasSemana = semanaActiva?.dias ?? [];
-  const alumnaToday = useMemo(
-    () => (isAlumnaMode && existingRutina ? resolveRutinaDay(existingRutina) : null),
-    [existingRutina, isAlumnaMode],
-  );
 
   useEffect(() => {
     if (!isAlumnaMode || !semanaActiva) return;
@@ -432,8 +447,9 @@ export function RutinaBuilder({
       startDate,
     );
     applyFormState(state, formSetters);
-    pendingTodayRef.current = { week: 1, dayIndex: 0 };
-    setNumeroSemana(1);
+    const todaySelection = todaySelectionFromDraft(state.semanasDraft);
+    pendingTodayRef.current = todaySelection;
+    setNumeroSemana(todaySelection.week);
     setAlumnaEditorReady(true);
     hydratedRutinaRef.current = existingRutina.id;
     setSavedAlumnaJson(
@@ -702,11 +718,24 @@ export function RutinaBuilder({
           defaultEjercicioId,
           startDate,
         );
-        applyFormState(state, formSetters);
-        setNumeroSemana(1);
+        const seeded = {
+          ...state,
+          semanasDraft: rescheduleAutoDiaFechas(state.semanasDraft, startDate),
+        };
+        applyFormState(seeded, formSetters);
+        const todaySelection = todaySelectionFromDraft(seeded.semanasDraft);
+        pendingTodayRef.current = todaySelection;
+        setNumeroSemana(todaySelection.week);
         setAlumnaEditorReady(true);
-        setSelectedDiaId(state.semanasDraft[0]?.dias[0]?.localId ?? null);
-        setSavedAlumnaJson(null);
+        setSelectedDiaId(null);
+        setSavedAlumnaJson(
+          JSON.stringify(
+            formStateToBlueprint(
+              seeded,
+              seeded.semanasDraft[0]?.dias[0]?.nombreDia || "Día",
+            ),
+          ),
+        );
       } catch (err) {
         setSaveError(
           err instanceof Error ? err.message : "No se pudo cargar la plantilla",
@@ -824,7 +853,7 @@ export function RutinaBuilder({
   ]);
 
   useEffect(() => {
-    if (selectedPlanTemplate) return;
+    if (selectedPlanTemplate || isAlumnaMode) return;
 
     setSemanasDraft((current) => {
       const existingByNumber = new Map(
@@ -844,7 +873,13 @@ export function RutinaBuilder({
         };
       });
     });
-  }, [duracionSemanas, selectedPlanTemplate, ejercicios, diasPorSemana]);
+  }, [
+    duracionSemanas,
+    selectedPlanTemplate,
+    ejercicios,
+    diasPorSemana,
+    isAlumnaMode,
+  ]);
 
   function updateDia(
     weekNumber: number,
@@ -899,6 +934,15 @@ export function RutinaBuilder({
       week.dias.length + 1,
       ejercicios[0]?.id ?? "",
     );
+    if (isAlumnaMode) {
+      newDia.fecha = suggestNewDiaFecha(
+        semanasDraft,
+        weekNumber,
+        week.dias.length,
+        startDate,
+      );
+      newDia.fechaManual = editingExisting;
+    }
     setSemanasDraft((current) =>
       current.map((sem) => {
         if (sem.numeroSemana !== weekNumber) return sem;
@@ -1002,6 +1046,15 @@ export function RutinaBuilder({
     const source = sourceWeek.dias.find((dia) => dia.localId === diaLocalId);
     if (!source) return;
     const clone = cloneDiaForDuplicate(source);
+    if (isAlumnaMode) {
+      clone.fecha = suggestNewDiaFecha(
+        semanasDraft,
+        weekNumber,
+        sourceWeek.dias.length,
+        startDate,
+      );
+      clone.fechaManual = editingExisting;
+    }
     setSemanasDraft((current) =>
       current.map((sem) => {
         if (sem.numeroSemana !== weekNumber) return sem;
@@ -1085,6 +1138,12 @@ export function RutinaBuilder({
     }
 
     if (!alumnaIdProp || !canSaveAlumnaRutina) return;
+
+    const fechaIssue = findDiaFechaIssues(semanasDraft);
+    if (fechaIssue) {
+      setSaveError(fechaIssue);
+      return;
+    }
 
     setSaving(true);
     setSaveError(null);
@@ -1330,12 +1389,17 @@ export function RutinaBuilder({
         };
       });
     });
+    if (isAlumnaMode) {
+      setSemanasDraft((current) =>
+        fillMissingDiaFechas(current, startDate, editingExisting),
+      );
+    }
   }
 
   function handleDiasPorSemanaChange(next: number) {
     setDiasPorSemana(next);
-    setSemanasDraft((current) =>
-      resizeSemanasToDiasPorSemana(
+    setSemanasDraft((current) => {
+      const resized = resizeSemanasToDiasPorSemana(
         current.length > 0
           ? current
           : buildSemanasDraftForPlan(
@@ -1345,8 +1409,17 @@ export function RutinaBuilder({
             ),
         next,
         ejercicios[0]?.id ?? "",
-      ),
-    );
+      );
+      return isAlumnaMode
+        ? fillMissingDiaFechas(resized, startDate, editingExisting)
+        : resized;
+    });
+  }
+
+  function handleStartDateChange(nextStart: string) {
+    setStartDate(nextStart);
+    if (!isAlumnaMode) return;
+    setSemanasDraft((current) => rescheduleAutoDiaFechas(current, nextStart));
   }
 
   function handleWeekChange(week: number) {
@@ -1358,9 +1431,11 @@ export function RutinaBuilder({
 
   const alumnaSaveBlockedReason = !nombrePlan.trim()
     ? "Completá el nombre del plan."
-    : !editingExisting && !semanasValid
-      ? "Completá el nombre de cada día y asigná un ejercicio en cada uno."
-      : null;
+    : diaFechaIssue
+      ? diaFechaIssue
+      : !editingExisting && !semanasValid
+        ? "Completá el nombre de cada día y asigná un ejercicio en cada uno."
+        : null;
 
   const planStructureFields = (
     <>
@@ -1379,7 +1454,7 @@ export function RutinaBuilder({
           type="date"
           required
           value={startDate}
-          onChange={(event) => setStartDate(event.target.value)}
+          onChange={(event) => handleStartDateChange(event.target.value)}
         />
       ) : null}
       <Select
@@ -1671,9 +1746,7 @@ export function RutinaBuilder({
               <nav className="rutina-builder__day-rail" aria-label="Días de la semana">
                 {semanaActiva.dias.map((dia, diaIndex) => {
                   const isActive = dia.localId === selectedDia?.localId;
-                  const isToday =
-                    alumnaToday?.numeroSemana === semanaActiva.numeroSemana &&
-                    alumnaToday.dayIndex === diaIndex;
+                  const isToday = Boolean(dia.fecha) && dia.fecha === todayKey;
                   const exerciseCount = dia.drafts.filter((draft) =>
                     draft.ejercicioId,
                   ).length;
@@ -1697,6 +1770,9 @@ export function RutinaBuilder({
                       </span>
                       <span className="rutina-builder__day-rail-name">
                         {dia.nombreDia.trim() || "Sin nombre"}
+                      </span>
+                      <span className="rutina-builder__day-rail-date">
+                        {dia.fecha ? formatRutinaDateKey(dia.fecha) : "Sin fecha"}
                       </span>
                       <span className="rutina-builder__day-rail-meta">
                         {exerciseCount}{" "}

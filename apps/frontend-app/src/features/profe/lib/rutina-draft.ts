@@ -12,7 +12,7 @@ import {
   isRepeticionesPorSerieActive,
   persistRepeticionesPorSerie,
 } from "@/lib/rutina-reps";
-import { profeCalendarDateKey } from "@ivisfit/database";
+import { addCalendarDays, profeCalendarDateKey } from "@ivisfit/database";
 
 export type MediaType = PlanContentMediaType;
 
@@ -32,6 +32,10 @@ export type DiaPlanDraft = {
   localId: string;
   nombreDia: string;
   comentario: string;
+  /** YYYY-MM-DD. Vacía en plantillas, que no guardan una fecha absoluta. */
+  fecha: string;
+  /** La profe la eligió, o el día ya estaba guardado: cambiar Inicio no la mueve. */
+  fechaManual: boolean;
   drafts: EjercicioRutinaDraft[];
 };
 
@@ -52,6 +56,7 @@ export type PlanTemplateBlueprint = {
     dias: {
       nombreDia: string;
       comentario?: string;
+      fecha?: string;
       ejercicios: {
         ejercicioId: string;
         series: number;
@@ -102,6 +107,12 @@ export function createDraftEjercicio(ejercicioId = ""): EjercicioRutinaDraft {
   };
 }
 
+const DIA_FECHA_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+export function isDiaFechaKey(value: string): boolean {
+  return DIA_FECHA_RE.test(value);
+}
+
 export function createDiaPlanDraft(
   dayIndex: number,
   defaultEjercicioId = "",
@@ -110,8 +121,153 @@ export function createDiaPlanDraft(
     localId: createLocalId(),
     nombreDia: `Día ${dayIndex}`,
     comentario: "",
+    fecha: "",
+    fechaManual: false,
     drafts: [createDraftEjercicio(defaultEjercicioId)],
   };
+}
+
+function weekIndexByNumero(semanas: { numeroSemana: number }[]): Map<number, number> {
+  return new Map(
+    [...semanas]
+      .sort((a, b) => a.numeroSemana - b.numeroSemana)
+      .map((sem, index) => [sem.numeroSemana, index]),
+  );
+}
+
+/** Fecha que hoy se calcula sola: inicio + semana × 7 + posición en la semana. */
+export function positionalDiaFecha(
+  startDate: string,
+  weekIndex: number,
+  dayIndex: number,
+): string {
+  if (!isDiaFechaKey(startDate) || weekIndex < 0 || dayIndex < 0) return "";
+  return addCalendarDays(startDate, weekIndex * 7 + dayIndex);
+}
+
+export function nextFreeDiaFecha(start: string, taken: ReadonlySet<string>): string {
+  if (!isDiaFechaKey(start)) return "";
+  let cursor = start;
+  const guard = taken.size + 370;
+  for (let step = 0; step < guard && taken.has(cursor); step += 1) {
+    cursor = addCalendarDays(cursor, 1);
+  }
+  return cursor;
+}
+
+function collectDiaFechas(
+  semanas: SemanaPlanDraft[],
+  predicate: (dia: DiaPlanDraft) => boolean = () => true,
+): Set<string> {
+  const taken = new Set<string>();
+  for (const sem of semanas) {
+    for (const dia of sem.dias) {
+      if (predicate(dia) && isDiaFechaKey(dia.fecha)) taken.add(dia.fecha);
+    }
+  }
+  return taken;
+}
+
+/** Recalcula las fechas que la profe todavía no tocó. Las manuales quedan. */
+export function rescheduleAutoDiaFechas(
+  semanas: SemanaPlanDraft[],
+  startDate: string,
+): SemanaPlanDraft[] {
+  const taken = collectDiaFechas(semanas, (dia) => dia.fechaManual);
+  const weekIndexes = weekIndexByNumero(semanas);
+  const fechaByLocalId = new Map<string, string>();
+
+  for (const sem of [...semanas].sort((a, b) => a.numeroSemana - b.numeroSemana)) {
+    sem.dias.forEach((dia, dayIndex) => {
+      if (dia.fechaManual) return;
+      const fecha = nextFreeDiaFecha(
+        positionalDiaFecha(
+          startDate,
+          weekIndexes.get(sem.numeroSemana) ?? 0,
+          dayIndex,
+        ),
+        taken,
+      );
+      if (fecha) taken.add(fecha);
+      fechaByLocalId.set(dia.localId, fecha);
+    });
+  }
+
+  return semanas.map((sem) => ({
+    ...sem,
+    dias: sem.dias.map((dia) => {
+      const fecha = fechaByLocalId.get(dia.localId);
+      if (fecha === undefined) return dia;
+      return { ...dia, fecha, fechaManual: false };
+    }),
+  }));
+}
+
+/** Completa días nuevos sin fecha. No mueve las que ya tienen. */
+export function fillMissingDiaFechas(
+  semanas: SemanaPlanDraft[],
+  startDate: string,
+  fechaManual = false,
+): SemanaPlanDraft[] {
+  const taken = collectDiaFechas(semanas);
+  const weekIndexes = weekIndexByNumero(semanas);
+  const fechaByLocalId = new Map<string, string>();
+
+  for (const sem of [...semanas].sort((a, b) => a.numeroSemana - b.numeroSemana)) {
+    sem.dias.forEach((dia, dayIndex) => {
+      if (isDiaFechaKey(dia.fecha)) return;
+      const fecha = nextFreeDiaFecha(
+        positionalDiaFecha(
+          startDate,
+          weekIndexes.get(sem.numeroSemana) ?? 0,
+          dayIndex,
+        ),
+        taken,
+      );
+      if (fecha) taken.add(fecha);
+      fechaByLocalId.set(dia.localId, fecha);
+    });
+  }
+
+  return semanas.map((sem) => ({
+    ...sem,
+    dias: sem.dias.map((dia) => {
+      const fecha = fechaByLocalId.get(dia.localId);
+      if (!fecha) return dia;
+      return { ...dia, fecha, fechaManual };
+    }),
+  }));
+}
+
+export function suggestNewDiaFecha(
+  semanas: SemanaPlanDraft[],
+  weekNumber: number,
+  dayIndex: number,
+  startDate: string,
+): string {
+  const weekIndex = weekIndexByNumero(semanas).get(weekNumber) ?? 0;
+  return nextFreeDiaFecha(
+    positionalDiaFecha(startDate, weekIndex, dayIndex),
+    collectDiaFechas(semanas),
+  );
+}
+
+export function findDiaFechaIssues(semanas: SemanaPlanDraft[]): string | null {
+  const seen = new Map<string, string>();
+  for (const sem of semanas) {
+    for (const [dayIndex, dia] of sem.dias.entries()) {
+      const label = `Semana ${sem.numeroSemana}, ${dia.nombreDia.trim() || `día ${dayIndex + 1}`}`;
+      if (!isDiaFechaKey(dia.fecha.trim())) {
+        return "Cada día necesita una fecha.";
+      }
+      const previous = seen.get(dia.fecha);
+      if (previous) {
+        return `${label} tiene la misma fecha que ${previous}. Elegí una fecha distinta para cada día.`;
+      }
+      seen.set(dia.fecha, label);
+    }
+  }
+  return null;
 }
 
 export function buildSemanasDraftForPlan(
@@ -189,10 +345,12 @@ function semanasFromBlueprint(
 
   return blueprint.semanas.map((sem) => ({
     numeroSemana: sem.numeroSemana,
-    dias: sem.dias.map((dia, index) => ({
+    dias: sem.dias.map((dia) => ({
       localId: createLocalId(),
       nombreDia: dia.nombreDia,
       comentario: dia.comentario ?? "",
+      fecha: "",
+      fechaManual: false,
       drafts: dia.ejercicios.map((ej) => {
         const repeticionesPorSerie = repeticionesPorSerieFromSource(
           ej.series,
@@ -273,6 +431,7 @@ export function rutinaDocToFormState(
       dias: {
         nombreDia: string;
         comentario?: string;
+        fecha?: string;
         ejercicios: {
           id?: string;
           series: number;
@@ -291,13 +450,22 @@ export function rutinaDocToFormState(
     ...rutina.semanas.map((s) => s.dias.length),
     1,
   );
+  const start = profeCalendarDateKey(rutina.startDate) ?? startDateFallback;
+  const weekIndexes = weekIndexByNumero(rutina.semanas);
   const semanasDraft: SemanaPlanDraft[] = rutina.semanas.map((sem) => ({
     numeroSemana: sem.numeroSemana,
-    dias: sem.dias.map((dia, index) => ({
-      localId: createLocalId(),
-      nombreDia: dia.nombreDia,
-      comentario: dia.comentario ?? "",
-      drafts: dia.ejercicios.map((ej) => {
+    dias: sem.dias.map((dia, index) => {
+      const stored = profeCalendarDateKey(dia.fecha);
+      const fecha =
+        stored ??
+        positionalDiaFecha(start, weekIndexes.get(sem.numeroSemana) ?? 0, index);
+      return {
+        localId: createLocalId(),
+        nombreDia: dia.nombreDia,
+        comentario: dia.comentario ?? "",
+        fecha,
+        fechaManual: true,
+        drafts: dia.ejercicios.map((ej) => {
         const repeticionesPorSerie = repeticionesPorSerieFromSource(
           ej.series,
           ej.repeticionesPorSerie,
@@ -314,7 +482,8 @@ export function rutinaDocToFormState(
           ...(repeticionesPorSerie ? { repeticionesPorSerie } : {}),
         };
       }),
-    })),
+      };
+    }),
   }));
 
   const story = rutina.storyPreview;
@@ -440,9 +609,11 @@ function diaDraftToBlueprint(dia: DiaPlanDraft): BlueprintDia | undefined {
 
   if (!nombreDia || ejercicios.length === 0) return undefined;
   const comentario = trimToUndefined(dia.comentario ?? "");
+  const fecha = isDiaFechaKey(dia.fecha.trim()) ? dia.fecha.trim() : undefined;
   return {
     nombreDia,
     ...(comentario ? { comentario } : {}),
+    ...(fecha ? { fecha } : {}),
     ejercicios,
   };
 }

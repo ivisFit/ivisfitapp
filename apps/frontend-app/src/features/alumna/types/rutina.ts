@@ -52,6 +52,8 @@ export type RutinaEjercicio = {
 export type RutinaDia = {
   nombreDia: string;
   comentario?: string;
+  /** Día civil elegido por la profe, YYYY-MM-DD. Si falta, se calcula desde el inicio. */
+  fecha?: string;
   ejercicios: RutinaEjercicio[];
 };
 

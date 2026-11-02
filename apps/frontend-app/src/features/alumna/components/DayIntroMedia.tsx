@@ -1,5 +1,7 @@
-import { YoutubeFrame } from "@/components/YoutubeFrame";
-import { getYoutubeEmbedUrl } from "@/features/alumna/lib/rutina-day";
+"use client";
+
+import { YoutubePlayer } from "@/components/YoutubePlayer";
+import { getYoutubeEmbedUrl, getYoutubeWatchUrl } from "@/lib/youtube";
 import type { RutinaMediaAsset } from "@/features/alumna/types/rutina";
 
 type DayIntroMediaVariant = "sheet" | "story";
@@ -30,11 +32,26 @@ export function DayIntroMedia({
     );
   }
 
-  const youtubeEmbedUrl = getYoutubeEmbedUrl(media.url);
-  if (youtubeEmbedUrl) {
+  const watchUrl = getYoutubeWatchUrl(media.url);
+  if (getYoutubeEmbedUrl(media.url) && watchUrl) {
     return (
-      <div className={`${prefix}__media-frame`}>
-        <YoutubeFrame title={mediaTitle} src={youtubeEmbedUrl} />
+      <div className="youtube-player-stack">
+        <div className={`${prefix}__media-frame`}>
+          <YoutubePlayer
+            videoUrl={media.url}
+            title={mediaTitle}
+            fill
+            showOpenLink={false}
+          />
+        </div>
+        <a
+          className="youtube-player__open"
+          href={watchUrl}
+          target="_blank"
+          rel="noreferrer"
+        >
+          Abrir en YouTube
+        </a>
       </div>
     );
   }
@@ -42,13 +59,12 @@ export function DayIntroMedia({
   if (media.type === "video") {
     return (
       <video
-        className={`${prefix}__media`}
+        className={`${prefix}__media ${prefix}__media--player`}
         src={media.url}
         poster={media.posterUrl}
-        autoPlay
-        muted
-        loop
+        controls
         playsInline
+        preload="metadata"
       />
     );
   }

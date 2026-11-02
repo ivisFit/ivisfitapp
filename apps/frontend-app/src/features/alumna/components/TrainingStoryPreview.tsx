@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { VideoPlayIcon, RestTimerIcon } from "@/components/icons/exercise-action-icons";
-import { YoutubeFrame } from "@/components/YoutubeFrame";
+import { YoutubePlayer } from "@/components/YoutubePlayer";
 import { DayIntroMedia } from "@/features/alumna/components/DayIntroMedia";
 import { ExerciseWeightLog } from "@/features/alumna/components/ExerciseWeightLog";
 import { RestTimerModal } from "@/features/alumna/components/RestTimerModal";
@@ -16,9 +17,13 @@ import type { UpsertRutinaProgresoPayload } from "@/features/alumna/types/rutina
 import {
   buildDayStorySequence,
   formatDescanso,
-  getYoutubeEmbedUrl,
   type DayStoryStep,
 } from "@/features/alumna/lib/rutina-day";
+import {
+  getYoutubeEmbedUrl,
+  getYoutubeThumbnailUrl,
+  getYoutubeWatchUrl,
+} from "@/lib/youtube";
 import type { RutinaDay } from "@/features/alumna/lib/rutina-day";
 import type { RutinaDetail, RutinaMediaAsset } from "@/features/alumna/types/rutina";
 import { formatSeriesReps } from "@/lib/rutina-reps";
@@ -46,27 +51,42 @@ type TrainingStoryPreviewProps = {
   ) => Promise<RutinaProgresoRecord>;
 };
 
+function StoryPlaceholder() {
+  return (
+    <div className="training-story__placeholder" aria-hidden="true">
+      <span />
+      <span />
+      <span />
+    </div>
+  );
+}
+
 function StoryBackground({ media }: { media?: RutinaMediaAsset }) {
+  const thumbUrl = media ? getYoutubeThumbnailUrl(media.url) : null;
+  const [thumbFailed, setThumbFailed] = useState(false);
+
+  useEffect(() => {
+    setThumbFailed(false);
+  }, [media?.url]);
+
   if (!media) {
+    return <StoryPlaceholder />;
+  }
+
+  if (thumbUrl && !thumbFailed) {
     return (
-      <div className="training-story__placeholder" aria-hidden="true">
-        <span />
-        <span />
-        <span />
-      </div>
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        className="training-story__media"
+        src={thumbUrl}
+        alt=""
+        onError={() => setThumbFailed(true)}
+      />
     );
   }
 
-  const youtubeEmbedUrl = getYoutubeEmbedUrl(media.url);
-  if (youtubeEmbedUrl) {
-    return (
-      <YoutubeFrame
-        className="training-story__media"
-        title={media.alt ?? "Video de la rutina"}
-        src={youtubeEmbedUrl}
-        loading="eager"
-      />
-    );
+  if (thumbUrl) {
+    return <StoryPlaceholder />;
   }
 
   if (media.type === "video") {
@@ -233,6 +253,9 @@ export function TrainingStoryPreview({
   );
   const selectedVideoEmbedUrl = selectedVideoExercise?.videoUrl
     ? getYoutubeEmbedUrl(selectedVideoExercise.videoUrl)
+    : null;
+  const selectedVideoWatchUrl = selectedVideoExercise?.videoUrl
+    ? getYoutubeWatchUrl(selectedVideoExercise.videoUrl)
     : null;
 
   useEffect(() => {
@@ -660,34 +683,48 @@ export function TrainingStoryPreview({
         ) : null}
       </div>
 
-      {selectedVideoExercise && selectedVideoEmbedUrl ? (
-        <div className="routine-video" role="dialog" aria-modal="true">
-          <button
-            className="routine-video__backdrop"
-            type="button"
-            aria-label="Cerrar video"
-            onClick={() => setSelectedVideoKey(null)}
-          />
-          <article className="routine-video__panel">
-            <div className="routine-video__header">
-              <div>
-                <span>Video del ejercicio</span>
-                <h3>{selectedVideoExercise.nombre}</h3>
-              </div>
-              <button type="button" onClick={() => setSelectedVideoKey(null)}>
-                Cerrar
-              </button>
-            </div>
-            <div className="routine-video__frame">
-              <YoutubeFrame
-                title={`Video de ${selectedVideoExercise.nombre}`}
-                src={selectedVideoEmbedUrl}
-                loading="eager"
+      {selectedVideoExercise && selectedVideoEmbedUrl && typeof document !== "undefined"
+        ? createPortal(
+            <div className="routine-video" role="dialog" aria-modal="true">
+              <button
+                className="routine-video__backdrop"
+                type="button"
+                aria-label="Cerrar video"
+                onClick={() => setSelectedVideoKey(null)}
               />
-            </div>
-          </article>
-        </div>
-      ) : null}
+              <article className="routine-video__panel">
+                <div className="routine-video__header">
+                  <div>
+                    <span>Video del ejercicio</span>
+                    <h3>{selectedVideoExercise.nombre}</h3>
+                    {selectedVideoWatchUrl ? (
+                      <a
+                        className="routine-video__external"
+                        href={selectedVideoWatchUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Abrir en YouTube
+                      </a>
+                    ) : null}
+                  </div>
+                  <button type="button" onClick={() => setSelectedVideoKey(null)}>
+                    Cerrar
+                  </button>
+                </div>
+                <div className="routine-video__frame">
+                  <YoutubePlayer
+                    videoUrl={selectedVideoExercise.videoUrl}
+                    title={selectedVideoExercise.nombre}
+                    fill
+                    showOpenLink={false}
+                  />
+                </div>
+              </article>
+            </div>,
+            document.body,
+          )
+        : null}
 
       {restTimerExerciseKey === activeExerciseId && activeEjercicio ? (
         <RestTimerModal

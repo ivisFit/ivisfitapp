@@ -9,6 +9,7 @@ type SemanaPlanDraftLike = {
   dias: {
     nombreDia: string;
     comentario?: string;
+    fecha?: string;
     drafts: {
       ejercicioId: string;
       series: number;
@@ -387,12 +388,15 @@ export function draftSemanasToRutinaSemanas(
 ): RutinaSemana[] {
   return semanasDraft.map((sem) => ({
     numeroSemana: sem.numeroSemana,
-    dias: sem.dias.map((dia) => ({
-      nombreDia: dia.nombreDia.trim() || "Día",
-      ...(dia.comentario?.trim()
-        ? { comentario: dia.comentario.trim() }
-        : {}),
-      ejercicios: dia.drafts
+    dias: sem.dias.map((dia) => {
+      const fecha = dia.fecha?.trim();
+      return {
+        nombreDia: dia.nombreDia.trim() || "Día",
+        ...(dia.comentario?.trim()
+          ? { comentario: dia.comentario.trim() }
+          : {}),
+        ...(fecha && /^\d{4}-\d{2}-\d{2}$/.test(fecha) ? { fecha } : {}),
+        ejercicios: dia.drafts
         .filter((draft) => draft.ejercicioId)
         .map((draft) => {
           const ejercicio = ejerciciosById.get(draft.ejercicioId);
@@ -409,7 +413,8 @@ export function draftSemanasToRutinaSemanas(
               : {}),
           };
         }),
-    })),
+      };
+    }),
   }));
 }
 

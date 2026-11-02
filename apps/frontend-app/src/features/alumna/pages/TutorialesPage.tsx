@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components";
-import { YoutubeFrame } from "@/components/YoutubeFrame";
-import { getYoutubeEmbedUrl } from "@/features/alumna/lib/rutina-day";
+import { YoutubePlayer } from "@/components/YoutubePlayer";
+import { getYoutubeWatchUrl } from "@/lib/youtube";
 import {
   useTutorialesActivos,
   type TutorialAlumna,
@@ -112,7 +112,7 @@ export function TutorialesPage() {
   }
 
   const elegido = viewportListo ? elegirVideoTutorial(current, isMobile) : null;
-  const embedUrl = elegido ? getYoutubeEmbedUrl(elegido.url) : null;
+  const watchUrl = elegido ? getYoutubeWatchUrl(elegido.url) : null;
 
   return (
     <div className="tutoriales-shell__inner">
@@ -157,20 +157,28 @@ export function TutorialesPage() {
             elegido?.variante === "movil" ? " tutoriales-player__media--movil" : ""
           }`}
         >
-          {!viewportListo ? (
+          {!viewportListo || !elegido ? (
             <div className="tutoriales-skeleton tutoriales-skeleton--video" />
-          ) : embedUrl ? (
-            <YoutubeFrame
-              key={`${current.id}-${elegido?.url ?? ""}`}
-              title={current.titulo}
-              src={embedUrl}
-            />
           ) : (
-            <div className="tutoriales-player__invalid">
-              <p>No se pudo incrustar este video.</p>
-            </div>
+            <YoutubePlayer
+              key={`${current.id}-${elegido.url}`}
+              videoUrl={elegido.url}
+              title={current.titulo}
+              fill
+              showOpenLink={false}
+            />
           )}
         </div>
+        {watchUrl ? (
+          <a
+            className="youtube-player__open"
+            href={watchUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Abrir en YouTube
+          </a>
+        ) : null}
 
         <div className="tutoriales-player__copy">
           <h2>{current.titulo}</h2>

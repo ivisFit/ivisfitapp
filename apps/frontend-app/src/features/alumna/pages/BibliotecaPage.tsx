@@ -2,11 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Input } from "@/components/Input";
-import { YoutubeFrame } from "@/components/YoutubeFrame";
+import { YoutubePlayer } from "@/components/YoutubePlayer";
 import { IvisContentLoader } from "@/components/IvisContentLoader";
 import { apiFetch } from "@/lib/api";
 import { mapDocId, uniqueListKey } from "@/lib/map-doc-id";
-import { getYoutubeEmbedUrl } from "@/lib/youtube";
 
 type EjercicioApiDoc = {
   _id?: unknown;
@@ -109,7 +108,6 @@ export function BibliotecaPage() {
 
       <ul className="ejercicios-list">
         {filtrados.map((ejercicio, index) => {
-          const embed = getYoutubeEmbedUrl(ejercicio.videoUrl);
           return (
             <li
               className="ejercicio-item"
@@ -120,13 +118,11 @@ export function BibliotecaPage() {
                   <h3>{ejercicio.nombre}</h3>
                   {ejercicio.descripcion ? <p>{ejercicio.descripcion}</p> : null}
                 </div>
-                {embed ? (
-                  <div className="ejercicio-video">
-                    <YoutubeFrame
-                      title={`Video de ${ejercicio.nombre}`}
-                      src={embed}
-                    />
-                  </div>
+                {ejercicio.videoUrl.trim() ? (
+                  <YoutubePlayer
+                    videoUrl={ejercicio.videoUrl}
+                    title={ejercicio.nombre}
+                  />
                 ) : null}
               </div>
             </li>

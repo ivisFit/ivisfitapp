@@ -3,6 +3,7 @@ import path from "node:path";
 import withBundleAnalyzer from "@next/bundle-analyzer";
 import withPWA from "@ducanh2912/next-pwa";
 import { shouldPrecacheManifestUrl } from "./lib/pwa-precache-filter";
+import { PERMISSIONS_POLICY } from "./src/lib/permissions-policy";
 
 const cspHeader = `
   default-src 'self';
@@ -151,7 +152,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Permissions-Policy",
-            value: "camera=(self), microphone=(), geolocation=()",
+            value: PERMISSIONS_POLICY,
           },
           {
             key: "Content-Security-Policy",

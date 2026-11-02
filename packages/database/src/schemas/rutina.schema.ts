@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { normalizeProfeCalendarDateInput } from "../lib/calendar-uy";
+import {
+  normalizeProfeCalendarDateInput,
+  profeCalendarDateKey,
+} from "../lib/calendar-uy";
 import {
   objectIdSchema,
   repeticionesPorSerieMatchesSeries,
@@ -33,9 +36,16 @@ const ejercicioRutinaSchema = z
     path: ["repeticionesPorSerie"],
   });
 
+const diaFechaSchema = z.preprocess((value) => {
+  if (value === null || value === undefined || value === "") return undefined;
+  const key = profeCalendarDateKey(value);
+  return key ?? value;
+}, z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional());
+
 const diaRutinaSchema = z.object({
   nombreDia: z.string().min(1),
   comentario: z.string().trim().max(500).optional(),
+  fecha: diaFechaSchema,
   ejercicios: z.array(ejercicioRutinaSchema).min(1),
 });
 

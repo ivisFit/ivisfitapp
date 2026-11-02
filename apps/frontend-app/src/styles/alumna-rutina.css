@@ -685,12 +685,20 @@
 }
 
 .routine-video {
+  --rutina-black: var(--color-black);
+  --rutina-yellow: var(--color-gold, #e1aa43);
+  --rutina-yellow-soft: #ffd84d;
+
   position: fixed;
   inset: 0;
-  z-index: 80;
+  z-index: 120;
   display: grid;
   place-items: center;
-  padding: 1rem;
+  padding:
+    max(1rem, env(safe-area-inset-top))
+    max(1rem, env(safe-area-inset-right))
+    max(1rem, env(safe-area-inset-bottom))
+    max(1rem, env(safe-area-inset-left));
 }
 
 .routine-video__backdrop {
@@ -705,6 +713,8 @@
   display: grid;
   gap: 1rem;
   width: min(100%, 52rem);
+  max-height: 100%;
+  overflow: auto;
   padding: clamp(0.85rem, 3vw, 1.2rem);
   background:
     radial-gradient(circle at top left, rgb(253 201 21 / 14%), transparent 18rem),
@@ -747,6 +757,21 @@
   border-radius: 999px;
   padding: 0.5rem 0.8rem;
   cursor: pointer;
+}
+
+.routine-video__external,
+.challenge-exercise-video__external {
+  display: inline-block;
+  margin-top: 0.35rem;
+  color: var(--rutina-yellow);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.routine-video__external:hover,
+.challenge-exercise-video__external:hover {
+  text-decoration: underline;
 }
 
 .routine-video__frame {
@@ -1432,6 +1457,12 @@
   border: 0;
 }
 
+.challenge-sheet__media--player,
+.training-story__intro__media--player {
+  object-fit: contain;
+  background: #000;
+}
+
 .challenge-sheet__media-placeholder {
   display: grid;
   place-items: center;
@@ -1722,7 +1753,11 @@
   z-index: 110;
   display: grid;
   place-items: center;
-  padding: 1rem;
+  padding:
+    max(1rem, env(safe-area-inset-top))
+    max(1rem, env(safe-area-inset-right))
+    max(1rem, env(safe-area-inset-bottom))
+    max(1rem, env(safe-area-inset-left));
 }
 
 .challenge-exercise-video__backdrop {
@@ -1737,6 +1772,8 @@
   display: grid;
   gap: 1rem;
   width: min(100%, 52rem);
+  max-height: 100%;
+  overflow: auto;
   padding: clamp(0.85rem, 3vw, 1.2rem);
   background:
     radial-gradient(circle at top left, rgb(253 201 21 / 14%), transparent 18rem),
@@ -2179,6 +2216,22 @@
   gap: 0.5rem;
   flex: 1 1 12rem;
   min-width: 0;
+}
+
+.rutina-builder__dia-card-fields {
+  display: grid;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.rutina-builder__dia-card-fields--dated {
+  grid-template-columns: minmax(0, 1.4fr) minmax(9.5rem, 0.8fr);
+}
+
+@media (max-width: 720px) {
+  .rutina-builder__dia-card-fields--dated {
+    grid-template-columns: 1fr;
+  }
 }
 
 .rutina-builder__dia-card-badge {
@@ -2774,6 +2827,11 @@
   font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.rutina-builder__day-rail-date {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
 }
 
 .rutina-builder__day-rail-meta {
@@ -3707,7 +3765,7 @@
   }
 
   .alumna-rutina .rest-timer__header h3,
-  .alumna-rutina .routine-video__header h3 {
+  .routine-video__header h3 {
     font-size: 1.15rem;
   }
 

@@ -1,0 +1,123 @@
+.youtube-player-block,
+.youtube-player-stack {
+  display: grid;
+  gap: 0.45rem;
+  min-width: 0;
+  width: 100%;
+}
+
+.youtube-player-block--fill {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.youtube-player {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #000;
+  border: 1px solid var(--glass-border, rgb(253 201 21 / 18%));
+  border-radius: var(--radius-md, 1rem);
+}
+
+.youtube-player-block--fill .youtube-player {
+  height: 100%;
+  aspect-ratio: auto;
+  border: 0;
+  border-radius: inherit;
+}
+
+.youtube-player__stage,
+.youtube-player__fallback,
+.youtube-player iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.youtube-player__stage {
+  display: block;
+  padding: 0;
+  overflow: hidden;
+  color: inherit;
+  font: inherit;
+  background: #000;
+  cursor: pointer;
+}
+
+.youtube-player__stage img,
+.youtube-player__placeholder {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 0;
+}
+
+.youtube-player__placeholder {
+  background:
+    radial-gradient(circle at 35% 25%, rgb(253 201 21 / 24%), transparent 12rem),
+    #111;
+}
+
+.youtube-player__play {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  background: rgb(9 7 8 / 78%);
+  border: 1px solid rgb(253 201 21 / 45%);
+  color: #fdf3d7;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+}
+
+.youtube-player__fallback {
+  display: grid;
+  place-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  text-align: center;
+  background: #000;
+}
+
+.youtube-player__fallback p {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: rgb(255 255 255 / 78%);
+}
+
+.youtube-player__open {
+  justify-self: start;
+  color: var(--color-gold, #e1aa43);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.youtube-player__fallback .youtube-player__open {
+  justify-self: center;
+}
+
+.youtube-player__open:hover {
+  text-decoration: underline;
+}
+
+.youtube-player__stage:focus-visible,
+.youtube-player__open:focus-visible {
+  outline: 2px solid var(--color-yellow, #e1aa43);
+  outline-offset: 2px;
+}
+
+.youtube-player__stage:focus-visible {
+  outline-offset: -2px;
+}

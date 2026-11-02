@@ -106,6 +106,7 @@ const diaRutinaSchema = new Schema(
   {
     nombreDia: { type: String, required: true },
     comentario: { type: String, maxlength: 500 },
+    fecha: { type: String },
     ejercicios: { type: [ejercicioRutinaSchema], required: true },
   },
   { _id: false },

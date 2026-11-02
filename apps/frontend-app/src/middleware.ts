@@ -4,6 +4,7 @@ import {
   authRateLimiter,
   apiRateLimiter,
 } from "@/lib/rate-limiter";
+import { PERMISSIONS_POLICY } from "@/lib/permissions-policy";
 
 function isCmsPreviewPath(pathname: string): boolean {
   return pathname === "/cms-preview" || pathname.startsWith("/cms-preview/");
@@ -22,7 +23,7 @@ function applySecurityHeaders(
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   response.headers.set(
     "Permissions-Policy",
-    "camera=(self), microphone=(), geolocation=()",
+    PERMISSIONS_POLICY,
   );
 
   return response;

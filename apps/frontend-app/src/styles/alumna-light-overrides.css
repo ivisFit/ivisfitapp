@@ -684,6 +684,11 @@ html[data-alumna-color-scheme="light"] .rest-timer__panel {
   box-shadow: 0 30px 80px rgb(40 28 12 / 16%);
 }
 
+html[data-alumna-color-scheme="light"] .routine-video__external,
+html[data-alumna-color-scheme="light"] .challenge-exercise-video__external {
+  color: #6b5314;
+}
+
 html[data-alumna-color-scheme="light"] .challenge-exercise-video__header h3,
 html[data-alumna-color-scheme="light"] .routine-video__header h3,
 html[data-alumna-color-scheme="light"] .rest-timer__header h3,

@@ -83,13 +83,6 @@ function resolveStartDateKey(
   );
 }
 
-function diffDays(startKey: string, endKey: string): number {
-  const start = new Date(`${startKey}T00:00:00Z`);
-  const end = new Date(`${endKey}T00:00:00Z`);
-  const diffMs = end.getTime() - start.getTime();
-  return Math.floor(diffMs / (1000 * 60 * 60 * 24));
-}
-
 function sortWeeks(weeks: RutinaSemana[]): RutinaSemana[] {
   return [...weeks].sort((a, b) => a.numeroSemana - b.numeroSemana);
 }
@@ -256,10 +249,18 @@ export function getDateKeyForPlanDayIndex(
   startDateKey: string,
   planIndex: number,
 ): string {
+  const fecha = explicitDiaFecha(getFlatRoutineDays(rutina)[planIndex]?.dia.fecha);
+  if (fecha) return fecha;
   return addDaysToDateKey(
     startDateKey,
     getCalendarOffsetForPlanDayIndex(rutina, planIndex),
   );
+}
+
+function explicitDiaFecha(fecha?: string): string | null {
+  if (!fecha) return null;
+  const match = /^(\d{4}-\d{2}-\d{2})/.exec(fecha.trim());
+  return match?.[1] ?? null;
 }
 
 export function getDateKeyForFlatRoutineDay(
@@ -276,32 +277,15 @@ export function getCurrentPlanDayNumber(
   todayKey: string,
 ): number {
   const flatDays = getFlatRoutineDays(rutina);
-  const totalDays = flatDays.length;
-  if (totalDays === 0) return 1;
+  if (flatDays.length === 0) return 1;
 
-  let daysSince = diffDays(startDateKey, todayKey);
-  if (daysSince < 0) daysSince = 0;
-
-  const weeks = sortWeeks(rutina.semanas ?? []);
-  if (weeks.length === 0) return 1;
-
-  const calendarWeekIndex = Math.min(
-    Math.floor(daysSince / 7),
-    weeks.length - 1,
-  );
-
-  let dayNumber = 0;
-  for (let w = 0; w < calendarWeekIndex; w++) {
-    dayNumber += weeks[w]?.dias.length ?? 0;
+  let lastDue = 0;
+  for (let index = 0; index < flatDays.length; index += 1) {
+    const dateKey = getDateKeyForPlanDayIndex(rutina, startDateKey, index);
+    if (dateKey <= todayKey) lastDue = index + 1;
   }
 
-  const currentWeek = weeks[calendarWeekIndex];
-  if (currentWeek && currentWeek.dias.length > 0) {
-    const daySlot = Math.min(daysSince % 7, currentWeek.dias.length - 1);
-    dayNumber += daySlot + 1;
-  }
-
-  return Math.min(totalDays, Math.max(1, dayNumber));
+  return lastDue === 0 ? 1 : lastDue;
 }
 
 export function resolveActivePlanDayNumber(
@@ -310,41 +294,62 @@ export function resolveActivePlanDayNumber(
   todayKey: string,
   isPlanDayDone?: PlanDayDoneCheck,
 ): number {
-  const calendarCap = getCurrentPlanDayNumber(rutina, startDateKey, todayKey);
   const flatDays = getFlatRoutineDays(rutina);
   if (flatDays.length === 0) return 1;
-  if (!isPlanDayDone) return calendarCap;
 
-  for (let index = 0; index < flatDays.length; index++) {
-    const dayNumber = index + 1;
-    if (dayNumber > calendarCap) break;
+  const dated = flatDays.map((entry, index) => ({
+    dayNumber: index + 1,
+    dateKey: getDateKeyForPlanDayIndex(rutina, startDateKey, index),
+    numeroSemana: entry.numeroSemana,
+    nombreDia: entry.dia.nombreDia,
+  }));
 
-    const entry = flatDays[index];
-    const dateKey = getDateKeyForPlanDayIndex(rutina, startDateKey, index);
-    if (
+  const due = dated
+    .filter((day) => day.dateKey <= todayKey)
+    .sort(
+      (a, b) => a.dateKey.localeCompare(b.dateKey) || a.dayNumber - b.dayNumber,
+    );
+
+  if (due.length === 0) return 1;
+
+  const today = due.find((day) => day.dateKey === todayKey);
+  if (
+    today &&
+    (!isPlanDayDone ||
       !isPlanDayDone(
-        dayNumber,
-        dateKey,
-        entry.numeroSemana,
-        entry.dia.nombreDia,
-      )
-    ) {
-      return dayNumber;
-    }
+        today.dayNumber,
+        today.dateKey,
+        today.numeroSemana,
+        today.nombreDia,
+      ))
+  ) {
+    return today.dayNumber;
   }
 
-  return Math.min(calendarCap, flatDays.length);
+  if (isPlanDayDone) {
+    const pending = due.find(
+      (day) =>
+        !isPlanDayDone(
+          day.dayNumber,
+          day.dateKey,
+          day.numeroSemana,
+          day.nombreDia,
+        ),
+    );
+    if (pending) return pending.dayNumber;
+  }
+
+  return due[due.length - 1].dayNumber;
 }
 
 function resolveChallengeDayState(
-  dayNumber: number,
-  calendarCap: number,
-  _activePlanDay: number,
+  dateKey: string,
+  todayKey: string,
   isPlanDayDone: PlanDayDoneCheck | undefined,
   meta: { numeroSemana: number; nombreDia: string },
-  dateKey: string,
+  dayNumber: number,
 ): ChallengeDayState {
-  if (dayNumber > calendarCap) return "locked";
+  if (dateKey > todayKey) return "locked";
 
   if (isPlanDayDone) {
     if (isPlanDayDone(dayNumber, dateKey, meta.numeroSemana, meta.nombreDia)) {
@@ -353,7 +358,7 @@ function resolveChallengeDayState(
     return "unlocked";
   }
 
-  if (dayNumber < calendarCap) return "completed";
+  if (dateKey < todayKey) return "completed";
   return "unlocked";
 }
 
@@ -586,28 +591,20 @@ export function buildPlanDays(
     dayInfo?.startDateKey ??
     resolveStartDateKey(rutina.startDate, rutina.createdAt, now);
   const todayKey = dayInfo?.todayKey ?? toDateKeyFromDate(now, TIME_ZONE);
-  const calendarCap = getCurrentPlanDayNumber(rutina, startDateKey, todayKey);
-  const activePlanDay = resolveActivePlanDayNumber(
-    rutina,
-    startDateKey,
-    todayKey,
-    options?.isPlanDayDone,
-  );
 
   return flatDays.map((routineDay, index) => {
     const dayNumber = index + 1;
     const dateKey = getDateKeyForPlanDayIndex(rutina, startDateKey, index);
     const media = getFirstRoutineMedia(routineDay.dia);
     const state = resolveChallengeDayState(
-      dayNumber,
-      calendarCap,
-      activePlanDay,
+      dateKey,
+      todayKey,
       options?.isPlanDayDone,
       {
         numeroSemana: routineDay.numeroSemana,
         nombreDia: routineDay.dia.nombreDia,
       },
-      dateKey,
+      dayNumber,
     );
 
     return attachStoryMedia(rutina, dayNumber, {
@@ -616,7 +613,7 @@ export function buildPlanDays(
       title: routineDay.dia.nombreDia,
       tags: buildDayTags(routineDay.dia),
       state,
-      isToday: dayNumber === activePlanDay,
+      isToday: dateKey === todayKey,
       nombreDia: routineDay.dia.nombreDia,
       ...(routineDay.dia.comentario?.trim()
         ? { comentario: routineDay.dia.comentario.trim() }
@@ -642,19 +639,6 @@ export function buildChallenge28Days(
     dayInfo?.startDateKey ??
     resolveStartDateKey(rutina.startDate, rutina.createdAt, now);
   const todayKey = dayInfo?.todayKey ?? toDateKeyFromDate(now, TIME_ZONE);
-  const calendarCap = Math.min(
-    totalDays,
-    getCurrentPlanDayNumber(rutina, startDateKey, todayKey),
-  );
-  const activePlanDay = Math.min(
-    totalDays,
-    resolveActivePlanDayNumber(
-      rutina,
-      startDateKey,
-      todayKey,
-      options?.isPlanDayDone,
-    ),
-  );
 
   return Array.from({ length: totalDays }, (_, index) => {
     const dayNumber = index + 1;
@@ -671,15 +655,14 @@ export function buildChallenge28Days(
       `Día ${dayNumber}`;
 
     const state = resolveChallengeDayState(
-      dayNumber,
-      calendarCap,
-      activePlanDay,
+      dateKey,
+      todayKey,
       options?.isPlanDayDone,
       {
         numeroSemana: routineDay?.numeroSemana ?? 1,
         nombreDia,
       },
-      dateKey,
+      dayNumber,
     );
 
     return attachStoryMedia(rutina, dayNumber, {
@@ -688,7 +671,7 @@ export function buildChallenge28Days(
       title: configuredDay?.title ?? nombreDia,
       tags: buildDayTags(routineDay?.dia, configuredDay?.tags),
       state,
-      isToday: dayNumber === activePlanDay,
+      isToday: dateKey === todayKey,
       nombreDia,
       ...(routineDay?.dia.comentario?.trim()
         ? { comentario: routineDay.dia.comentario.trim() }
@@ -731,32 +714,4 @@ export function formatTimerSeconds(segundos: number): string {
   const minutes = Math.floor(safeSeconds / 60);
   const seconds = safeSeconds % 60;
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-}
-
-export function getYoutubeEmbedUrl(videoUrl: string): string | null {
-  try {
-    const url = new URL(videoUrl);
-    const hostname = url.hostname.replace(/^www\./, "");
-    let videoId = "";
-
-    if (hostname === "youtu.be") {
-      videoId = url.pathname.split("/").filter(Boolean)[0] ?? "";
-    }
-
-    if (hostname === "youtube.com" || hostname.endsWith(".youtube.com")) {
-      if (url.pathname === "/watch") {
-        videoId = url.searchParams.get("v") ?? "";
-      } else {
-        const [kind, id] = url.pathname.split("/").filter(Boolean);
-        if (kind === "embed" || kind === "shorts" || kind === "live") {
-          videoId = id ?? "";
-        }
-      }
-    }
-
-    if (!videoId) return null;
-    return `https://www.youtube.com/embed/${encodeURIComponent(videoId)}`;
-  } catch {
-    return null;
-  }
 }
