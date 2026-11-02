@@ -22,7 +22,7 @@ import {
   type RutinaProgresoRecord,
   type UpsertRutinaProgresoPayload,
 } from "@/features/alumna/types/rutina-progreso";
-import { instantToUruguayDateKey } from "@ivisfit/database";
+import { instantToUruguayDateKey } from "@ivisfit/database/calendar";
 import { rutinaStartKey } from "@/features/alumna/lib/rutina-utils";
 
 function normalizeExerciseIds(

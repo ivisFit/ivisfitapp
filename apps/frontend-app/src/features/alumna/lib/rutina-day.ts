@@ -9,7 +9,7 @@ import {
   URUGUAY_TIME_ZONE,
   instantToUruguayDateKey,
   profeCalendarDateKey,
-} from "@ivisfit/database";
+} from "@ivisfit/database/calendar";
 
 const TIME_ZONE = URUGUAY_TIME_ZONE;
 

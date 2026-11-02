@@ -1,6 +1,7 @@
-import { existsSync, readdirSync, rmSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { removeTreeSync } from "./remove-tree.mjs";
 
 const appRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const nextDir = path.join(appRoot, ".next");
@@ -85,6 +86,13 @@ function shouldCleanNextForDev() {
 
 const decision = shouldCleanNextForDev();
 if (decision.clean) {
-  rmSync(nextDir, { recursive: true, force: true });
+  const result = removeTreeSync(nextDir);
+  if (!result.ok) {
+    console.error(
+      `[dev] No se pudo limpiar .next (${result.error?.code ?? result.error?.message}).`,
+    );
+    console.error(`[dev] ${result.hint ?? "Reintentá en unos segundos."}`);
+    process.exit(1);
+  }
   console.log(`[dev] .next eliminada: ${decision.reason}`);
 }

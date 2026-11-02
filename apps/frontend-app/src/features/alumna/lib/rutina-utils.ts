@@ -3,7 +3,7 @@ import {
   addCalendarDays,
   instantToUruguayDateKey,
   profeCalendarDateKey,
-} from "@ivisfit/database";
+} from "@ivisfit/database/calendar";
 
 export type RutinaPickCandidate = {
   createdAt?: string | Date;

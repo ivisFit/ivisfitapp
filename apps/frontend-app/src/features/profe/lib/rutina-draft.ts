@@ -12,7 +12,7 @@ import {
   isRepeticionesPorSerieActive,
   persistRepeticionesPorSerie,
 } from "@/lib/rutina-reps";
-import { addCalendarDays, profeCalendarDateKey } from "@ivisfit/database";
+import { addCalendarDays, profeCalendarDateKey } from "@ivisfit/database/calendar";
 
 export type MediaType = PlanContentMediaType;
 
