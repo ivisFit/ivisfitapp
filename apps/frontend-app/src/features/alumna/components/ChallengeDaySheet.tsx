@@ -255,6 +255,53 @@ export function ChallengeDaySheet({
     });
   }
 
+  const exerciseVideoOverlay =
+    selectedExercise && selectedExerciseEmbedUrl ? (
+      <div
+        className={`challenge-exercise-video${
+          isContained ? " challenge-exercise-video--contained" : ""
+        }`}
+        role="dialog"
+        aria-modal="true"
+      >
+        <button
+          className="challenge-exercise-video__backdrop"
+          type="button"
+          aria-label="Cerrar video"
+          onClick={() => setSelectedExercise(null)}
+        />
+        <article className="challenge-exercise-video__panel">
+          <div className="challenge-exercise-video__header">
+            <div>
+              <span>Video del ejercicio</span>
+              <h3>{selectedExercise.nombre}</h3>
+              {selectedExerciseWatchUrl ? (
+                <a
+                  className="challenge-exercise-video__external"
+                  href={selectedExerciseWatchUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Abrir en YouTube
+                </a>
+              ) : null}
+            </div>
+            <button type="button" onClick={() => setSelectedExercise(null)}>
+              Cerrar
+            </button>
+          </div>
+          <div className="challenge-exercise-video__frame">
+            <YoutubePlayer
+              videoUrl={selectedExercise.videoUrl}
+              title={selectedExercise.nombre}
+              fill
+              showOpenLink={false}
+            />
+          </div>
+        </article>
+      </div>
+    ) : null;
+
   const content = (
     <div
       className={`challenge-sheet${isContained ? " challenge-sheet--contained" : ""}`}
@@ -476,58 +523,24 @@ export function ChallengeDaySheet({
           </div>
         </div>
       </article>
-
-      {selectedExercise && selectedExerciseEmbedUrl ? (
-        <div
-          className={`challenge-exercise-video${
-            isContained ? " challenge-exercise-video--contained" : ""
-          }`}
-          role="dialog"
-          aria-modal="true"
-        >
-          <button
-            className="challenge-exercise-video__backdrop"
-            type="button"
-            aria-label="Cerrar video"
-            onClick={() => setSelectedExercise(null)}
-          />
-          <article className="challenge-exercise-video__panel">
-            <div className="challenge-exercise-video__header">
-              <div>
-                <span>Video del ejercicio</span>
-                <h3>{selectedExercise.nombre}</h3>
-                {selectedExerciseWatchUrl ? (
-                  <a
-                    className="challenge-exercise-video__external"
-                    href={selectedExerciseWatchUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Abrir en YouTube
-                  </a>
-                ) : null}
-              </div>
-              <button type="button" onClick={() => setSelectedExercise(null)}>
-                Cerrar
-              </button>
-            </div>
-            <div className="challenge-exercise-video__frame">
-              <YoutubePlayer
-                videoUrl={selectedExercise.videoUrl}
-                title={selectedExercise.nombre}
-                fill
-                showOpenLink={false}
-              />
-            </div>
-          </article>
-        </div>
-      ) : null}
     </div>
   );
 
   if (isContained) {
-    return content;
+    return (
+      <>
+        {content}
+        {exerciseVideoOverlay}
+      </>
+    );
   }
 
-  return createPortal(content, document.body);
+  return (
+    <>
+      {createPortal(content, document.body)}
+      {exerciseVideoOverlay && typeof document !== "undefined"
+        ? createPortal(exerciseVideoOverlay, document.body)
+        : null}
+    </>
+  );
 }

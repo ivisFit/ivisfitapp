@@ -550,6 +550,7 @@
 .alumna-rutina :is(button, a):focus-visible,
 .challenge-sheet :is(button, a):focus-visible,
 .routine-video :is(button, a):focus-visible,
+.challenge-exercise-video :is(button, a):focus-visible,
 .weight-log__step-btn:focus-visible {
   outline: 2px solid var(--color-yellow);
   outline-offset: 2px;
@@ -684,55 +685,91 @@
   text-align: center;
 }
 
-.routine-video {
-  --rutina-black: var(--color-black);
+.routine-video,
+.challenge-exercise-video:not(.challenge-exercise-video--contained) {
+  --rutina-black: var(--color-black, #090708);
   --rutina-yellow: var(--color-gold, #e1aa43);
   --rutina-yellow-soft: #ffd84d;
 
   position: fixed;
   inset: 0;
-  z-index: 120;
-  display: grid;
-  place-items: center;
-  padding:
-    max(1rem, env(safe-area-inset-top))
-    max(1rem, env(safe-area-inset-right))
-    max(1rem, env(safe-area-inset-bottom))
-    max(1rem, env(safe-area-inset-left));
+  left: 0;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  max-width: 100vw;
+  height: 100dvh;
+  max-height: 100dvh;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.routine-video__backdrop {
-  position: absolute;
+.routine-video__backdrop,
+.challenge-exercise-video:not(.challenge-exercise-video--contained)
+  .challenge-exercise-video__backdrop {
+  position: fixed;
   inset: 0;
-  background: rgb(0 0 0 / 72%);
+  background: rgb(9 7 8 / 94%);
   border: 0;
+  cursor: pointer;
 }
 
-.routine-video__panel {
+.routine-video__panel,
+.challenge-exercise-video:not(.challenge-exercise-video--contained)
+  .challenge-exercise-video__panel {
   position: relative;
-  display: grid;
-  gap: 1rem;
-  width: min(100%, 52rem);
-  max-height: 100%;
-  overflow: auto;
-  padding: clamp(0.85rem, 3vw, 1.2rem);
+  z-index: 1;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+  max-width: none;
+  min-height: 0;
+  max-height: none;
+  height: 100%;
+  margin: 0;
+  padding:
+    max(0.75rem, env(safe-area-inset-top))
+    max(0.85rem, env(safe-area-inset-right))
+    max(0.85rem, env(safe-area-inset-bottom))
+    max(0.85rem, env(safe-area-inset-left));
+  overflow: hidden;
   background:
     radial-gradient(circle at top left, rgb(253 201 21 / 14%), transparent 18rem),
-    linear-gradient(145deg, rgb(27 23 18 / 96%), rgb(9 7 8 / 96%));
-  border: 1px solid rgb(253 201 21 / 22%);
-  border-radius: 1.4rem;
-  box-shadow: 0 30px 80px rgb(0 0 0 / 58%);
-  animation: routineCardIn 220ms ease-out;
+    linear-gradient(145deg, rgb(27 23 18 / 98%), rgb(9 7 8 / 98%));
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  animation: routineVideoIn 220ms ease-out;
 }
 
-.routine-video__header {
+@keyframes routineVideoIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.routine-video__header,
+.challenge-exercise-video:not(.challenge-exercise-video--contained)
+  .challenge-exercise-video__header {
   display: flex;
+  flex-shrink: 0;
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
+  padding-bottom: 0.75rem;
 }
 
-.routine-video__header span {
+.routine-video__header span,
+.challenge-exercise-video:not(.challenge-exercise-video--contained)
+  .challenge-exercise-video__header span {
   color: var(--rutina-yellow);
   font-size: 0.75rem;
   font-weight: 900;
@@ -740,13 +777,17 @@
   text-transform: uppercase;
 }
 
-.routine-video__header h3 {
+.routine-video__header h3,
+.challenge-exercise-video:not(.challenge-exercise-video--contained)
+  .challenge-exercise-video__header h3 {
   margin: 0.2rem 0 0;
   color: #fff;
   font-size: clamp(1.2rem, 4vw, 1.7rem);
 }
 
-.routine-video__header button {
+.routine-video__header button,
+.challenge-exercise-video:not(.challenge-exercise-video--contained)
+  .challenge-exercise-video__header button {
   flex: 0 0 auto;
   color: var(--rutina-yellow);
   font: inherit;
@@ -774,21 +815,46 @@
   text-decoration: underline;
 }
 
-.routine-video__frame {
+.routine-video__frame,
+.challenge-exercise-video:not(.challenge-exercise-video--contained)
+  .challenge-exercise-video__frame {
   position: relative;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
   overflow: hidden;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: auto;
   background: #000;
   border: 1px solid rgb(253 201 21 / 14%);
-  border-radius: 1rem;
+  border-radius: 0.75rem;
 }
 
-.routine-video__frame iframe {
+.routine-video__frame iframe,
+.challenge-exercise-video:not(.challenge-exercise-video--contained)
+  .challenge-exercise-video__frame iframe {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   border: 0;
+}
+
+@media (min-width: 768px) {
+  .routine-video__panel,
+  .challenge-exercise-video:not(.challenge-exercise-video--contained)
+    .challenge-exercise-video__panel {
+    padding:
+      max(1rem, env(safe-area-inset-top))
+      clamp(1.25rem, 4vw, 2.5rem)
+      max(1rem, env(safe-area-inset-bottom))
+      clamp(1.25rem, 4vw, 2.5rem);
+  }
+
+  .routine-video__frame,
+  .challenge-exercise-video:not(.challenge-exercise-video--contained)
+    .challenge-exercise-video__frame {
+    border-radius: 1rem;
+  }
 }
 
 .rest-timer {
@@ -1747,27 +1813,23 @@
   margin: 0;
 }
 
-.challenge-exercise-video {
-  position: fixed;
+.challenge-exercise-video--contained {
+  position: absolute;
   inset: 0;
-  z-index: 110;
+  z-index: 30;
   display: grid;
   place-items: center;
-  padding:
-    max(1rem, env(safe-area-inset-top))
-    max(1rem, env(safe-area-inset-right))
-    max(1rem, env(safe-area-inset-bottom))
-    max(1rem, env(safe-area-inset-left));
+  padding: 0.5rem;
 }
 
-.challenge-exercise-video__backdrop {
+.challenge-exercise-video--contained .challenge-exercise-video__backdrop {
   position: absolute;
   inset: 0;
   background: rgb(0 0 0 / 74%);
   border: 0;
 }
 
-.challenge-exercise-video__panel {
+.challenge-exercise-video--contained .challenge-exercise-video__panel {
   position: relative;
   display: grid;
   gap: 1rem;
@@ -1784,14 +1846,14 @@
   animation: routineCardIn 220ms ease-out;
 }
 
-.challenge-exercise-video__header {
+.challenge-exercise-video--contained .challenge-exercise-video__header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
 }
 
-.challenge-exercise-video__header span {
+.challenge-exercise-video--contained .challenge-exercise-video__header span {
   color: var(--rutina-yellow);
   font-size: 0.75rem;
   font-weight: 900;
@@ -1799,13 +1861,13 @@
   text-transform: uppercase;
 }
 
-.challenge-exercise-video__header h3 {
+.challenge-exercise-video--contained .challenge-exercise-video__header h3 {
   margin: 0.2rem 0 0;
   color: #fff;
   font-size: clamp(1.2rem, 4vw, 1.7rem);
 }
 
-.challenge-exercise-video__header button {
+.challenge-exercise-video--contained .challenge-exercise-video__header button {
   flex: 0 0 auto;
   color: var(--rutina-yellow);
   font: inherit;
@@ -1818,7 +1880,7 @@
   cursor: pointer;
 }
 
-.challenge-exercise-video__frame {
+.challenge-exercise-video--contained .challenge-exercise-video__frame {
   position: relative;
   overflow: hidden;
   aspect-ratio: 16 / 9;
@@ -1827,7 +1889,7 @@
   border-radius: 1rem;
 }
 
-.challenge-exercise-video__frame iframe {
+.challenge-exercise-video--contained .challenge-exercise-video__frame iframe {
   position: absolute;
   inset: 0;
   width: 100%;
