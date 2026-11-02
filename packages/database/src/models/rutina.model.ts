@@ -138,6 +138,33 @@ const rutinaSchema = new Schema(
 
 rutinaSchema.index({ alumnaId: 1 });
 
+function calendarDateKey(value: unknown): string | null {
+  if (!value) return null;
+
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) return null;
+    const year = value.getUTCFullYear();
+    const month = String(value.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(value.getUTCDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  if (typeof value === "string") {
+    const match = /^(\d{4}-\d{2}-\d{2})/.exec(value);
+    return match?.[1] ?? null;
+  }
+
+  return null;
+}
+
+rutinaSchema.set("toJSON", {
+  transform(_doc, ret: { startDate?: unknown }) {
+    const key = calendarDateKey(ret.startDate);
+    if (key) ret.startDate = key;
+    return ret;
+  },
+});
+
 export type RutinaDocument = InferSchemaType<typeof rutinaSchema> & {
   _id: Types.ObjectId;
 };
