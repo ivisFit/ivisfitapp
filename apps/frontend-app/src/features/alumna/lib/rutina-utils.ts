@@ -1,4 +1,9 @@
-import { getTodayDateKey } from "@/features/alumna/lib/rutina-day";
+import {
+  URUGUAY_TIME_ZONE,
+  addCalendarDays,
+  instantToUruguayDateKey,
+  profeCalendarDateKey,
+} from "@ivisfit/database";
 
 export type RutinaPickCandidate = {
   createdAt?: string | Date;
@@ -7,31 +12,12 @@ export type RutinaPickCandidate = {
   duracionSemanas?: number;
 };
 
-/** Fecha YYYY-MM-DD tal como se guardó, sin correr el día por el huso. */
+/** Fecha YYYY-MM-DD del inicio elegido por la profe (día civil exacto). */
 export function rutinaDateKey(value?: string | Date | null): string | null {
-  if (!value) return null;
-
-  if (value instanceof Date) {
-    if (Number.isNaN(value.getTime())) return null;
-    const year = value.getUTCFullYear();
-    const month = String(value.getUTCMonth() + 1).padStart(2, "0");
-    const day = String(value.getUTCDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  }
-
-  const match = /^(\d{4}-\d{2}-\d{2})/.exec(value);
-  if (match) return match[1];
-
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return null;
-  return rutinaDateKey(parsed);
+  return profeCalendarDateKey(value ?? null);
 }
 
-export function addCalendarDays(dateKey: string, days: number): string {
-  const date = new Date(`${dateKey}T00:00:00Z`);
-  date.setUTCDate(date.getUTCDate() + days);
-  return date.toISOString().slice(0, 10);
-}
+export { addCalendarDays };
 
 export function toTime(value?: string | Date): number {
   if (!value) return 0;
@@ -40,7 +26,10 @@ export function toTime(value?: string | Date): number {
 }
 
 export function rutinaStartKey(rutina: RutinaPickCandidate): string | null {
-  return rutinaDateKey(rutina.startDate) ?? rutinaDateKey(rutina.createdAt);
+  return (
+    profeCalendarDateKey(rutina.startDate) ??
+    instantToUruguayDateKey(rutina.createdAt)
+  );
 }
 
 /** Primer día que ya no pertenece a esta rutina: inicio + duración en semanas. */
@@ -51,43 +40,26 @@ export function rutinaEndExclusiveKey(rutina: RutinaPickCandidate): string | nul
   return addCalendarDays(start, weeks * 7);
 }
 
-export function rutinaEndInclusiveKey(rutina: RutinaPickCandidate): string | null {
-  const end = rutinaEndExclusiveKey(rutina);
-  if (!end) return null;
-  return addCalendarDays(end, -1);
-}
-
-export function rutinaCoversDate(
-  rutina: RutinaPickCandidate,
-  todayKey: string,
-): boolean {
+function rutinaCoversDate(rutina: RutinaPickCandidate, day: string): boolean {
   const start = rutinaStartKey(rutina);
   const end = rutinaEndExclusiveKey(rutina);
   if (!start || !end) return false;
-  return start <= todayKey && todayKey < end;
+  return start <= day && day < end;
 }
 
-function byStartThenCreated(
-  a: RutinaPickCandidate,
-  b: RutinaPickCandidate,
-): number {
+function byStartThenCreated(a: RutinaPickCandidate, b: RutinaPickCandidate): number {
   const startDiff = (rutinaStartKey(a) ?? "").localeCompare(rutinaStartKey(b) ?? "");
   if (startDiff !== 0) return startDiff;
   return toTime(a.createdAt) - toTime(b.createdAt);
 }
 
-/**
- * La rutina que la alumna ve hoy.
- * Si alguna incluye hoy, gana la que empezó antes.
- * Si ninguna incluye hoy, sigue la última que ya empezó hasta que la próxima entre en su calendario.
- */
 export function pickPrimaryRutina<T extends RutinaPickCandidate>(
   rutinas: T[],
   now: Date = new Date(),
 ): T | null {
   if (rutinas.length === 0) return null;
 
-  const today = getTodayDateKey(now);
+  const today = instantToUruguayDateKey(now) ?? "";
   const covering = rutinas.filter((rutina) => rutinaCoversDate(rutina, today));
   if (covering.length > 0) {
     return [...covering].sort(byStartThenCreated)[0];
@@ -158,3 +130,5 @@ export function suggestedNextRutinaStart(
   if (!latestEnd || latestEnd < todayKey) return todayKey;
   return latestEnd;
 }
+
+export { URUGUAY_TIME_ZONE };

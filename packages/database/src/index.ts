@@ -344,3 +344,14 @@ export {
   createCoachNotaSchema,
   type CreateCoachNotaInput,
 } from "./schemas/coach-insight.schema";
+
+export {
+  URUGUAY_TIME_ZONE,
+  profeCalendarDateKey,
+  instantToUruguayDateKey,
+  normalizeProfeCalendarDateInput,
+  dateKeyToUtcDate,
+  addCalendarDays,
+  formatCalendarDateKeyLongEsUy,
+  isCalendarDateKey,
+} from "./lib/calendar-uy";

@@ -12,6 +12,7 @@ import {
   isRepeticionesPorSerieActive,
   persistRepeticionesPorSerie,
 } from "@/lib/rutina-reps";
+import { profeCalendarDateKey } from "@ivisfit/database";
 
 export type MediaType = PlanContentMediaType;
 
@@ -340,7 +341,7 @@ export function rutinaDocToFormState(
     nombrePlan: rutina.nombrePlan,
     duracionSemanas: rutina.duracionSemanas,
     diasPorSemana,
-    startDate: rutina.startDate?.slice(0, 10) ?? startDateFallback,
+    startDate: profeCalendarDateKey(rutina.startDate) ?? startDateFallback,
     storyMediaType: story?.background?.type ?? "image",
     storyBackgroundUrl: story?.background?.url ?? "",
     storyPosterUrl: story?.background?.posterUrl ?? "",

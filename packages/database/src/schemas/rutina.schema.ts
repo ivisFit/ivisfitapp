@@ -1,9 +1,16 @@
 import { z } from "zod";
+import { normalizeProfeCalendarDateInput } from "../lib/calendar-uy";
 import {
   objectIdSchema,
   repeticionesPorSerieMatchesSeries,
   repeticionesPorSerieSchema,
 } from "./shared";
+
+const profeStartDateSchema = z.preprocess((value) => {
+  if (value === null || value === undefined || value === "") return undefined;
+  const normalized = normalizeProfeCalendarDateInput(value);
+  return normalized ?? value;
+}, z.date().optional());
 
 const mediaAssetSchema = z.object({
   type: z.enum(["image", "video", "gif"]),
@@ -84,7 +91,7 @@ export const createRutinaSchema = z.object({
   planTemplateSnapshot: planTemplateSnapshotSchema.optional(),
   nombrePlan: z.string().min(1),
   duracionSemanas: z.number().int().min(4).max(8),
-  startDate: z.coerce.date().optional(),
+  startDate: profeStartDateSchema,
   storyPreview: storyPreviewSchema.optional(),
   challenge28: challenge28Schema.optional(),
   semanas: z.array(semanaRutinaSchema).min(1),

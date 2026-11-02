@@ -11,7 +11,7 @@ import { getAppName, getAppUrl, resolveAlumnaEmail } from "../lib/email.js";
 import {
   formatRutinaDateKeyLong,
   isRutinaVisibleToday,
-  rutinaDateKey,
+  rutinaStartKey,
 } from "../lib/rutina-schedule.js";
 import {
   enrichRutinaChallenge28WithTemplate,
@@ -80,7 +80,7 @@ export const rutinasService = {
           "startDate createdAt updatedAt duracionSemanas",
         );
         const visibleHoy = isRutinaVisibleToday(rutina, hermanas);
-        const inicioKey = rutinaDateKey(rutina.startDate) ?? rutinaDateKey(rutina.createdAt);
+        const inicioKey = rutinaStartKey(rutina);
         const inicioProgramado =
           !visibleHoy && inicioKey ? formatRutinaDateKeyLong(inicioKey) : undefined;
         await sendRutinaAsignadaEmail({

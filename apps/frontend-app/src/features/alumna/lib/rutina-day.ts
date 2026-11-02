@@ -5,8 +5,13 @@ import type {
   RutinaMediaAsset,
   RutinaSemana,
 } from "../types/rutina";
+import {
+  URUGUAY_TIME_ZONE,
+  instantToUruguayDateKey,
+  profeCalendarDateKey,
+} from "@ivisfit/database";
 
-const TIME_ZONE = "America/Montevideo";
+const TIME_ZONE = URUGUAY_TIME_ZONE;
 
 type DateParts = {
   year: number;
@@ -65,34 +70,16 @@ function toDateKeyFromValue(
   return toDateKeyFromDate(value, timeZone);
 }
 
-/** Día de calendario de startDate. No se convierte a Uruguay: medianoche UTC es el día elegido. */
-function toCalendarDateKey(value: string | Date | undefined): string | null {
-  if (!value) return null;
-
-  if (typeof value === "string") {
-    const match = /^(\d{4}-\d{2}-\d{2})/.exec(value.trim());
-    if (match) return match[1];
-  }
-
-  const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
-
-  const year = date.getUTCFullYear();
-  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-  const day = String(date.getUTCDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
 function resolveStartDateKey(
   startDate: string | Date | undefined,
   createdAt: string | Date | undefined,
   now: Date,
-  timeZone: string,
 ): string {
   return (
-    toCalendarDateKey(startDate) ||
-    toDateKeyFromValue(createdAt, timeZone) ||
-    toDateKeyFromDate(now, timeZone)
+    profeCalendarDateKey(startDate) ??
+    instantToUruguayDateKey(createdAt) ??
+    instantToUruguayDateKey(now) ??
+    ""
   );
 }
 
@@ -184,9 +171,8 @@ export function resolveRutinaDay(
     rutina.startDate,
     rutina.createdAt,
     now,
-    timeZone,
   );
-  const todayKey = toDateKeyFromDate(now, timeZone);
+  const todayKey = instantToUruguayDateKey(now) ?? toDateKeyFromDate(now, timeZone);
 
   const weeks = sortWeeks(rutina.semanas ?? []);
   if (weeks.length === 0) return null;
@@ -598,7 +584,7 @@ export function buildPlanDays(
   const now = new Date();
   const startDateKey =
     dayInfo?.startDateKey ??
-    resolveStartDateKey(rutina.startDate, rutina.createdAt, now, TIME_ZONE);
+    resolveStartDateKey(rutina.startDate, rutina.createdAt, now);
   const todayKey = dayInfo?.todayKey ?? toDateKeyFromDate(now, TIME_ZONE);
   const calendarCap = getCurrentPlanDayNumber(rutina, startDateKey, todayKey);
   const activePlanDay = resolveActivePlanDayNumber(
@@ -654,7 +640,7 @@ export function buildChallenge28Days(
   const now = new Date();
   const startDateKey =
     dayInfo?.startDateKey ??
-    resolveStartDateKey(rutina.startDate, rutina.createdAt, now, TIME_ZONE);
+    resolveStartDateKey(rutina.startDate, rutina.createdAt, now);
   const todayKey = dayInfo?.todayKey ?? toDateKeyFromDate(now, TIME_ZONE);
   const calendarCap = Math.min(
     totalDays,
@@ -717,9 +703,9 @@ export function buildChallenge28Days(
 
 export function getTodayDateKey(
   now: Date = new Date(),
-  timeZone: string = TIME_ZONE,
+  _timeZone: string = TIME_ZONE,
 ): string {
-  return toDateKeyFromDate(now, timeZone);
+  return instantToUruguayDateKey(now) ?? toDateKeyFromDate(now, TIME_ZONE);
 }
 
 export function formatTodayLabel(

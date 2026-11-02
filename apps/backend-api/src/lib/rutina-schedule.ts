@@ -3,6 +3,14 @@
  * la alumna ve la rutina cuyo calendario incluye hoy; si hay solape, la que empezó antes.
  */
 
+import {
+  URUGUAY_TIME_ZONE,
+  addCalendarDays,
+  formatCalendarDateKeyLongEsUy,
+  instantToUruguayDateKey,
+  profeCalendarDateKey,
+} from "@ivisfit/database";
+
 export type RutinaScheduleCandidate = {
   _id?: unknown;
   id?: unknown;
@@ -12,41 +20,18 @@ export type RutinaScheduleCandidate = {
   duracionSemanas?: number | null;
 };
 
-const TIME_ZONE = "America/Montevideo";
+const TIME_ZONE = URUGUAY_TIME_ZONE;
 
 export function todayKey(now: Date = new Date()): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: TIME_ZONE,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(now);
+  return instantToUruguayDateKey(now) ?? "";
 }
 
+/** Día civil del inicio elegido por la profe. */
 export function rutinaDateKey(value?: string | Date | null): string | null {
-  if (!value) return null;
-
-  if (value instanceof Date) {
-    if (Number.isNaN(value.getTime())) return null;
-    const year = value.getUTCFullYear();
-    const month = String(value.getUTCMonth() + 1).padStart(2, "0");
-    const day = String(value.getUTCDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  }
-
-  const match = /^(\d{4}-\d{2}-\d{2})/.exec(value);
-  if (match) return match[1];
-
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return null;
-  return rutinaDateKey(parsed);
+  return profeCalendarDateKey(value ?? null);
 }
 
-export function addCalendarDays(dateKey: string, days: number): string {
-  const date = new Date(`${dateKey}T00:00:00Z`);
-  date.setUTCDate(date.getUTCDate() + days);
-  return date.toISOString().slice(0, 10);
-}
+export { addCalendarDays };
 
 function toTime(value?: string | Date | null): number {
   if (!value) return 0;
@@ -55,7 +40,10 @@ function toTime(value?: string | Date | null): number {
 }
 
 export function rutinaStartKey(rutina: RutinaScheduleCandidate): string | null {
-  return rutinaDateKey(rutina.startDate) ?? rutinaDateKey(rutina.createdAt);
+  return (
+    profeCalendarDateKey(rutina.startDate) ??
+    instantToUruguayDateKey(rutina.createdAt)
+  );
 }
 
 export function rutinaEndExclusiveKey(rutina: RutinaScheduleCandidate): string | null {
@@ -136,15 +124,7 @@ export function isRutinaVisibleToday(
 }
 
 export function formatRutinaDateKeyLong(dateKey: string): string {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateKey);
-  if (!match) return dateKey;
-  const date = new Date(
-    Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])),
-  );
-  return new Intl.DateTimeFormat("es-UY", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(date);
+  return formatCalendarDateKeyLongEsUy(dateKey);
 }
+
+export { TIME_ZONE as URUGUAY_TIME_ZONE };

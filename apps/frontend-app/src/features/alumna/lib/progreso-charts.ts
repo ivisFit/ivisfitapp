@@ -5,6 +5,7 @@ import {
   getDateKeyForPlanDayIndex,
   getFlatRoutineDays,
 } from "@/features/alumna/lib/rutina-day";
+import { rutinaStartKey } from "@/features/alumna/lib/rutina-utils";
 
 const TIME_ZONE = "America/Montevideo";
 
@@ -141,10 +142,7 @@ export function buildLast7DateKeys(
 function buildExerciseCountByDateKey(
   rutina: RutinaDetail,
 ): Map<string, number> {
-  const startKey =
-    rutina.startDate?.slice(0, 10) ??
-    rutina.createdAt?.slice(0, 10) ??
-    toDateKeyFromDate(new Date());
+  const startKey = rutinaStartKey(rutina) ?? toDateKeyFromDate(new Date());
 
   const flatDays = getFlatRoutineDays(rutina);
   const map = new Map<string, number>();

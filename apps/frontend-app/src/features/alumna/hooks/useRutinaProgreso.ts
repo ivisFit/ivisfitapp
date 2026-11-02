@@ -22,6 +22,8 @@ import {
   type RutinaProgresoRecord,
   type UpsertRutinaProgresoPayload,
 } from "@/features/alumna/types/rutina-progreso";
+import { instantToUruguayDateKey } from "@ivisfit/database";
+import { rutinaStartKey } from "@/features/alumna/lib/rutina-utils";
 
 function normalizeExerciseIds(
   keys: string[],
@@ -41,9 +43,9 @@ function normalizeExerciseIds(
 
 function buildDateKeyMap(rutina: RutinaDetail): Map<string, { numeroSemana: number; nombreDia: string; ejercicioIds: string[] }> {
   const startKey =
-    rutina.startDate?.slice(0, 10) ??
-    rutina.createdAt?.slice(0, 10) ??
-    new Date().toISOString().slice(0, 10);
+    rutinaStartKey(rutina) ??
+    instantToUruguayDateKey(new Date()) ??
+    "";
 
   const flatDays = getFlatRoutineDays(rutina);
   const map = new Map<string, { numeroSemana: number; nombreDia: string; ejercicioIds: string[] }>();
@@ -303,10 +305,7 @@ export function resolveDayDateKey(
         routineDay.dia.nombreDia === day.nombreDia,
     );
     if (index >= 0) {
-      const startKey =
-        rutina.startDate?.slice(0, 10) ??
-        rutina.createdAt?.slice(0, 10) ??
-        day.dateKey;
+      const startKey = rutinaStartKey(rutina) ?? day.dateKey;
       return getDateKeyForPlanDayIndex(rutina, startKey, index);
     }
   }
