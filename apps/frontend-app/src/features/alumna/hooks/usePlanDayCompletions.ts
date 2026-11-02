@@ -69,7 +69,7 @@ export function usePlanDayCompletions(
         nombreDia,
         ejerciciosCompletados:
           ejerciciosCompletados ?? existing?.ejerciciosCompletados ?? [],
-        diaCompletado: true,
+        diaCompletado: false,
         diaOmitido: true,
       });
     },
@@ -90,7 +90,7 @@ export function usePlanDayCompletions(
         numeroSemana,
         nombreDia,
         ejerciciosCompletados: [],
-        diaCompletado: true,
+        diaCompletado: false,
         diaOmitido: true,
       });
     },
@@ -99,9 +99,10 @@ export function usePlanDayCompletions(
 
   const isDayComplete = useCallback(
     (dateKey: string, numeroSemana?: number, nombreDia?: string) => {
-      if (completedDateKeys.has(dateKey)) return true;
       const record = getDayProgreso(dateKey, numeroSemana, nombreDia);
-      return Boolean(record?.diaCompletado || record?.diaOmitido);
+      if (record?.diaOmitido) return false;
+      if (record?.diaCompletado) return true;
+      return completedDateKeys.has(dateKey);
     },
     [completedDateKeys, getDayProgreso],
   );

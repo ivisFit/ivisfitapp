@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/Button";
 import { FeedbackModal } from "@/components/FeedbackModal";
 import { MedicionFotosProgresoFields } from "@/components/mediciones/MedicionFotosProgresoFields";
@@ -86,7 +87,27 @@ export function MedicionFotosEditDialog({
     onClose();
   }
 
-  return (
+  const closeRef = useRef(handleClose);
+  closeRef.current = handleClose;
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      closeRef.current();
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, []);
+
+  const dialog = (
     <div
       className="medicion-fotos-dialog"
       role="dialog"
@@ -128,4 +149,7 @@ export function MedicionFotosEditDialog({
       </article>
     </div>
   );
+
+  if (typeof document === "undefined") return null;
+  return createPortal(dialog, document.body);
 }

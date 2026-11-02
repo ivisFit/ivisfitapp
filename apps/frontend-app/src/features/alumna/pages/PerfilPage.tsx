@@ -3,7 +3,7 @@
 import { useCallback, useState } from "react";
 import { Suspense } from "react";
 import { Button } from "@/components/Button";
-import { FormSkeleton, SkeletonCard, SkeletonLine } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import { useAuth } from "@/context/AuthContext";
 import { usePerfil, useInvalidatePerfil } from "@/features/alumna/hooks/usePerfil";
 import { PerfilSections } from "@/features/alumna/components/PerfilSections";
@@ -14,25 +14,7 @@ import type { HealthChangesRequestInput, UsuarioApiDoc } from "@/types/usuario";
 import "./PerfilPage.css";
 
 function PerfilSkeleton() {
-  return (
-    <div className="perfil-page page" aria-busy="true" aria-label="Cargando perfil">
-      <SkeletonCard elevated className="perfil-skeleton-sheet">
-        <div className="perfil-skeleton-sheet__header">
-          <span className="sk sk--avatar-lg" aria-hidden />
-          <div className="sk-header">
-            <SkeletonLine size="xs" width="w-25" gold />
-            <SkeletonLine size="lg" width="w-48" />
-            <SkeletonLine size="sm" width="w-40" />
-          </div>
-        </div>
-        <FormSkeleton fields={5} showButton={false} />
-      </SkeletonCard>
-      <div
-        className="sk sk--card-elevated perfil-skeleton-gamif"
-        aria-hidden
-      />
-    </div>
-  );
+  return <IvisContentLoader label="Cargando perfil" />;
 }
 
 export function PerfilPage() {

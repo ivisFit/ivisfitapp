@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { CardSkeleton } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import {
   FotosAgrupacionToggle,
   PlieguesFotosComparisonGrid,
@@ -87,7 +87,7 @@ export function AlumnaFotosEvolucion({
       </div>
 
       {loading ? (
-        <CardSkeleton lines={3} />
+        <IvisContentLoader variant="section" label="Cargando fotos" />
       ) : error ? (
         <p className="auth-error">{error}</p>
       ) : totalConFotos === 0 ? (

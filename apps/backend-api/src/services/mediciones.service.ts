@@ -54,6 +54,25 @@ export const medicionesService = {
     return Medicion.find(filter).sort({ fecha: -1 });
   },
 
+  async listPlieguesPropios(alumnaId: string) {
+    return Medicion.find({
+      alumnaId,
+      metodoCalculo: { $in: ["jp3", "jp7"] },
+    })
+      .select(
+        "alumnaId metodoCalculo fecha metricas pesoCorporalKg fotosProgreso",
+      )
+      .sort({ fecha: 1 });
+  },
+
+  async alumnaTienePliegues(alumnaId: string) {
+    const count = await Medicion.countDocuments({
+      alumnaId,
+      metodoCalculo: { $in: ["jp3", "jp7"] },
+    });
+    return count > 0;
+  },
+
   async getUltimaByAlumna(alumnaId: string) {
     return Medicion.findOne({ alumnaId }).sort({ fecha: -1 });
   },

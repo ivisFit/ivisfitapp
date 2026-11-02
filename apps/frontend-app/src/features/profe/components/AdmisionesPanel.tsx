@@ -2,7 +2,7 @@
 
 import { Button } from "@/components";
 import { UserAvatar } from "@/components/UserAvatar";
-import { CardSkeleton, SkeletonStack } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import type { AdmissionRequest } from "@/types/usuario";
 
 function formatMetodo(metodo?: string) {
@@ -77,11 +77,7 @@ export function AdmisionesPanel({
       ) : null}
 
       {loading ? (
-        <SkeletonStack tight aria-busy={true} aria-label="Cargando solicitudes">
-          <CardSkeleton lines={4} elevated />
-          <CardSkeleton lines={4} elevated />
-          <CardSkeleton lines={4} elevated />
-        </SkeletonStack>
+        <IvisContentLoader variant="section" label="Cargando solicitudes" />
       ) : null}
 
       {!loading && solicitudes.length === 0 ? (

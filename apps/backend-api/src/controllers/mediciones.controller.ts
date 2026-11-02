@@ -37,6 +37,16 @@ export const medicionesController = {
     res.json(resumen ?? {});
   },
 
+  async listMisPliegues(req: Request, res: Response) {
+    const usuario = await getUsuarioForSession(req);
+    if (usuario.rol !== "alumna") {
+      throw new AppError(403, "No tenés permiso para esta acción");
+    }
+
+    const mediciones = await medicionesService.listPlieguesPropios(usuario.id);
+    res.json(mediciones);
+  },
+
   async list(req: Request, res: Response) {
     const usuario = await getUsuarioForSession(req);
 

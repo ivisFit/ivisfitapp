@@ -2,7 +2,7 @@
 import { FeedbackModal } from "@/components/FeedbackModal";
 
 import Link from "next/link";
-import { ListSkeleton } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import { usePlanTemplates } from "@/features/profe/hooks/usePlanTemplates";
 import { profePlanTemplateDetailRoute } from "@/routes/paths";
 
@@ -45,7 +45,7 @@ export function CreadorRutinas() {
             aria-busy="true"
             aria-label="Cargando plantillas"
           >
-            <ListSkeleton items={5} />
+            <IvisContentLoader variant="section" label="Cargando plantillas" />
           </div>
         ) : null}
         <FeedbackModal message={error} />

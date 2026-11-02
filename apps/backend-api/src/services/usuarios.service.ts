@@ -5,6 +5,7 @@ import {
   Usuario,
   emitNotificacionProfe,
   notificacionSaludPendiente,
+  resolveModoPlan,
   type CreateUsuarioInput,
   type UpdateUsuarioInput,
   type HealthChangesRequestInput,
@@ -165,8 +166,16 @@ export const usuariosService = {
       if (data.circunferenciasHabilitadas !== undefined) {
         usuario.circunferenciasHabilitadas = data.circunferenciasHabilitadas;
       }
-      if (data.soloAlimentacion !== undefined) {
+      if (data.modoPlan !== undefined) {
+        usuario.modoPlan = data.modoPlan;
+        usuario.soloAlimentacion = data.modoPlan === "alimentacion";
+      } else if (data.soloAlimentacion !== undefined) {
         usuario.soloAlimentacion = data.soloAlimentacion;
+        if (data.soloAlimentacion) {
+          usuario.modoPlan = "alimentacion";
+        } else if (usuario.modoPlan !== "rutina") {
+          usuario.modoPlan = "ambos";
+        }
       }
       if (data.membresia !== undefined) {
         usuario.membresia = {

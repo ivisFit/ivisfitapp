@@ -9,6 +9,7 @@ import {
   RutinaProgreso,
   Usuario,
   Alimento,
+  resolveModoPlan,
   type AsistenteCheckinMotivo,
   type AsistenteCheckinRating,
 } from "@ivisfit/database";
@@ -316,19 +317,46 @@ async function appendConversation(
   );
 }
 
+const RUTINA_INSIGHTS = new Set([
+  "nuevo_record",
+  "racha_positiva",
+  "desafio_semanal",
+  "dias_sin_entrenar",
+  "cumplimiento_bajo",
+  "rutina_asignada",
+  "peso_estancado",
+]);
+
+const ALIMENTACION_INSIGHTS = new Set([
+  "alimentacion_baja",
+  "sin_plan_alimentacion",
+  "plan_publicado",
+]);
+
+function insightVisibleForModo(tipo: string, modo: ReturnType<typeof resolveModoPlan>) {
+  if (modo === "alimentacion" && RUTINA_INSIGHTS.has(tipo)) return false;
+  if (modo === "rutina" && ALIMENTACION_INSIGHTS.has(tipo)) return false;
+  return true;
+}
+
 export const asistenteService = {
   async bootstrap(alumnaId: string) {
     const today = getTodayDateKey();
     await coachProgresoService.evaluar(alumnaId);
 
-    const [context, conversacion, insights] = await Promise.all([
+    const [context, conversacion, insights, alumna] = await Promise.all([
       buildContext(alumnaId),
       ConversacionAsistente.findOne({ alumnaId }),
       CoachInsight.find({ alumnaId, leido: false }).sort({ createdAt: -1 }).limit(1),
+      Usuario.findById(alumnaId).select("soloAlimentacion modoPlan"),
     ]);
 
-    const insight = insights[0];
-    const checkinPendiente = conversacion?.ultimoCheckin?.dateKey !== today;
+    const modoPlan = resolveModoPlan(alumna);
+    const insight = insights.find((item) =>
+      insightVisibleForModo(String(item.tipo), modoPlan),
+    );
+    const checkinPendiente =
+      modoPlan !== "alimentacion" && conversacion?.ultimoCheckin?.dateKey !== today;
     const historial = getMensajesDelDia(conversacion, today);
 
     if (conversacion && conversacion.historialDateKey !== today) {

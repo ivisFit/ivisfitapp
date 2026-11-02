@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AppSidebarSkeleton } from "@/components/skeletons/AppSkeleton";
 import { getSidebarNav } from "@/config/navigation";
+import { resolveModoPlan } from "@/lib/modo-plan";
 import { SidebarNavContent } from "@/components/layout/SidebarNavContent";
 import { useAuth } from "@/context/AuthContext";
 import { useProfeCola } from "@/features/profe/hooks/useProfeCola";
@@ -25,7 +26,8 @@ export function AppSidebar() {
 
   const nav = getSidebarNav(user.role, {
     circunferenciasHabilitadas: user.circunferenciasHabilitadas ?? undefined,
-    soloAlimentacion: user.soloAlimentacion === true,
+    tienePliegues: user.tienePliegues ?? undefined,
+    modoPlan: user.role === "alumna" ? resolveModoPlan(user) : undefined,
   });
 
   async function handleLogout() {

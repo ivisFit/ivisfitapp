@@ -24,6 +24,10 @@ export const membresiaEstadoSchema = z.enum([
   "vencida",
 ]);
 
+export const modoPlanSchema = z.enum(["ambos", "rutina", "alimentacion"]);
+
+export type ModoPlan = z.infer<typeof modoPlanSchema>;
+
 export const mensajeAutorRolSchema = z.enum(["profe", "alumna"]);
 
 export const repeticionesPorSerieSchema = z

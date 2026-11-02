@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/Button";
-import { FormSkeleton, PageHeaderSkeleton, SkeletonCard } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import { RutinaBuilder } from "@/features/profe/components/RutinaBuilder";
 import { usePlanTemplateDetail } from "@/features/profe/hooks/usePlanTemplateDetail";
 import { profeRoutes } from "@/routes/paths";
@@ -34,10 +34,7 @@ export function PlanTemplateDetailPage({ planId }: { planId: string }) {
         <p className="page__back">
           <Link href={profeRoutes.nuevaRutina}>← Volver a laboratorio</Link>
         </p>
-        <PageHeaderSkeleton titleWidth="w-48" subtitle={false} />
-        <SkeletonCard elevated>
-          <FormSkeleton fields={4} />
-        </SkeletonCard>
+        <IvisContentLoader variant="section" label="Cargando plantilla" />
       </div>
     );
   }

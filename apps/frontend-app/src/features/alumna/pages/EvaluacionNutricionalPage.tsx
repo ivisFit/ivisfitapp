@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
-import { FormSkeleton, PageHeaderSkeleton, SkeletonCard, SkeletonStack } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import { NutricionWizard } from "@/features/alumna/components/alimentacion/NutricionWizard";
 import { useEvaluacionBridgeTransition } from "@/features/alumna/components/evaluacion-bridge/EvaluacionBridgeProvider";
 import { useEvaluacionNutricional } from "@/features/alumna/hooks/useEvaluacionNutricional";
@@ -33,12 +33,7 @@ export function EvaluacionNutricionalPage() {
 
   if (loading) {
     return (
-      <SkeletonStack aria-busy={true} aria-label="Cargando evaluación">
-        <PageHeaderSkeleton titleWidth="w-56" subtitleWidth="w-60" eyebrow />
-        <SkeletonCard elevated>
-          <FormSkeleton fields={5} />
-        </SkeletonCard>
-      </SkeletonStack>
+      <IvisContentLoader label="Cargando evaluación" />
     );
   }
 

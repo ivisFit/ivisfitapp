@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/Button";
-import { SkeletonLine } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import { useGamificacion } from "@/features/gamificacion/hooks/useGamificacion";
 import {
   xpProgresoPorcentaje,
@@ -104,41 +104,7 @@ export function LogrosPage() {
   const { data, isLoading, error } = useGamificacion();
 
   if (isLoading) {
-    return (
-      <div className="logros-page page" aria-busy="true" aria-label="Cargando tus logros">
-        <div className="pliegues-hero">
-          <span className="pliegues-hero__eyebrow">Gamificación</span>
-          <h1>Logros</h1>
-        </div>
-        <section className="feature-card gamif-level-card gamif-level-card--loading">
-          <div className="gamif-level-card__level" aria-hidden>
-            <SkeletonLine size="2xl" width="w-25" gold />
-            <span className="gamif-level-card__label">Nivel</span>
-          </div>
-          <div className="gamif-level-card__main" aria-hidden>
-            <SkeletonLine size="sm" width="w-40" />
-            <span className="sk sk--pill sk--xs sk--full" />
-            <SkeletonLine size="xs" width="w-56" />
-          </div>
-        </section>
-        {Array.from({ length: 3 }).map((_, sectionIndex) => (
-          <section key={sectionIndex} className="gamif-section gamif-category-block" aria-hidden>
-            <SkeletonLine size="md" width="w-40" />
-            <ul className="gamif-badges-grid">
-              {Array.from({ length: 4 }).map((__, index) => (
-                <li key={index} className="gamif-badge gamif-badge--locked">
-                  <span className="sk sk--avatar-sm" aria-hidden />
-                  <span className="gamif-badge__info" aria-hidden>
-                    <SkeletonLine size="sm" width="w-60" />
-                    <SkeletonLine size="xs" width="w-90" />
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))}
-      </div>
-    );
+    return <IvisContentLoader label="Cargando tus logros" />;
   }
 
   if (error) {

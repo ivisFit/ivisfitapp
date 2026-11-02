@@ -3,34 +3,26 @@
 import { useState } from "react";
 import {
   Activity,
-  Apple,
   CalendarDays,
-  ChefHat,
   CheckCheck,
   CheckCircle2,
-  Clock3,
-  Cookie,
-  Croissant,
   Droplets,
   Drumstick,
   Flame,
-  MoonStar,
   Percent,
   Quote,
   Scale,
-  StickyNote,
-  Utensils,
   Wheat,
   XCircle,
 } from "lucide-react";
 import type {
-  ComidaPlan,
   DiaPlanNutricional,
   PlanNutricionalApiDoc,
 } from "@/features/alumna/types/plan-nutricional";
 import { useComposicionResumen } from "@/features/alumna/hooks/useComposicionResumen";
 import { useCheckinsAlimentacionSemana } from "@/features/alumna/hooks/useCheckinsAlimentacionSemana";
 import { InfoTooltip } from "@/components";
+import { ComidaCard } from "@/features/alumna/components/alimentacion/ComidaCard";
 import { ProximaComida } from "@/features/alumna/components/alimentacion/ProximaComida";
 import { ListaComprasAlumna } from "@/features/alumna/components/alimentacion/ListaComprasAlumna";
 import { getDiaHoyIndex } from "@/features/alumna/lib/alimentacion-dia-hoy";
@@ -38,18 +30,6 @@ import { getDiaHoyIndex } from "@/features/alumna/lib/alimentacion-dia-hoy";
 type Macros = PlanNutricionalApiDoc["macrosObjetivo"];
 
 const KCAL_POR_GRAMO = { proteina: 4, carbohidratos: 4, grasas: 9 } as const;
-
-function getMealIcon(nombre: string) {
-  const value = nombre.toLowerCase();
-  if (value.includes("desayuno")) return Croissant;
-  if (value.includes("almuerzo")) return Utensils;
-  if (value.includes("merienda")) return Apple;
-  if (value.includes("cena")) return MoonStar;
-  if (value.includes("snack") || value.includes("colación") || value.includes("colacion")) {
-    return Cookie;
-  }
-  return Utensils;
-}
 
 function getCheckinIcon(estado?: string) {
   switch (estado) {
@@ -75,6 +55,26 @@ function getCheckinLabel(estado?: string) {
     default:
       return null;
   }
+}
+
+function NotaProfe({
+  texto,
+  standalone = false,
+}: {
+  texto: string;
+  standalone?: boolean;
+}) {
+  return (
+    <blockquote
+      className={`alimentacion-hero__notes${
+        standalone ? " alimentacion-hero__notes--standalone" : ""
+      }`}
+    >
+      <Quote size={16} aria-hidden />
+      <p>{texto}</p>
+      <footer>Nota de tu profesora</footer>
+    </blockquote>
+  );
 }
 
 function getDiaKcal(dia: DiaPlanNutricional) {
@@ -236,64 +236,6 @@ export function ComposicionResumenAlumna() {
         );
       })}
     </ul>
-  );
-}
-
-function ComidaCard({ comida }: { comida: ComidaPlan }) {
-  const Icon = getMealIcon(comida.nombre);
-
-  return (
-    <article className="alimentacion-comida">
-      <header className="alimentacion-comida__header">
-        <span className="alimentacion-comida__icon" aria-hidden>
-          <Icon size={18} />
-        </span>
-        <div className="alimentacion-comida__title">
-          <h3>{comida.nombre}</h3>
-          {comida.horario ? (
-            <span className="alimentacion-comida__horario">
-              <Clock3 size={13} aria-hidden />
-              {comida.horario}
-            </span>
-          ) : null}
-        </div>
-        {comida.macrosComida ? (
-          <span className="alimentacion-comida__kcal">
-            {comida.macrosComida.kcal} kcal
-          </span>
-        ) : null}
-      </header>
-
-      <ul className="alimentacion-comida__ingredientes">
-        {comida.ingredientes.map((ingrediente, ingredienteIndex) => (
-          <li key={`${ingrediente.nombre}-${ingredienteIndex}`}>
-            <span className="alimentacion-comida__ingrediente-nombre">
-              {ingrediente.nombre}
-            </span>
-            <span className="alimentacion-comida__ingrediente-cantidad">
-              {ingrediente.cantidad}
-              {ingrediente.unidad}
-              {ingrediente.kcal !== undefined ? (
-                <small>{ingrediente.kcal} kcal</small>
-              ) : null}
-            </span>
-          </li>
-        ))}
-      </ul>
-
-      {comida.preparacion ? (
-        <p className="alimentacion-comida__callout alimentacion-comida__callout--prep">
-          <ChefHat size={15} aria-hidden />
-          <span>{comida.preparacion}</span>
-        </p>
-      ) : null}
-      {comida.notas ? (
-        <p className="alimentacion-comida__callout alimentacion-comida__callout--nota">
-          <StickyNote size={15} aria-hidden />
-          <span>{comida.notas}</span>
-        </p>
-      ) : null}
-    </article>
   );
 }
 
@@ -459,13 +401,11 @@ export function PlanNutricionalDashboard({
             </p>
           ) : null}
           {plan.observacionesProfe ? (
-            <blockquote className="alimentacion-hero__notes">
-              <Quote size={16} aria-hidden />
-              <p>{plan.observacionesProfe}</p>
-              <footer>Nota de tu profesora</footer>
-            </blockquote>
+            <NotaProfe texto={plan.observacionesProfe} />
           ) : null}
         </header>
+      ) : plan.observacionesProfe ? (
+        <NotaProfe texto={plan.observacionesProfe} standalone />
       ) : null}
 
       {preview || !diaHoy ? null : (

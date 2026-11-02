@@ -1,6 +1,8 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { resolveModoPlan, type ModoPlan } from "@/lib/modo-plan";
 import { ChatbotAvatar } from "@/features/landing/components/Chatbot/ChatbotAvatar";
 import { AppAssistantChips } from "./AppAssistantChips";
 import {
@@ -99,6 +101,26 @@ function chipsFor(set: ChipSet) {
   }
 }
 
+function visibleChips(
+  chips: Array<{ value: string; label: string }>,
+  modo: ModoPlan,
+) {
+  return chips.filter((chip) => {
+    if (modo === "rutina" && (chip.value === "alimentacion" || chip.value.includes("alimentación"))) {
+      return false;
+    }
+    if (
+      modo === "alimentacion" &&
+      (chip.value === "entrenamiento" ||
+        chip.value === "progreso" ||
+        chip.value.includes("entrenamiento"))
+    ) {
+      return false;
+    }
+    return true;
+  });
+}
+
 function SendIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -109,6 +131,8 @@ function SendIcon() {
 }
 
 export function AsistentePage() {
+  const { user } = useAuth();
+  const modoPlan = resolveModoPlan(user);
   const [text, setText] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -216,7 +240,7 @@ export function AsistentePage() {
 
   const showWhatsappCta = Boolean(whatsappHref) && !loading;
 
-  const options = chipsFor(chipSet);
+  const options = visibleChips(chipsFor(chipSet), modoPlan);
 
   return (
     <div className="app-assistant-page">

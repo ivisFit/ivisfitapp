@@ -13,6 +13,7 @@ import {
 } from "@/routes/auth-redirect";
 import { PwaInstallButton } from "@/components/pwa/PwaInstallButton";
 import { publicRoutes } from "@/routes/paths";
+import { resolveModoPlan } from "@/lib/modo-plan";
 import { prefetchPostLoginRoutes } from "@/lib/prefetch-app-routes";
 import { normalizeAuthEmail } from "@/lib/auth-errors";
 import {
@@ -49,8 +50,12 @@ export function LoginPage() {
   }, []);
 
   useEffect(() => {
-    prefetchPostLoginRoutes(router, user?.role ?? null);
-  }, [router, user?.role]);
+    prefetchPostLoginRoutes(
+      router,
+      user?.role ?? null,
+      user ? resolveModoPlan(user) : undefined,
+    );
+  }, [router, user]);
 
   function persistRememberCredentials() {
     if (rememberMe) {

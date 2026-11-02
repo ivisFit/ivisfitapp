@@ -267,7 +267,7 @@ export function useRutinaProgreso(
     () =>
       new Set(
         Object.values(progresoByDateKey)
-          .filter((record) => record.diaCompletado)
+          .filter((record) => record.diaCompletado && !record.diaOmitido)
           .map((record) => record.dateKey),
       ),
     [progresoByDateKey],

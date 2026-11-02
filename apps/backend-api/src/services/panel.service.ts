@@ -6,6 +6,7 @@ import {
   Rutina,
   RutinaProgreso,
   Usuario,
+  resolveModoPlan,
 } from "@ivisfit/database";
 
 const TIMEZONE = "America/Montevideo";
@@ -469,7 +470,7 @@ export const panelService = {
     const todayKey = isoDateLabel(new Date());
 
     const admitted = await Usuario.find(ADMITTED_ALUMNA_FILTER)
-      .select("_id nombre membresia soloAlimentacion")
+      .select("_id nombre membresia soloAlimentacion modoPlan")
       .lean();
     const admittedIds = admitted.map((a) => a._id);
 
@@ -512,24 +513,34 @@ export const panelService = {
     const conPlan = new Set(planesPublicados.map((p) => String(p.alumnaId)));
 
     const sinRutina = admitted
-      .filter((a) => a.soloAlimentacion !== true && !conRutina.has(String(a._id)))
+      .filter(
+        (a) =>
+          resolveModoPlan(a) !== "alimentacion" && !conRutina.has(String(a._id)),
+      )
       .map((a) => ({ id: String(a._id), nombre: a.nombre }));
 
     const evalSinPlan = admitted
       .filter(
         (a) =>
-          conEval.has(String(a._id)) && !conPlan.has(String(a._id)),
+          resolveModoPlan(a) !== "rutina" &&
+          conEval.has(String(a._id)) &&
+          !conPlan.has(String(a._id)),
       )
       .map((a) => ({ id: String(a._id), nombre: a.nombre }));
 
-    const checkinsAtencion = checkinsHoy.map((c) => {
-      const alumna = admitted.find((a) => String(a._id) === String(c.alumnaId));
-      return {
-        id: String(c.alumnaId),
-        nombre: alumna?.nombre ?? "Alumna",
-        estado: c.estado as string,
-      };
-    });
+    const checkinsAtencion = checkinsHoy
+      .filter((c) => {
+        const alumna = admitted.find((a) => String(a._id) === String(c.alumnaId));
+        return resolveModoPlan(alumna) !== "rutina";
+      })
+      .map((c) => {
+        const alumna = admitted.find((a) => String(a._id) === String(c.alumnaId));
+        return {
+          id: String(c.alumnaId),
+          nombre: alumna?.nombre ?? "Alumna",
+          estado: c.estado as string,
+        };
+      });
 
     const membresiasPorVencer = admitted
       .filter((a) => a.membresia?.estado === "por_vencer")

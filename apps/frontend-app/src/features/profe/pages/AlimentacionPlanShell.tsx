@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { PageHeaderSkeleton } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import { useAlumna } from "@/features/profe/hooks/useAlumna";
 import { AlimentacionPlanProvider } from "@/features/profe/context/AlimentacionPlanProvider";
 import { PlanNutricionalWorkspaceProvider } from "@/features/profe/context/PlanNutricionalWorkspaceProvider";
@@ -23,7 +23,7 @@ function AlimentacionPlanChrome({ children }: { children: React.ReactNode }) {
   }
 
   if (loading) {
-    return <PageHeaderSkeleton titleWidth="w-56" subtitle={false} />;
+    return <IvisContentLoader label="Cargando plan" />;
   }
 
   if (error) {

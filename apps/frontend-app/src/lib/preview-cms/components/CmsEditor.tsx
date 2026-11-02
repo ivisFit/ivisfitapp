@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAppDialog } from '@/components/AppDialogProvider';
 import { FaCompress, FaExpand } from 'react-icons/fa';
-import { SkeletonLine } from '@/components/skeletons/AppSkeleton';
+import { IvisContentLoader } from '@/components/IvisContentLoader';
 import { cmsConfig } from '../config/cms.config';
 import { AdminSiteContentResponseSchema, validateSiteContentData, type SiteContentLocaleDto } from '../types/site-content';
 import { getApiErrorMessage, humanizeSiteContentError } from '../lib/api-errors';
@@ -522,14 +522,7 @@ export default function CmsEditor({
 
   if (loading) {
     return (
-      <div className="sk-stack sk-stack--tight py-12" aria-busy="true" aria-label="Cargando editor">
-        <div className="mx-auto grid max-w-xl gap-3">
-          <SkeletonLine size="md" width="w-40" gold />
-          <SkeletonLine size="sm" width="full" />
-          <SkeletonLine size="sm" width="full" />
-          <SkeletonLine size="sm" width="w-75" />
-        </div>
-      </div>
+      <IvisContentLoader variant="section" label="Cargando editor" />
     );
   }
 

@@ -260,7 +260,7 @@ export function AlimentacionRevisarStep() {
             className="plan-nutricional-builder__field ap-form-grid__wide"
             htmlFor="plan-obs-revisar"
           >
-            <span>Mensaje para la alumna</span>
+            <span>Comentario para la alumna</span>
             <textarea
               id="plan-obs-revisar"
               className="plan-nutricional-builder__textarea"

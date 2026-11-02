@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { PageHeaderSkeleton } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import { AlumnaAlimentacionWorkspace } from "@/features/profe/components/AlumnaAlimentacionWorkspace";
 import { useAlumna } from "@/features/profe/hooks/useAlumna";
 import type { AlumnaDetail } from "@/types/usuario";
@@ -89,7 +89,7 @@ function AlumnaAlimentacionView({
 
   const renderContent = () => {
     if (alumnaLoading) {
-      return <PageHeaderSkeleton titleWidth="w-48" subtitle={false} />;
+      return <IvisContentLoader variant="section" label="Cargando alimentación" />;
     }
     if (alumnaError) {
       return <p className="auth-error">{alumnaError}</p>;

@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { Button, Input, Pagination } from "@/components";
 import { useAppDialog } from "@/components/AppDialogProvider";
-import { ListSkeleton } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import { useUrlPagination } from "@/hooks/useUrlPagination";
 import { YoutubePreview } from "@/features/profe/components/YoutubePreview";
 import {
@@ -254,7 +254,7 @@ export function BancoEjercicios({
 
         {loading ? (
           <div aria-busy="true" aria-label="Cargando ejercicios">
-            <ListSkeleton items={4} withAvatar />
+            <IvisContentLoader variant="section" label="Cargando ejercicios" />
           </div>
         ) : null}
 

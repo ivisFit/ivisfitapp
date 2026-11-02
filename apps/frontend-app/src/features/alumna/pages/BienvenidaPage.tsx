@@ -6,6 +6,7 @@ import { Button, Select } from "@/components";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/api";
 import { invalidateCache } from "@/lib/apiCache";
+import { resolveModoPlan } from "@/lib/modo-plan";
 import { alumnaRoutes, getHomeRouteForRole } from "@/routes/paths";
 import type { UsuarioApiDoc } from "@/types/usuario";
 
@@ -29,7 +30,9 @@ export function BienvenidaPage() {
   const [error, setError] = useState<string | null>(null);
 
   const nombre = user?.name?.split(" ")[0] ?? "";
-  const soloAlimentacion = user?.soloAlimentacion === true;
+  const modoPlan = resolveModoPlan(user);
+  const soloAlimentacion = modoPlan === "alimentacion";
+  const soloRutina = modoPlan === "rutina";
   const pasosVisibles = soloAlimentacion ? [0, 2, 3] : [0, 1, 2, 3];
   const indiceVisible = Math.max(0, pasosVisibles.indexOf(paso));
 
@@ -53,9 +56,7 @@ export function BienvenidaPage() {
 
       const nextRoute =
         profile.tutorialesVistos === true
-          ? getHomeRouteForRole("alumna", {
-              soloAlimentacion: user?.soloAlimentacion,
-            })
+          ?         getHomeRouteForRole("alumna", { modoPlan })
           : alumnaRoutes.tutoriales;
 
       window.location.assign(nextRoute);
@@ -118,7 +119,9 @@ export function BienvenidaPage() {
             <p className="onboarding-step__text">
               {soloAlimentacion
                 ? "Te damos la bienvenida a tu espacio. Acá vas a encontrar tu plan de alimentación y el acompañamiento para avanzar con tu objetivo."
-                : "Te damos la bienvenida a tu espacio. Acá vas a encontrar tu rutina, tu plan de alimentación y todo el acompañamiento para avanzar con tu objetivo."}
+                : soloRutina
+                  ? "Te damos la bienvenida a tu espacio. Acá vas a encontrar tu rutina y el acompañamiento para avanzar con tu objetivo."
+                  : "Te damos la bienvenida a tu espacio. Acá vas a encontrar tu rutina, tu plan de alimentación y todo el acompañamiento para avanzar con tu objetivo."}
             </p>
             <p className="onboarding-step__text">
               Vamos a configurar un par de cosas para empezar con todo.
@@ -235,6 +238,7 @@ export function BienvenidaPage() {
                 </div>
               </div>
               )}
+              {soloRutina ? null : (
               <div className="onboarding-tour__item">
                 <span className="onboarding-tour__icon" aria-hidden>
                   <UtensilsCrossed size={22} />
@@ -244,6 +248,7 @@ export function BienvenidaPage() {
                   <p>Tu plan nutricional y el check-in diario de comidas.</p>
                 </div>
               </div>
+              )}
               {soloAlimentacion ? null : (
               <div className="onboarding-tour__item">
                 <span className="onboarding-tour__icon" aria-hidden>

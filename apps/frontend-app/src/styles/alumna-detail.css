@@ -2,6 +2,8 @@
 
 .alumna-detail-mobile {
   display: block;
+  min-width: 0;
+  max-width: 100%;
   margin: -1.5rem -1rem 0;
 }
 
@@ -155,7 +157,10 @@
   position: relative;
   z-index: 1;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1.15rem;
+  min-width: 0;
+  max-width: 100%;
   padding: 0 1rem 3rem;
   margin-top: -2.5rem;
 }
@@ -367,10 +372,8 @@
 }
 
 .alumna-sheet__plan-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  display: grid;
+  gap: 0.7rem;
   padding: 0.9rem clamp(1.1rem, 3vw, 1.6rem);
   border-bottom: 1px solid rgb(255 255 255 / 8%);
 }
@@ -391,14 +394,18 @@
   line-height: 1.35;
 }
 
-.alumna-sheet__switch {
-  position: relative;
-  flex: 0 0 auto;
-  width: 2.75rem;
-  height: 1.55rem;
+.alumna-sheet__plan-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
 }
 
-.alumna-sheet__switch input {
+.alumna-sheet__plan-option {
+  position: relative;
+  flex: 1 1 8.5rem;
+}
+
+.alumna-sheet__plan-option input {
   position: absolute;
   inset: 0;
   z-index: 1;
@@ -407,43 +414,47 @@
   cursor: pointer;
 }
 
-.alumna-sheet__switch input:disabled {
+.alumna-sheet__plan-option input:disabled {
   cursor: wait;
 }
 
-.alumna-sheet__switch-track {
-  display: block;
-  width: 100%;
-  height: 100%;
-  border-radius: 999px;
-  background: rgb(255 255 255 / 14%);
+.alumna-sheet__plan-option span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.45rem;
+  padding: 0.4rem 0.55rem;
+  border-radius: 0.75rem;
   border: 1px solid rgb(255 255 255 / 18%);
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  background: rgb(255 255 255 / 6%);
+  color: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 
-.alumna-sheet__switch-thumb {
-  position: absolute;
-  top: 0.16rem;
-  left: 0.16rem;
-  width: 1.15rem;
-  height: 1.15rem;
-  border-radius: 999px;
-  background: #fff;
-  transition: transform 0.15s ease;
-}
-
-.alumna-sheet__switch input:checked + .alumna-sheet__switch-track {
+.alumna-sheet__plan-option input:checked + span {
   background: var(--color-gold, #e1aa43);
   border-color: var(--color-gold, #e1aa43);
+  color: #1c1814;
 }
 
-.alumna-sheet__switch input:checked + .alumna-sheet__switch-track .alumna-sheet__switch-thumb {
-  transform: translateX(1.18rem);
-}
-
-.alumna-sheet__switch input:focus-visible + .alumna-sheet__switch-track {
+.alumna-sheet__plan-option input:focus-visible + span {
   outline: 2px solid var(--color-gold, #e1aa43);
   outline-offset: 2px;
+}
+
+.alumna-sheet__plan-option:hover input:not(:disabled):not(:checked) + span {
+  border-color: rgb(225 170 67 / 55%);
+}
+
+.alumna-sheet__plan-option input:disabled + span {
+  opacity: 0.7;
 }
 
 .alumna-sheet__action {
@@ -1184,12 +1195,15 @@
 
 .alumna-detail-tabbed {
   min-width: 0;
+  max-width: 100%;
 }
 
 .alumna-detail-tabbed .profe-chrome-tabs {
   display: flex;
   flex-wrap: nowrap;
   gap: 0.35rem;
+  min-width: 0;
+  max-width: 100%;
   overflow-x: auto;
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
@@ -1207,6 +1221,7 @@
 
 .alumna-detail-tabbed__panel {
   min-width: 0;
+  max-width: 100%;
 }
 
 .alumna-detail-tabbed__panel:has(.plan-nutricional-builder) {

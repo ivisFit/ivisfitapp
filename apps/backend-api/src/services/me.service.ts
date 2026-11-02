@@ -1,6 +1,7 @@
 import type { Request } from "express";
 import {
   Usuario,
+  resolveModoPlan,
   type CompletarOnboardingInput,
   type UpdateMeProfileInput,
   type UpdateNotificacionesInput,
@@ -41,6 +42,7 @@ function serializeUsuario(usuario: {
   alturaCm?: number;
   circunferenciasHabilitadas?: boolean;
   soloAlimentacion?: boolean;
+  modoPlan?: string | null;
   fechaNacimiento?: Date;
   coberturaEmergenciaMedica?: string;
   lesionesPatologias?: string;
@@ -92,6 +94,7 @@ function serializeUsuario(usuario: {
     ...NOTIFICACIONES_DEFAULT,
     ...(usuario.notificaciones ?? {}),
   };
+  const modoPlan = resolveModoPlan(usuario);
 
   return {
     id: usuario._id.toString(),
@@ -104,7 +107,8 @@ function serializeUsuario(usuario: {
     sexo: usuario.sexo,
     alturaCm: usuario.alturaCm,
     circunferenciasHabilitadas: usuario.circunferenciasHabilitadas === true,
-    soloAlimentacion: usuario.soloAlimentacion === true,
+    modoPlan,
+    soloAlimentacion: modoPlan === "alimentacion",
     tutorialesVistos: usuario.tutorialesVistos === true,
     onboardingCompletado: usuario.onboarding?.completado === true,
     notificaciones,

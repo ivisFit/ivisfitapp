@@ -9,6 +9,11 @@ import {
 import { sendRutinaAsignadaEmail } from "@ivisfit/mail";
 import { getAppName, getAppUrl, resolveAlumnaEmail } from "../lib/email.js";
 import {
+  formatRutinaDateKeyLong,
+  isRutinaVisibleToday,
+  rutinaDateKey,
+} from "../lib/rutina-schedule.js";
+import {
   enrichRutinaChallenge28WithTemplate,
   mergeRutinaInputChallenge28WithTemplate,
 } from "./plan-template-rutina-sync.service.js";
@@ -71,19 +76,37 @@ export const rutinasService = {
       if (to && alumna) {
         const planNombre =
           rutina.planTemplateSnapshot?.nombre ?? rutina.nombrePlan;
+        const hermanas = await Rutina.find({ alumnaId: rutina.alumnaId }).select(
+          "startDate createdAt updatedAt duracionSemanas",
+        );
+        const visibleHoy = isRutinaVisibleToday(rutina, hermanas);
+        const inicioKey = rutinaDateKey(rutina.startDate) ?? rutinaDateKey(rutina.createdAt);
+        const inicioProgramado =
+          !visibleHoy && inicioKey ? formatRutinaDateKeyLong(inicioKey) : undefined;
         await sendRutinaAsignadaEmail({
           to,
           alumnaNombre: alumna.nombre,
           planNombre: planNombre || undefined,
           appName: getAppName(),
           appUrl: getAppUrl(),
+          programada: !visibleHoy,
+          inicioProgramado,
         });
+        const mensaje = !visibleHoy
+          ? inicioProgramado
+            ? planNombre
+              ? `Tu rutina "${planNombre}" empieza el ${inicioProgramado}. Hasta esa fecha seguís con la rutina actual.`
+              : `Tenés una rutina nueva que empieza el ${inicioProgramado}. Hasta esa fecha seguís con la rutina actual.`
+            : planNombre
+              ? `Tu rutina "${planNombre}" ya está preparada. Seguís con la rutina actual hasta que termine.`
+              : "Tenés una rutina nueva preparada. Seguís con la actual hasta que termine."
+          : planNombre
+            ? `Tu rutina "${planNombre}" ya está lista. Entrá a Mi rutina para empezar.`
+            : "Tu rutina ya está lista. Entrá a Mi rutina para empezar.";
         await CoachInsight.create({
           alumnaId: rutina.alumnaId,
           tipo: "rutina_asignada",
-          mensaje: planNombre
-            ? `Tu rutina "${planNombre}" ya está lista. Entrá a Mi rutina para empezar.`
-            : "Tu rutina ya está lista. Entrá a Mi rutina para empezar.",
+          mensaje,
           prioridad: 5,
           leido: false,
           accionSugerida: "Abrí Mi rutina",

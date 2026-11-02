@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Button } from "@/components/Button";
-import { ChartSkeleton, FormSkeleton, PageHeaderSkeleton, SkeletonStack, TableSkeleton } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import { CircunferenciaForm } from "@/components/mediciones/CircunferenciaForm";
 import { PlieguesHistoryTable } from "@/features/profe/components/pliegues/PlieguesHistoryTable";
 import { useMeProfile } from "@/features/alumna/hooks/useMeProfile";
@@ -19,9 +19,7 @@ const PlieguesHistoryChart = dynamic(
   {
     ssr: false,
     loading: () => (
-      <section className="pliegues-chart">
-        <ChartSkeleton height="chart-md" />
-      </section>
+      <IvisContentLoader variant="section" label="Cargando gráfico" />
     ),
   },
 );
@@ -39,16 +37,7 @@ export function CircunferenciasPage() {
 
   if (profileLoading) {
     return (
-      <SkeletonStack
-        className="circunferencias-page page"
-        aria-busy={true}
-        aria-label="Cargando"
-      >
-        <PageHeaderSkeleton titleWidth="w-48" subtitleWidth="w-60" eyebrow />
-        <section className="feature-card">
-          <FormSkeleton fields={3} />
-        </section>
-      </SkeletonStack>
+      <IvisContentLoader label="Cargando" />
     );
   }
 
@@ -110,17 +99,7 @@ export function CircunferenciasPage() {
         </section>
 
         {loading ? (
-          <div className="pliegues-layout" aria-busy="true" aria-label="Cargando mediciones">
-            <div className="pliegues-layout__row">
-              <section className="pliegues-form-card feature-card">
-                <FormSkeleton fields={3} />
-              </section>
-              <ChartSkeleton height="chart" />
-            </div>
-            <div className="feature-card">
-              <TableSkeleton rows={3} columns={["3rem", "1fr", "4rem"]} />
-            </div>
-          </div>
+          <IvisContentLoader variant="section" label="Cargando mediciones" />
         ) : error ? (
           <div className="feature-card circunferencias-state" role="alert">
             <p className="auth-error">{error}</p>

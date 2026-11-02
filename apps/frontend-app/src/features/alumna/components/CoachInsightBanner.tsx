@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCoachInsights } from "@/features/alumna/hooks/useCoachInsights";
 import type { CoachInsightTipo } from "@/features/alumna/types/coach-insight";
 import { useAuth } from "@/context/AuthContext";
+import { resolveModoPlan } from "@/lib/modo-plan";
 import { alumnaRoutes } from "@/routes/paths";
 
 const ICONS: Partial<Record<CoachInsightTipo, string>> = {
@@ -51,6 +52,13 @@ const RUTINA_INSIGHTS = new Set<CoachInsightTipo>([
   "dias_sin_entrenar",
   "cumplimiento_bajo",
   "rutina_asignada",
+  "peso_estancado",
+]);
+
+const ALIMENTACION_INSIGHTS = new Set<CoachInsightTipo>([
+  "alimentacion_baja",
+  "sin_plan_alimentacion",
+  "plan_publicado",
 ]);
 
 export function CoachInsightBanner() {
@@ -58,7 +66,9 @@ export function CoachInsightBanner() {
   const { insight, dismiss } = useCoachInsights();
 
   if (!insight) return null;
-  if (user?.soloAlimentacion && RUTINA_INSIGHTS.has(insight.tipo)) return null;
+  const modoPlan = resolveModoPlan(user);
+  if (modoPlan === "alimentacion" && RUTINA_INSIGHTS.has(insight.tipo)) return null;
+  if (modoPlan === "rutina" && ALIMENTACION_INSIGHTS.has(insight.tipo)) return null;
 
   const accionHref = hrefForInsight(insight.tipo);
 

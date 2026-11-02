@@ -3,6 +3,7 @@ import {
   estadoAdmisionSchema,
   membresiaEstadoSchema,
   metodoComprobanteSchema,
+  modoPlanSchema,
   rolSchema,
   sexoSchema,
 } from "./shared";
@@ -48,6 +49,7 @@ const usuarioBaseSchema = z.object({
   fechaRegistro: z.coerce.date().optional(),
   circunferenciasHabilitadas: z.boolean().optional(),
   soloAlimentacion: z.boolean().optional(),
+  modoPlan: modoPlanSchema.optional(),
   tutorialesVistos: z.boolean().optional(),
   onboarding: z
     .object({

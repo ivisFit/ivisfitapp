@@ -89,7 +89,8 @@ export async function proxyApiRequest(request: NextRequest): Promise<NextRespons
     const body = await upstream.arrayBuffer();
     const responseHeaders = forwardUpstreamHeaders(
       upstream,
-      pathname === "/api/mediciones/fotos",
+      pathname === "/api/mediciones/fotos" ||
+        pathname === "/api/me/foto-perfil",
     );
     if (body.byteLength > 0) {
       responseHeaders.set("content-length", String(body.byteLength));

@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/Button";
-import { FormSkeleton, PageHeaderSkeleton, SkeletonCard, SkeletonStack } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import {
   normalizeAlumnaRouteId,
   useAlumna,
@@ -55,15 +55,7 @@ function AlumnaDetailBodyContent({
 
   if (loading || !alumna) {
     return (
-      <SkeletonStack aria-busy={true} aria-label="Cargando alumna">
-        <PageHeaderSkeleton titleWidth="w-48" subtitleWidth="w-40" />
-        <SkeletonCard elevated>
-          <FormSkeleton fields={4} />
-        </SkeletonCard>
-        <SkeletonCard elevated>
-          <FormSkeleton fields={3} />
-        </SkeletonCard>
-      </SkeletonStack>
+      <IvisContentLoader variant="section" label="Cargando alumna" />
     );
   }
 
@@ -84,12 +76,7 @@ function AlumnaDetailBodyContent({
       </div>
       <Suspense
         fallback={
-          <SkeletonStack aria-busy={true} aria-label="Cargando secciones">
-            <PageHeaderSkeleton titleWidth="w-40" subtitle={false} />
-            <SkeletonCard elevated>
-              <FormSkeleton fields={3} />
-            </SkeletonCard>
-          </SkeletonStack>
+          <IvisContentLoader variant="section" label="Cargando secciones" />
         }
       >
         <AlumnaDetailTabbedContent
@@ -165,14 +152,8 @@ function AlumnaDetailDesktop({
 
   if (loading || !alumna) {
     return (
-      <div className="page alumna-detail-desktop alumna-detail-view sk-stack" aria-busy="true" aria-label="Cargando alumna">
-        <PageHeaderSkeleton titleWidth="w-48" subtitle={false} />
-        <SkeletonCard elevated>
-          <FormSkeleton fields={4} />
-        </SkeletonCard>
-        <SkeletonCard elevated>
-          <FormSkeleton fields={3} />
-        </SkeletonCard>
+      <div className="page alumna-detail-desktop alumna-detail-view" aria-busy="true" aria-label="Cargando alumna">
+        <IvisContentLoader label="Cargando alumna" />
       </div>
     );
   }
@@ -184,12 +165,7 @@ function AlumnaDetailDesktop({
       </p>
       <Suspense
         fallback={
-          <SkeletonStack aria-busy={true} aria-label="Cargando secciones">
-            <PageHeaderSkeleton titleWidth="w-48" subtitleWidth="w-40" />
-            <SkeletonCard elevated>
-              <FormSkeleton fields={3} />
-            </SkeletonCard>
-          </SkeletonStack>
+          <IvisContentLoader variant="section" label="Cargando secciones" />
         }
       >
         <>

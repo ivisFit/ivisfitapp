@@ -52,15 +52,11 @@ export function resolveDayStatus(
 ): SeguimientoDayStatus {
   const total = day.ejercicios.length;
   const completedCount = progreso?.ejerciciosCompletados.length ?? 0;
-  const diaCompletado =
-    progreso?.diaOmitido === true ||
-    progreso?.diaCompletado ||
-    (total > 0 && completedCount >= total);
-
-  if (diaCompletado) return "completado";
-  if (day.isToday) return completedCount > 0 ? "en_curso" : "en_curso";
+  if (progreso?.diaCompletado && !progreso.diaOmitido) return "completado";
+  if (progreso?.diaOmitido) return "pendiente";
+  if (total > 0 && completedCount >= total) return "completado";
+  if (day.isToday) return "en_curso";
   if (day.state === "locked") return "futuro";
-  if (day.state === "completed" && !progreso) return "pendiente";
   if (completedCount > 0) return "en_curso";
   return "pendiente";
 }

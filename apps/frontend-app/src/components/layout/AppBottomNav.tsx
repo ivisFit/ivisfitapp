@@ -4,12 +4,13 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import {
   alumnaBottomNav,
-  alumnaMobileMoreNav,
-  omitRutinaNav,
+  filterNavByModoPlan,
+  getAlumnaMobileMoreNav,
   profeBottomNav,
   profeMobileMoreNav,
   type NavItem,
 } from "@/config/navigation";
+import { resolveModoPlan } from "@/lib/modo-plan";
 import { AppBottomNavMoreSheet } from "@/components/layout/AppBottomNavMoreSheet";
 import { BottomNavLink } from "@/components/layout/BottomNavLink";
 import { NavIcon } from "@/components/icons/nav-icons";
@@ -42,11 +43,13 @@ export function AppBottomNav() {
   if (!mounted || !user) return null;
 
   const isAlumna = user.role === "alumna";
-  const soloAlimentacion = isAlumna && user.soloAlimentacion === true;
-  const moreItems = isAlumna ? alumnaMobileMoreNav : profeMobileMoreNav;
-  const nav = omitRutinaNav(
-    isAlumna ? alumnaBottomNav : profeBottomNav,
-    soloAlimentacion,
+  const moreItems = isAlumna
+    ? getAlumnaMobileMoreNav({ tienePliegues: user.tienePliegues === true })
+    : profeMobileMoreNav;
+  const nav = (
+    isAlumna
+      ? filterNavByModoPlan(alumnaBottomNav, resolveModoPlan(user))
+      : profeBottomNav
   ).filter((item) => item.href !== sharedRoutes.ajustes);
   const moreActive = isMoreNavActive(pathname, moreItems);
   const showMensajesBadge = isAlumna && mensajesUnread > 0;

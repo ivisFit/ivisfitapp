@@ -1,3 +1,4 @@
+import { resolveModoPlan } from "@/lib/modo-plan";
 import type { AuthUser, UserRole } from "@/types/auth";
 import type { AdmissionStatus, UsuarioApiDoc } from "@/types/usuario";
 
@@ -28,6 +29,7 @@ export function mapAuthUser(
   if (!sessionUser) return null;
 
   const role = resolveUserRole(profile?.rol, sessionUser.rol);
+  const modoPlan = resolveModoPlan(profile);
 
   return {
     id: profile?.id ?? profile?._id ?? sessionUser.id,
@@ -37,7 +39,9 @@ export function mapAuthUser(
     admissionStatus: resolveAdmissionStatus(role, profile?.estadoAdmision),
     photoUrl: profile?.fotoPerfil?.url ?? null,
     circunferenciasHabilitadas: profile?.circunferenciasHabilitadas === true,
-    soloAlimentacion: profile?.soloAlimentacion === true,
+    tienePliegues: profile?.tienePliegues === true,
+    modoPlan,
+    soloAlimentacion: modoPlan === "alimentacion",
     tutorialesVistos: profile?.tutorialesVistos === true,
     onboardingCompletado: profile?.onboardingCompletado === true,
     notificaciones: profile?.notificaciones,

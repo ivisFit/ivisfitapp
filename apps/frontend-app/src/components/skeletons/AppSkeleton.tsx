@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, type ReactNode } from "react";
-import { PanelSkeleton } from "@/features/profe/components/panel/PanelSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 
 /**
  * Primitivas de skeleton del app. Reutilizan las clases `.sk` de
@@ -324,155 +324,48 @@ export const AppSidebarSkeleton = memo(function AppSidebarSkeleton() {
   );
 });
 
-/* Home de la alumna (/rutina) — imita tabs + historia, sin banner extra */
 export const AlumnaRutinaSkeleton = memo(function AlumnaRutinaSkeleton() {
-  return (
-    <div className="alumna-rutina-skeleton" aria-busy="true" aria-label="Cargando rutina">
-      <section className="feature-card alumna-rutina alumna-rutina--experience">
-        <div className="alumna-rutina__experience">
-          <div className="alumna-rutina__tabs" aria-hidden>
-            <span className="sk sk--tab sk--gold" />
-            <span className="sk sk--tab" />
-          </div>
-
-          <div className="sk-story" aria-hidden>
-            <span className="sk sk--full sk-story__media" />
-            <div className="sk-story__copy">
-              <SkeletonLine size="xs" width="w-32" gold pill />
-              <SkeletonLine size="lg" width="w-60" />
-              <SkeletonLine size="sm" width="w-75" />
-              <span className="sk sk--button sk--gold sk--pill" />
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
-  );
+  return <IvisContentLoader label="Cargando rutina" />;
 });
 
 export const AlumnaAlimentacionSkeleton = memo(function AlumnaAlimentacionSkeleton() {
-  return (
-    <div
-      className="alimentacion-page page sk-stack"
-      aria-busy="true"
-      aria-label="Cargando alimentación"
-    >
-      <PageHeaderSkeleton titleWidth="w-48" subtitleWidth="w-56" eyebrow />
-
-      <SkeletonCard elevated>
-        <div className="sk-card__head">
-          <SkeletonLine size="sm" width="w-40" />
-        </div>
-        <div className="sk-chips">
-          <span className="sk sk--chip sk--gold" />
-          <span className="sk sk--chip" />
-          <span className="sk sk--chip" />
-          <span className="sk sk--chip" />
-        </div>
-      </SkeletonCard>
-
-      <div className="sk-grid sk-grid--4" aria-hidden>
-        {Array.from({ length: 4 }).map((_, index) => (
-          <SkeletonCard key={index} elevated className="sk--metric-card">
-            <SkeletonLine size="xs" width="w-50" />
-            <SkeletonLine size="xl" width="w-60" gold />
-            <SkeletonLine size="xs" width="w-40" />
-          </SkeletonCard>
-        ))}
-      </div>
-
-      <SkeletonCard elevated>
-        <div className="sk-card__head">
-          <SkeletonLine size="md" width="w-48" gold />
-          <SkeletonLine size="xs" width="w-60" />
-        </div>
-        <div className="sk--tabs" aria-hidden>
-          <span className="sk sk--tab sk--gold" />
-          <span className="sk sk--tab" />
-          <span className="sk sk--tab" />
-        </div>
-        {Array.from({ length: 3 }).map((_, index) => (
-          <div key={index} className="sk-meal-row">
-            <span className="sk sk--avatar-sm" />
-            <div className="sk--list-item__text">
-              <SkeletonLine size="md" width="w-50" />
-              <SkeletonLine size="sm" width="w-75" />
-            </div>
-            <span className="sk sk--sm sk--w-75" />
-          </div>
-        ))}
-      </SkeletonCard>
-    </div>
-  );
+  return <IvisContentLoader label="Cargando alimentación" />;
 });
 
 export const AlumnaProgresoSkeleton = memo(function AlumnaProgresoSkeleton() {
-  return (
-    <div
-      className="progreso-page page sk-stack"
-      aria-busy="true"
-      aria-label="Cargando progreso"
-    >
-      <PageHeaderSkeleton titleWidth="w-40" subtitleWidth="w-75" eyebrow />
-      <CardSkeleton lines={2} elevated />
-      <div className="sk-stack sk-stack--tight">
-        <ChartSkeleton height="chart" />
-        <ChartSkeleton height="chart" />
-      </div>
-    </div>
-  );
+  return <IvisContentLoader label="Cargando progreso" />;
 });
 
-/* Página de ajustes */
 export const SettingsSkeleton = memo(function SettingsSkeleton() {
-  return (
-    <div className="page sk-stack" aria-busy="true" aria-label="Cargando ajustes">
-      <PageHeaderSkeleton titleWidth="w-32" subtitle={false} />
-
-      <SkeletonCard elevated>
-        <div className="sk-card__head">
-          <SkeletonLine size="sm" width="w-40" gold />
-          <SkeletonLine size="xs" width="w-60" />
-        </div>
-        <div className="sk--avatar-list-item" style={{ gridTemplateColumns: "4rem 1fr" }}>
-          <span className="sk sk--avatar" />
-          <div className="sk-header">
-            <SkeletonLine size="md" width="w-50" />
-            <SkeletonLine size="sm" width="w-40" />
-          </div>
-        </div>
-      </SkeletonCard>
-
-      <SkeletonCard elevated>
-        <div className="sk-card__head">
-          <SkeletonLine size="sm" width="w-40" gold />
-          <SkeletonLine size="xs" width="w-56" />
-        </div>
-        <FormSkeleton fields={3} />
-      </SkeletonCard>
-    </div>
-  );
+  return <IvisContentLoader label="Cargando ajustes" />;
 });
 
-/* Skeleton genérico de página (lista + tarjetas) */
 export const GenericPageSkeleton = memo(function GenericPageSkeleton() {
-  return (
-    <div className="page sk-stack sk-stack--page" aria-busy="true" aria-label="Cargando página">
-      <PageHeaderSkeleton titleWidth="w-40" subtitleWidth="w-56" />
-      <CardSkeleton lines={3} elevated />
-      <CardSkeleton lines={2} elevated />
-      <ListSkeleton items={4} />
-    </div>
-  );
+  return <IvisContentLoader label="Cargando página" />;
 });
-
-function matchesPath(pathname: string, prefix: string): boolean {
-  return pathname === prefix || pathname.startsWith(`${prefix}/`);
-}
 
 type RouteSkeletonRole = "profe" | "alumna" | "generic";
 
-/* Skeleton por rol / ruta para la carga inicial del shell */
+function routeLoaderLabel(pathname: string): string {
+  if (pathname.includes("/ajustes")) return "Cargando ajustes";
+  if (pathname.includes("/panel")) return "Cargando panel";
+  if (pathname.includes("/rutina")) return "Cargando rutina";
+  if (
+    pathname.includes("/alimentacion") ||
+    pathname.includes("/evaluacion-nutricional")
+  ) {
+    return "Cargando alimentación";
+  }
+  if (
+    pathname.includes("/progreso") ||
+    pathname.includes("/circunferencias") ||
+    pathname.includes("/pliegues")
+  ) {
+    return "Cargando progreso";
+  }
+  return "Cargando";
+}
+
 export function RouteSkeleton({
   role,
   pathname = "",
@@ -480,25 +373,10 @@ export function RouteSkeleton({
   role: RouteSkeletonRole;
   pathname?: string;
 }) {
-  if (pathname) {
-    if (matchesPath(pathname, "/ajustes")) return <SettingsSkeleton />;
-    if (matchesPath(pathname, "/panel")) return <PanelSkeleton />;
-    if (matchesPath(pathname, "/rutina")) return <AlumnaRutinaSkeleton />;
-    if (
-      matchesPath(pathname, "/alimentacion") ||
-      matchesPath(pathname, "/evaluacion-nutricional")
-    ) {
-      return <AlumnaAlimentacionSkeleton />;
-    }
-    if (
-      matchesPath(pathname, "/progreso") ||
-      matchesPath(pathname, "/circunferencias")
-    ) {
-      return <AlumnaProgresoSkeleton />;
-    }
-  }
-
-  if (role === "profe") return <GenericPageSkeleton />;
-  if (role === "alumna") return <GenericPageSkeleton />;
-  return <GenericPageSkeleton />;
+  return (
+    <IvisContentLoader
+      label={routeLoaderLabel(pathname)}
+      seed={`${role}:${pathname}`}
+    />
+  );
 }

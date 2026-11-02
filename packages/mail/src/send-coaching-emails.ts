@@ -45,6 +45,10 @@ export interface SendRutinaAsignadaEmailParams {
   planNombre?: string;
   appName: string;
   appUrl?: string;
+  /** La rutina nueva todavía no es la que la alumna ve hoy. */
+  programada?: boolean;
+  /** Fecha ya formateada en la que empieza esa rutina. */
+  inicioProgramado?: string;
 }
 
 export async function sendRutinaAsignadaEmail({
@@ -53,24 +57,39 @@ export async function sendRutinaAsignadaEmail({
   planNombre,
   appName,
   appUrl,
+  programada: programadaParam,
+  inicioProgramado,
 }: SendRutinaAsignadaEmailParams): Promise<void> {
   const link = appUrl
     ? `<p><a href="${appUrl.replace(/\/alimentacion\/?$/, "/rutina")}">Ver mi rutina</a></p>`
     : "";
   const planLine = planNombre ? ` Plan: <strong>${planNombre}</strong>.` : "";
+  const programada = Boolean(programadaParam || inicioProgramado);
+  const cuando = inicioProgramado ? ` el ${inicioProgramado}` : "";
+  const programadaText = inicioProgramado
+    ? `Tu profesora te preparó una rutina nueva.${planLine} Empieza${cuando}. Hasta esa fecha seguís con la rutina actual.`
+    : `Tu profesora te preparó una rutina nueva.${planLine} Seguís con la rutina actual hasta que termine.`;
 
   await sendSimpleEmail({
     to,
-    subject: `Tu rutina está lista — ${appName}`,
+    subject: programada
+      ? inicioProgramado
+        ? `Tu próxima rutina empieza el ${inicioProgramado} — ${appName}`
+        : `Tu próxima rutina — ${appName}`
+      : `Tu rutina está lista — ${appName}`,
     html: `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
         <h2 style="color: #1a1a1a;">${appName}</h2>
         <p>Hola ${alumnaNombre},</p>
-        <p>Tu profesora te asignó una rutina.${planLine}</p>
+        <p>${programada ? programadaText : `Tu profesora te asignó una rutina.${planLine}`}</p>
         ${link}
       </div>
     `,
-    text: `Hola ${alumnaNombre}, tu rutina ya está disponible en ${appName}.`,
+    text: programada
+      ? inicioProgramado
+        ? `Hola ${alumnaNombre}, tenés una rutina nueva en ${appName}. Empieza el ${inicioProgramado}. Hasta esa fecha seguís con la rutina actual.`
+        : `Hola ${alumnaNombre}, tenés una rutina nueva en ${appName}. Seguís con la rutina actual hasta que termine.`
+      : `Hola ${alumnaNombre}, tu rutina ya está disponible en ${appName}.`,
   });
 }
 

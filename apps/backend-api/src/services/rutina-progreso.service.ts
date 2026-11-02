@@ -55,7 +55,9 @@ export const rutinaProgresoService = {
       diaOmitido: data.diaOmitido ?? false,
     };
 
-    if (data.diaCompletado && !existing?.fechaCompletado) {
+    const markingRealComplete = data.diaCompletado && !data.diaOmitido;
+    const wasOmitted = existing?.diaOmitido === true;
+    if (markingRealComplete && (!existing?.fechaCompletado || wasOmitted)) {
       setPayload.fechaCompletado = getTodayDateKey();
     }
 

@@ -25,7 +25,7 @@ import { formatSeriesReps } from "@/lib/rutina-reps";
 import type { RutinaProgresoRecord } from "@/features/alumna/types/rutina-progreso";
 
 const INCOMPLETE_DAY_CONFIRM =
-  "Todavía te faltan ejercicios. ¿Marcar el día como incompleto? Vas a pasar al siguiente día sin sumar XP ni racha. Se guardan los que ya marcaste.";
+  "Todavía te faltan ejercicios. ¿Marcar el día como no hecho? No suma XP ni racha, y podés completarlo otro día. Se guardan los que ya marcaste.";
 
 type TrainingStoryPreviewProps = {
   rutina: RutinaDetail;
@@ -88,6 +88,10 @@ function isIntroStep(step: DayStoryStep | undefined): boolean {
   return step?.kind === "weekIntro" || step?.kind === "dayIntro";
 }
 
+function isRosterStep(step: DayStoryStep | undefined): boolean {
+  return step?.kind === "dayRoster";
+}
+
 function isOutroStep(step: DayStoryStep | undefined): boolean {
   return step?.kind === "dayOutro" || step?.kind === "weekOutro";
 }
@@ -98,6 +102,8 @@ function storyStepLabel(step: DayStoryStep): string {
       return "Introducción de la semana";
     case "dayIntro":
       return "Introducción del día";
+    case "dayRoster":
+      return "Resumen del día";
     case "exercise":
       return `Ejercicio ${step.index + 1}`;
     case "dayOutro":
@@ -117,6 +123,8 @@ function storyStepCopy(
       return "Mirá el mensaje de la semana antes de empezar.";
     case "dayIntro":
       return "Mirá el mensaje del día antes de empezar.";
+    case "dayRoster":
+      return "Mirá los ejercicios de hoy antes de empezar.";
     case "dayOutro":
       return `Completaste ${completedCount} de ${totalExercises} ejercicios. Cerrá el día con este mensaje.`;
     case "weekOutro":
@@ -188,6 +196,7 @@ export function TrainingStoryPreview({
   const nextStep = sequence[safeStepIndex + 1];
   const isLastStep = sequence.length > 0 && safeStepIndex === sequence.length - 1;
   const isIntroView = isIntroStep(currentStep);
+  const isRosterView = isRosterStep(currentStep);
   const isOutroView = isOutroStep(currentStep);
   const isExerciseView = currentStep?.kind === "exercise";
   const activeIndex = currentStep?.kind === "exercise" ? currentStep.index : 0;
@@ -222,7 +231,7 @@ export function TrainingStoryPreview({
   function handleSkipDay() {
     if (!onSkipDay || isDayCompleted) return;
     const confirmed = window.confirm(
-      "¿Marcar este día como no entrenado? Vas a pasar al siguiente día del plan sin sumar XP ni racha.",
+      "¿Marcar este día como no hecho? No suma XP ni racha, y podés completarlo otro día.",
     );
     if (confirmed) onSkipDay();
   }
@@ -375,6 +384,51 @@ export function TrainingStoryPreview({
                 onClick={goNext}
               >
                 Siguiente
+              </button>
+            </nav>
+          </div>
+        ) : null}
+
+        {isRosterView ? (
+          <div className="training-story__step training-story__step--roster">
+            <p className="training-story__intro-copy">
+              Mirá los ejercicios de hoy antes de empezar.
+            </p>
+            <ol className="training-story__roster">
+              {dayInfo.ejercicios.map((ejercicio, index) => (
+                <li key={`${ejercicio.id}-${index}`}>
+                  <span className="training-story__roster-index">{index + 1}</span>
+                  <div className="training-story__roster-copy">
+                    <strong>{ejercicio.nombre}</strong>
+                    <span>
+                      {formatSeriesReps(
+                        ejercicio.series,
+                        ejercicio.repeticiones,
+                        ejercicio.repeticionesPorSerie,
+                      )}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ol>
+            <nav className="training-story__nav" aria-label="Navegación del resumen">
+              {safeStepIndex > 0 ? (
+                <button
+                  type="button"
+                  className="training-story__nav-btn training-story__nav-btn--ghost"
+                  onClick={goPrev}
+                >
+                  Anterior
+                </button>
+              ) : (
+                <span />
+              )}
+              <button
+                type="button"
+                className="training-story__nav-btn training-story__nav-btn--primary"
+                onClick={goNext}
+              >
+                Empezar
               </button>
             </nav>
           </div>

@@ -8,6 +8,10 @@ export const medicionesRouter = Router();
 
 medicionesRouter.get("/", asyncHandler(medicionesController.list));
 medicionesRouter.get("/mi-resumen", asyncHandler(medicionesController.getMiResumen));
+medicionesRouter.get(
+  "/mis-pliegues",
+  asyncHandler(medicionesController.listMisPliegues),
+);
 medicionesRouter.get("/:id", asyncHandler(medicionesController.getById));
 medicionesRouter.post(
   "/",

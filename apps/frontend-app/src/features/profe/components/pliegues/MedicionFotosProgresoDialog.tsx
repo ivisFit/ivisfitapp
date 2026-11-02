@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import type { FotosProgreso } from "@/features/profe/types/medicion";
 import {
   countFotosProgreso,
@@ -22,7 +24,27 @@ export function MedicionFotosProgresoDialog({
   fechaLabel,
   onClose,
 }: MedicionFotosProgresoDialogProps) {
-  return (
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      onCloseRef.current();
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, []);
+
+  const dialog = (
     <div
       className="medicion-fotos-dialog"
       role="dialog"
@@ -58,4 +80,7 @@ export function MedicionFotosProgresoDialog({
       </article>
     </div>
   );
+
+  if (typeof document === "undefined") return null;
+  return createPortal(dialog, document.body);
 }

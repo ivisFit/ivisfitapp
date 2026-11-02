@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import { AlumnaRutinaSkeleton } from "@/components/skeletons/AppSkeleton";
 import { useAuth } from "@/context/AuthContext";
 import { CoachInsightBanner } from "@/features/alumna/components/CoachInsightBanner";
+import { ChallengeDaySheet } from "@/features/alumna/components/ChallengeDaySheet";
 import { PlanDaysDashboard } from "@/features/alumna/components/PlanDaysDashboard";
 import { TrainingStoryPreview } from "@/features/alumna/components/TrainingStoryPreview";
 import { WaitingStateActions } from "@/features/alumna/components/WaitingStateActions";
@@ -18,14 +19,17 @@ import {
   buildChallenge28Days,
   buildPlanDays,
   getFlatRoutineDays,
+  getTodayDateKey,
   hasCustomPlanContent,
   resolveRutinaDay,
+  type ChallengeDay,
 } from "@/features/alumna/lib/rutina-day";
 
 type RutinaView = "story" | "plan";
 
 export function VistaRutina() {
   const [activeView, setActiveView] = useState<RutinaView>("story");
+  const [catchUpDateKey, setCatchUpDateKey] = useState<string | null>(null);
   const { user, loading: authLoading } = useAuth();
   const {
     rutina,
@@ -39,22 +43,13 @@ export function VistaRutina() {
     markDayIncomplete,
     markDaySkipped,
     isDayComplete,
-    isPlanDayDone,
     getDayProgreso,
     upsertProgreso,
   } = usePlanDayCompletions(rutina?.id, rutina);
 
-  const rutinaProgressOptions = useMemo(
-    () => ({ isPlanDayDone }),
-    [isPlanDayDone],
-  );
-
   const dayInfo = useMemo(
-    () =>
-      rutina
-        ? resolveRutinaDay(rutina, undefined, undefined, rutinaProgressOptions)
-        : null,
-    [rutina, rutinaProgressOptions],
+    () => (rutina ? resolveRutinaDay(rutina) : null),
+    [rutina],
   );
 
   const todayDateKey = useMemo(
@@ -69,11 +64,62 @@ export function VistaRutina() {
 
     const baseDays =
       hasCustomPlanContentFlag && flatDays.length > 0
-        ? buildChallenge28Days(rutina, dayInfo, flatDays.length, rutinaProgressOptions)
-        : buildPlanDays(rutina, dayInfo, rutinaProgressOptions);
+        ? buildChallenge28Days(rutina, dayInfo, flatDays.length)
+        : buildPlanDays(rutina, dayInfo);
 
     return applyManualDayCompletions(baseDays, completedDateKeys, getDayProgreso);
-  }, [completedDateKeys, dayInfo, getDayProgreso, rutina, rutinaProgressOptions]);
+  }, [completedDateKeys, dayInfo, getDayProgreso, rutina]);
+
+  const todayKey = getTodayDateKey();
+  const pendingDay = useMemo(
+    () =>
+      planDays.find((day) => day.state === "missed" && day.dateKey < todayKey) ??
+      null,
+    [planDays, todayKey],
+  );
+  const catchUpDay = useMemo(
+    () => planDays.find((day) => day.dateKey === catchUpDateKey) ?? null,
+    [catchUpDateKey, planDays],
+  );
+
+  const finishPlanDay = useCallback(
+    (day: ChallengeDay) => {
+      if (!day.numeroSemana || !day.nombreDia) return;
+      void markDayComplete({
+        dateKey: day.dateKey,
+        numeroSemana: day.numeroSemana,
+        nombreDia: day.nombreDia,
+        ejerciciosCompletados: day.ejercicios
+          .map((ejercicio) => ejercicio.id)
+          .filter(Boolean),
+      });
+    },
+    [markDayComplete],
+  );
+
+  const finishPlanDayIncomplete = useCallback(
+    (day: ChallengeDay) => {
+      if (!day.numeroSemana || !day.nombreDia) return;
+      void markDayIncomplete({
+        dateKey: day.dateKey,
+        numeroSemana: day.numeroSemana,
+        nombreDia: day.nombreDia,
+      });
+    },
+    [markDayIncomplete],
+  );
+
+  const skipPlanDay = useCallback(
+    (day: ChallengeDay) => {
+      if (!day.numeroSemana || !day.nombreDia) return;
+      void markDaySkipped({
+        dateKey: day.dateKey,
+        numeroSemana: day.numeroSemana,
+        nombreDia: day.nombreDia,
+      });
+    },
+    [markDaySkipped],
+  );
 
   const handleSkipDay = useCallback(() => {
     if (!rutina || !dayInfo) return;
@@ -148,23 +194,38 @@ export function VistaRutina() {
             </div>
 
             {activeView === "story" && todayDateKey ? (
-              <TrainingStoryPreview
-                rutina={rutina}
-                dayInfo={dayInfo}
-                dayDateKey={todayDateKey}
-                isDayCompleted={isDayComplete(
-                  todayDateKey,
-                  dayInfo.numeroSemana,
-                  dayInfo.nombreDia,
-                )}
-                getDayProgreso={getDayProgreso}
-                upsertProgreso={upsertProgreso}
-                onFinishDay={() =>
-                  void markDayComplete(buildTodayCompletionInput(rutina, dayInfo))
-                }
-                onFinishIncomplete={handleFinishIncomplete}
-                onSkipDay={handleSkipDay}
-              />
+              <>
+                {pendingDay ? (
+                  <div className="rutina-catchup" role="status">
+                    <p>
+                      Te quedó {pendingDay.title}. Lo podés completar otro día.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setCatchUpDateKey(pendingDay.dateKey)}
+                    >
+                      Completar
+                    </button>
+                  </div>
+                ) : null}
+                <TrainingStoryPreview
+                  rutina={rutina}
+                  dayInfo={dayInfo}
+                  dayDateKey={todayDateKey}
+                  isDayCompleted={isDayComplete(
+                    todayDateKey,
+                    dayInfo.numeroSemana,
+                    dayInfo.nombreDia,
+                  )}
+                  getDayProgreso={getDayProgreso}
+                  upsertProgreso={upsertProgreso}
+                  onFinishDay={() =>
+                    void markDayComplete(buildTodayCompletionInput(rutina, dayInfo))
+                  }
+                  onFinishIncomplete={handleFinishIncomplete}
+                  onSkipDay={handleSkipDay}
+                />
+              </>
             ) : null}
 
             {activeView === "plan" ? (
@@ -173,33 +234,23 @@ export function VistaRutina() {
                 days={planDays}
                 getDayProgreso={getDayProgreso}
                 upsertProgreso={upsertProgreso}
-                onFinishDay={(day) => {
-                  if (!day.numeroSemana || !day.nombreDia) return;
-                  void markDayComplete({
-                    dateKey: day.dateKey,
-                    numeroSemana: day.numeroSemana,
-                    nombreDia: day.nombreDia,
-                    ejerciciosCompletados: day.ejercicios
-                      .map((ejercicio) => ejercicio.id)
-                      .filter(Boolean),
-                  });
-                }}
-                onFinishIncomplete={(day) => {
-                  if (!day.numeroSemana || !day.nombreDia) return;
-                  void markDayIncomplete({
-                    dateKey: day.dateKey,
-                    numeroSemana: day.numeroSemana,
-                    nombreDia: day.nombreDia,
-                  });
-                }}
-                onSkipDay={(day) => {
-                  if (!day.numeroSemana || !day.nombreDia) return;
-                  void markDaySkipped({
-                    dateKey: day.dateKey,
-                    numeroSemana: day.numeroSemana,
-                    nombreDia: day.nombreDia,
-                  });
-                }}
+                onFinishDay={finishPlanDay}
+                onFinishIncomplete={finishPlanDayIncomplete}
+                onSkipDay={skipPlanDay}
+              />
+            ) : null}
+
+            {activeView === "story" && catchUpDay ? (
+              <ChallengeDaySheet
+                day={catchUpDay}
+                rutina={rutina}
+                rutinaId={rutina.id}
+                onClose={() => setCatchUpDateKey(null)}
+                getDayProgreso={getDayProgreso}
+                upsertProgreso={upsertProgreso}
+                onFinishDay={finishPlanDay}
+                onFinishIncomplete={finishPlanDayIncomplete}
+                onSkipDay={skipPlanDay}
               />
             ) : null}
           </div>

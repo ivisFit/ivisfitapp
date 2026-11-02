@@ -5,7 +5,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { Button, Input } from "@/components";
 import { useAppDialog } from "@/components/AppDialogProvider";
-import { ListSkeleton } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import { PlanCardImagePicker } from "@/features/profe/components/PlanCardImagePicker";
 import {
   type LandingPlanGestion,
@@ -485,7 +485,7 @@ export function GestionPlanesLanding({
 
         {loading ? (
           <div aria-busy="true" aria-label="Cargando planes">
-            <ListSkeleton items={4} />
+            <IvisContentLoader variant="section" label="Cargando planes" />
           </div>
         ) : null}
 

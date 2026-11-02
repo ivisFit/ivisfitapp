@@ -5,7 +5,7 @@ import { CalendarClock, Video } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useProximaReunion } from "@/features/alumna/hooks/useProximaReunion";
 import { formatReunionDate, parseReunionLinkHref } from "@/features/profe/types/reunion";
-import { CardSkeleton } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import { getHomeRouteForRole } from "@/routes/paths";
 
 export function ReunionPage() {
@@ -25,7 +25,7 @@ export function ReunionPage() {
           <p className="reunion-page__eyebrow">Próxima reunión</p>
           <h1>Reunión</h1>
         </header>
-        <CardSkeleton elevated lines={2} />
+        <IvisContentLoader variant="section" label="Cargando reunión" />
       </div>
     );
   }

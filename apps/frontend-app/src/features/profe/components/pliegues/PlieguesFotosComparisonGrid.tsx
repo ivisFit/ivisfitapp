@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import type { FotosProgresoSlot } from "@/features/profe/types/medicion";
 import {
   PLIEGUES_FOTOS_SLOT_LABELS,
@@ -97,6 +98,17 @@ export function PlieguesFotosComparisonGrid({
     },
     [lightbox, lightboxIndex, lightboxItems],
   );
+
+  const lightboxOpen = lightbox != null;
+
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [lightboxOpen]);
 
   useEffect(() => {
     if (!lightbox) return;
@@ -242,7 +254,8 @@ export function PlieguesFotosComparisonGrid({
         </table>
       </div>
 
-      {lightbox && current && currentImage ? (
+      {lightbox && current && currentImage && typeof document !== "undefined"
+        ? createPortal(
         <div
           className="medicion-fotos-dialog pliegues-fotos-lightbox"
           role="dialog"
@@ -348,8 +361,10 @@ export function PlieguesFotosComparisonGrid({
               {modo === "mes" ? " meses con esta foto" : ""}
             </p>
           </article>
-        </div>
-      ) : null}
+        </div>,
+            document.body,
+          )
+        : null}
     </>
   );
 }

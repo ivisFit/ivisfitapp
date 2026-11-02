@@ -145,6 +145,45 @@ html[data-color-scheme="light"] .profe-notificaciones-btn {
   color: #1c1814;
 }
 
+.app-shell--alumna[data-color-scheme="light"] .training-story__roster li {
+  background: #fff;
+  border-color: rgb(184 148 31 / 28%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .training-story__step--roster .training-story__intro-copy,
+.app-shell--alumna[data-color-scheme="light"] .training-story__roster-copy span {
+  color: #5c5348;
+}
+
+.app-shell--alumna[data-color-scheme="light"] .training-story__roster-copy strong {
+  color: #1c1814;
+}
+
+.app-shell--alumna[data-color-scheme="light"] .plan-month__day {
+  background: #fff;
+  border-color: rgb(184 148 31 / 22%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .plan-month__nav {
+  background: #fff;
+  border-color: rgb(184 148 31 / 28%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .alumna-rutina--experience .plan-month__day.is-today .plan-month__number,
+.app-shell--alumna[data-color-scheme="light"] .alumna-rutina--experience .plan-month__chip,
+.app-shell--alumna[data-color-scheme="light"] .alumna-rutina--experience .plan-month__chip span {
+  color: #fff;
+}
+
+.app-shell--alumna[data-color-scheme="light"] .rutina-catchup {
+  background: rgb(124 77 255 / 12%);
+  border-color: rgb(124 77 255 / 35%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .challenge-sheet__completed-note {
+  color: #5c5348;
+}
+
 .app-shell--alumna[data-color-scheme="light"] .weight-log__input-wrap,
 .app-shell--alumna[data-color-scheme="light"] .weight-log--sheet .weight-log__input-wrap {
   background: #fff;
@@ -897,4 +936,24 @@ html[data-alumna-color-scheme="light"] .onboarding-switch__input:checked
 .app-shell--alumna[data-color-scheme="light"] .page h1,
 .app-shell--alumna[data-color-scheme="light"] .page h2 {
   color: var(--color-heading);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .progreso-circunferencias-cta p {
+  color: var(--color-text-muted);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .pliegues-fotos-historial-summary__card {
+  background: rgb(255 255 255 / 72%);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .pliegues-fotos-historial__corner,
+.app-shell--alumna[data-color-scheme="light"] .pliegues-fotos-historial__row-label {
+  background: #fff8ef;
+  box-shadow: 12px 0 16px -12px #fff8ef;
+}
+
+.app-shell--alumna[data-color-scheme="light"] .pliegues-fotos-historial__placeholder {
+  color: rgb(40 32 24 / 45%);
+  border-color: rgb(40 32 24 / 12%);
+  background: rgb(40 32 24 / 3%);
 }

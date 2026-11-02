@@ -88,7 +88,7 @@ export type RutinaDay = {
   weekIndex: number;
 };
 
-export type ChallengeDayState = "completed" | "unlocked" | "locked";
+export type ChallengeDayState = "completed" | "missed" | "unlocked" | "locked";
 
 export type ChallengeDay = {
   dayNumber: number;
@@ -111,6 +111,7 @@ export type ChallengeDay = {
 export type DayStoryStepKind =
   | "weekIntro"
   | "dayIntro"
+  | "dayRoster"
   | "exercise"
   | "dayOutro"
   | "weekOutro";
@@ -118,6 +119,7 @@ export type DayStoryStepKind =
 export type DayStoryStep =
   | { kind: "weekIntro"; media: RutinaMediaAsset }
   | { kind: "dayIntro"; media: RutinaMediaAsset }
+  | { kind: "dayRoster" }
   | { kind: "exercise"; index: number; ejercicio: RutinaDia["ejercicios"][number] }
   | { kind: "dayOutro"; media: RutinaMediaAsset }
   | { kind: "weekOutro"; media: RutinaMediaAsset };
@@ -495,6 +497,10 @@ export function buildDayStorySequence(
     steps.push({ kind: "dayIntro", media: dayIntro });
   }
 
+  if (dayInfo.ejercicios.length > 0) {
+    steps.push({ kind: "dayRoster" });
+  }
+
   dayInfo.ejercicios.forEach((ejercicio, index) => {
     steps.push({ kind: "exercise", index, ejercicio });
   });
@@ -676,6 +682,13 @@ export function buildChallenge28Days(
       thumbnail: configuredDay?.thumbnail ?? media,
     });
   });
+}
+
+export function getTodayDateKey(
+  now: Date = new Date(),
+  timeZone: string = TIME_ZONE,
+): string {
+  return toDateKeyFromDate(now, timeZone);
 }
 
 export function formatTodayLabel(

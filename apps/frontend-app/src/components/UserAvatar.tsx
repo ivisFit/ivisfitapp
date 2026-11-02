@@ -1,5 +1,6 @@
 "use client";
 
+import { browserImageUrl } from "@/lib/browser-image-url";
 import { getInitials } from "@/lib/display-name";
 import "./UserAvatar.css";
 
@@ -18,7 +19,7 @@ export function UserAvatar({
     <span className={className} aria-hidden>
       {photoUrl ? (
         <img
-          src={photoUrl}
+          src={browserImageUrl(photoUrl)}
           alt=""
           className="user-avatar__img"
           loading="lazy"

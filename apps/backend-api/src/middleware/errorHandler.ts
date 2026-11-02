@@ -15,7 +15,7 @@ export function errorHandler(
     (error as { type?: string }).type === "entity.too.large"
   ) {
     const path = _req.originalUrl ?? "";
-    if (path.includes("/mediciones/fotos")) {
+    if (path.includes("/mediciones/fotos") || path.includes("/me/foto-perfil")) {
       return res.status(413).json({
         error: "La foto es demasiado grande. Probá con otra imagen.",
       });

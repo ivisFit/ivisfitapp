@@ -9,6 +9,7 @@
 @import "./logout-exit-transition.css";
 @import "./transitions.css";
 @import "./app-skeletons.css";
+@import "./ivis-loader.css";
 
 *,
 *::before,

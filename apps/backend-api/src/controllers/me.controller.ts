@@ -9,11 +9,18 @@ import {
   updatePerfilForSession,
   updateNotificaciones,
 } from "../services/me.service.js";
+import { medicionesService } from "../services/mediciones.service.js";
 
 export const meController = {
   async get(req: Request, res: Response) {
     const usuario = await getUsuarioForSession(req);
-    res.json(usuario);
+    if (usuario.rol !== "alumna") {
+      res.json(usuario);
+      return;
+    }
+
+    const tienePliegues = await medicionesService.alumnaTienePliegues(usuario.id);
+    res.json({ ...usuario, tienePliegues });
   },
 
   async markTutorialesVistos(req: Request, res: Response) {

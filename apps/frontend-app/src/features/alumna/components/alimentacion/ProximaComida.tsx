@@ -3,6 +3,10 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { CheckCircle2, ChefHat, Clock3, Flame, Play, StickyNote } from "lucide-react";
+import {
+  ComidaCard,
+  type ComidaCardEstado,
+} from "@/features/alumna/components/alimentacion/ComidaCard";
 import type {
   ComidaPlan,
   DiaPlanNutricional,
@@ -62,6 +66,44 @@ function relativo(target: number | null, now: Date): string | null {
   const h = Math.floor(diff / 60);
   const m = diff % 60;
   return `En ${h} h${m ? ` ${m} min` : ""}`;
+}
+
+function estadoComida(
+  index: number,
+  done: number[],
+  pendienteIndex: number,
+): ComidaCardEstado {
+  if (done.includes(index)) return "hecha";
+  if (index === pendienteIndex) return "ahora";
+  return "mas-tarde";
+}
+
+function ComidasDelDia({
+  dia,
+  done,
+  pendienteIndex,
+}: {
+  dia: DiaPlanNutricional;
+  done: number[];
+  pendienteIndex: number;
+}) {
+  return (
+    <section className="comidas-del-dia" aria-labelledby="comidas-del-dia-title">
+      <div className="alimentacion-section-heading">
+        <h2 id="comidas-del-dia-title">Comidas de hoy</h2>
+        <p>Podés ver todo el día antes de empezar cada comida.</p>
+      </div>
+      <div className="alimentacion-plan__comidas">
+        {dia.comidas.map((comida, index) => (
+          <ComidaCard
+            key={`${comida.nombre}-${index}`}
+            comida={comida}
+            estado={estadoComida(index, done, pendienteIndex)}
+          />
+        ))}
+      </div>
+    </section>
+  );
 }
 
 function ComidaDetalle({ comida }: { comida: ComidaPlan }) {
@@ -159,32 +201,39 @@ export function ProximaComida({
     </nav>
   );
 
+  const preview = (
+    <ComidasDelDia dia={dia} done={done} pendienteIndex={pendienteIndex} />
+  );
+
   if (!comida) {
     return (
-      <section className="proxima-comida proxima-comida--done" aria-live="polite">
-        <div className="proxima-comida__body">
-          <CheckCircle2 size={40} aria-hidden />
-          <h2>¡Completaste tu día!</h2>
-          <p>Cumpliste las {total} comidas de hoy. Mañana seguimos.</p>
-          {done.length > 0 ? (
-            <ul className="proxima-comida__hechas" aria-label="Comidas completadas hoy">
-              {done.map((i) => (
-                <li key={i}>
-                  <button
-                    type="button"
-                    className="proxima-comida__hecha"
-                    onClick={() => setViewingIndex(i)}
-                  >
-                    <CheckCircle2 size={16} aria-hidden />
-                    {dia.comidas[i]?.nombre}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </div>
-        <div className="proxima-comida__actions">{quickLinks}</div>
-      </section>
+      <>
+        <section className="proxima-comida proxima-comida--done" aria-live="polite">
+          <div className="proxima-comida__body">
+            <CheckCircle2 size={40} aria-hidden />
+            <h2>¡Completaste tu día!</h2>
+            <p>Cumpliste las {total} comidas de hoy. Mañana seguimos.</p>
+            {done.length > 0 ? (
+              <ul className="proxima-comida__hechas" aria-label="Comidas completadas hoy">
+                {done.map((i) => (
+                  <li key={i}>
+                    <button
+                      type="button"
+                      className="proxima-comida__hecha"
+                      onClick={() => setViewingIndex(i)}
+                    >
+                      <CheckCircle2 size={16} aria-hidden />
+                      {dia.comidas[i]?.nombre}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+          <div className="proxima-comida__actions">{quickLinks}</div>
+        </section>
+        {preview}
+      </>
     );
   }
 
@@ -194,10 +243,11 @@ export function ProximaComida({
   const unlockLabel = modoBloqueado ? horaDesbloqueo(comida.horario) : null;
 
   return (
-    <section
-      className={`proxima-comida${modoBloqueado ? " proxima-comida--locked" : ""}`}
-      aria-labelledby="proxima-comida-title"
-    >
+    <>
+      <section
+        className={`proxima-comida${modoBloqueado ? " proxima-comida--locked" : ""}`}
+        aria-labelledby="proxima-comida-title"
+      >
       <div className="proxima-comida__body">
         <div className="proxima-comida__steps" aria-label={`${done.length} de ${total} comidas`}>
           {dia.comidas.map((c, i) => {
@@ -325,6 +375,8 @@ export function ProximaComida({
           </button>
         )}
       </div>
-    </section>
+      </section>
+      {preview}
+    </>
   );
 }

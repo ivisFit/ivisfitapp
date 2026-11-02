@@ -1,3 +1,4 @@
+import { resolveModoPlan } from "@/lib/modo-plan";
 import {
   alumnaRoutes,
   getHomeRouteForRole,
@@ -39,6 +40,7 @@ const ALUMNA_ROUTE_PREFIXES = [
   alumnaRoutes.alimentacion,
   alumnaRoutes.evaluacionNutricional,
   alumnaRoutes.progreso,
+  alumnaRoutes.pliegues,
   alumnaRoutes.circunferencias,
   alumnaRoutes.tutoriales,
   alumnaRoutes.logros,
@@ -71,6 +73,24 @@ export function isAuthRoute(path: string): boolean {
 
 function matchesRoutePrefix(path: string, prefix: string): boolean {
   return path === prefix || path.startsWith(`${prefix}/`);
+}
+
+function isBlockedAlumnaReturn(path: string, user: AuthUser): boolean {
+  if (user.role !== "alumna") return false;
+  const modo = resolveModoPlan(user);
+  if (modo === "alimentacion") {
+    return (
+      matchesRoutePrefix(path, alumnaRoutes.rutina) ||
+      matchesRoutePrefix(path, alumnaRoutes.progreso)
+    );
+  }
+  if (modo === "rutina") {
+    return (
+      matchesRoutePrefix(path, alumnaRoutes.alimentacion) ||
+      matchesRoutePrefix(path, alumnaRoutes.evaluacionNutricional)
+    );
+  }
+  return false;
 }
 
 export function isReturnPathAllowed(path: string, role: UserRole): boolean {
@@ -120,12 +140,15 @@ export function resolvePostAuthRoute(user: AuthUser, returnTo?: string | null): 
 
   if (returnTo && isReturnPathAllowed(returnTo, user.role)) {
     const path = normalizeRoute(returnTo);
-    const suffixStart = returnTo.search(/[?#]/);
-    const suffix = suffixStart >= 0 ? returnTo.slice(suffixStart) : "";
-    return `${path}${suffix}`;
+    if (!isBlockedAlumnaReturn(path, user)) {
+      const suffixStart = returnTo.search(/[?#]/);
+      const suffix = suffixStart >= 0 ? returnTo.slice(suffixStart) : "";
+      return `${path}${suffix}`;
+    }
   }
 
   return getHomeRouteForRole(user.role, {
+    modoPlan: resolveModoPlan(user),
     soloAlimentacion: user.soloAlimentacion,
   });
 }

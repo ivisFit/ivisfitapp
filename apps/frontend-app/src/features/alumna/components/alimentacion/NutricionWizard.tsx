@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FormSkeleton, PageHeaderSkeleton, SkeletonCard, SkeletonStack } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import { NutricionQuestionScreen } from "@/features/alumna/components/alimentacion/NutricionQuestionScreen";
 import { NutricionWizardNav } from "@/features/alumna/components/alimentacion/NutricionWizardNav";
 import { NutricionWizardProgress } from "@/features/alumna/components/alimentacion/NutricionWizardProgress";
@@ -153,18 +153,7 @@ export function NutricionWizard({ onComplete }: NutricionWizardProps) {
   }
 
   if (profileLoading || !currentQuestion) {
-    return (
-      <SkeletonStack
-        className="nutricion-wizard"
-        aria-busy={true}
-        aria-label="Cargando evaluación"
-      >
-        <PageHeaderSkeleton titleWidth="w-56" subtitleWidth="w-75" eyebrow />
-        <SkeletonCard elevated>
-          <FormSkeleton fields={4} />
-        </SkeletonCard>
-      </SkeletonStack>
-    );
+    return <IvisContentLoader label="Cargando evaluación" />;
   }
 
   return (

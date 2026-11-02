@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Input } from "@/components/Input";
-import { ListSkeleton } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import { apiFetch } from "@/lib/api";
 import { mapDocId, uniqueListKey } from "@/lib/map-doc-id";
 import { getYoutubeEmbedUrl } from "@/lib/youtube";
@@ -99,9 +99,7 @@ export function BibliotecaPage() {
       </div>
 
       {loading ? (
-        <div aria-busy="true" aria-label="Cargando biblioteca">
-          <ListSkeleton items={4} />
-        </div>
+        <IvisContentLoader variant="section" label="Cargando biblioteca" />
       ) : null}
       {error ? <p className="auth-error">{error}</p> : null}
       {!loading && filtrados.length === 0 ? (

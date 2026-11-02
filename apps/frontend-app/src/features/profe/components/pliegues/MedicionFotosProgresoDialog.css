@@ -1,11 +1,26 @@
+html[data-profe-color-scheme="light"] .medicion-fotos-dialog,
+html[data-color-scheme="light"] .medicion-fotos-dialog {
+  color-scheme: light;
+  --color-text: #1c1814;
+  --color-text-muted: #5c5348;
+  --color-border: rgb(28 23 18 / 10%);
+  --color-gold: #785c18;
+  --glass-bg: rgb(255 255 255 / 82%);
+  --glass-border: rgb(28 23 18 / 10%);
+  --glass-border-amber: rgb(184 148 31 / 28%);
+  --glass-bg-solid-elevated: #fff;
+  color: var(--color-text);
+}
+
 .medicion-fotos-dialog {
   position: fixed;
   inset: 0;
-  z-index: 120;
+  z-index: 200;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1rem;
+  color: var(--color-text);
 }
 
 .medicion-fotos-dialog__backdrop {
@@ -20,11 +35,18 @@
   position: relative;
   z-index: 1;
   width: min(56rem, 100%);
+  min-width: 0;
+  max-width: 100%;
   max-height: min(90vh, 48rem);
   overflow: auto;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background-color: #14110f;
+  background-image: linear-gradient(
+    var(--glass-bg-solid-elevated, rgb(28 23 18 / 94%)),
+    var(--glass-bg-solid-elevated, rgb(28 23 18 / 94%))
+  );
+  border: 1px solid var(--glass-border-amber, var(--color-border));
   border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card, 0 24px 48px rgb(0 0 0 / 48%));
   padding: 1rem 1.25rem 1.25rem;
 }
 
@@ -51,13 +73,15 @@
 
 .medicion-fotos-dialog__grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
+  min-width: 0;
+  max-width: 100%;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 768px) {
   .medicion-fotos-dialog__grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

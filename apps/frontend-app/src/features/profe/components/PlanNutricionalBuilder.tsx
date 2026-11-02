@@ -4,7 +4,7 @@ import { FeedbackModal } from "@/components/FeedbackModal";
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { Button, Input, InfoTooltip } from "@/components";
 import { useAppDialog } from "@/components/AppDialogProvider";
-import { FormSkeleton, ListSkeleton } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import { apiFetch } from "@/lib/api";
 import { RotateCcw, RotateCw } from "lucide-react";
 import type {
@@ -953,18 +953,7 @@ export function PlanNutricionalBuilder({
 
   if (loading && !showEditor) {
     return (
-      <div
-        className="plan-nutricional-builder"
-        aria-busy="true"
-        aria-label="Cargando plan nutricional"
-      >
-        <div className="sk-card__head" aria-hidden>
-          <span className="sk sk--sm sk--gold sk--w-40" />
-          <span className="sk sk--xs sk--w-56" />
-        </div>
-        <FormSkeleton fields={3} showButton={false} />
-        <ListSkeleton items={3} surface={false} />
-      </div>
+      <IvisContentLoader variant="section" label="Cargando plan nutricional" />
     );
   }
 

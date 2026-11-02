@@ -1,7 +1,11 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useState } from "react";
 import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
   CartesianGrid,
   Legend,
   Line,
@@ -11,6 +15,10 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import {
+  ChartTypeToggle,
+  type ChartKind,
+} from "@/features/profe/components/pliegues/ChartTypeToggle";
 import type { Medicion } from "@/features/profe/types/medicion";
 import type { MetodoCalculo } from "@/features/profe/types/medicion";
 import type { Sexo } from "@/types/usuario";
@@ -180,21 +188,126 @@ function ChartTooltip({
   );
 }
 
+function HistorySeries({
+  kind,
+  series,
+}: {
+  kind: ChartKind;
+  series: ReadonlyArray<{ key: string; label: string; color: string }>;
+}) {
+  if (kind === "bar") {
+    return (
+      <>
+        {series.map((item) => (
+          <Bar
+            key={item.key}
+            yAxisId="values"
+            dataKey={item.key}
+            name={item.label}
+            fill={item.color}
+            radius={[3, 3, 0, 0]}
+            maxBarSize={18}
+          />
+        ))}
+        <Bar
+          yAxisId="grasa"
+          dataKey="porcentajeGrasaCorporal"
+          name="% grasa"
+          fill="#7eb8e8"
+          radius={[3, 3, 0, 0]}
+          maxBarSize={18}
+        />
+      </>
+    );
+  }
+
+  if (kind === "area") {
+    return (
+      <>
+        {series.map((item) => (
+          <Area
+            key={item.key}
+            yAxisId="values"
+            type="linear"
+            dataKey={item.key}
+            name={item.label}
+            stroke={item.color}
+            strokeWidth={2.5}
+            fill={item.color}
+            fillOpacity={0.16}
+            dot={false}
+            activeDot={{ r: 4, strokeWidth: 0 }}
+          />
+        ))}
+        <Area
+          yAxisId="grasa"
+          type="linear"
+          dataKey="porcentajeGrasaCorporal"
+          name="% grasa"
+          stroke="#7eb8e8"
+          strokeWidth={2.5}
+          fill="#7eb8e8"
+          fillOpacity={0.12}
+          dot={false}
+          activeDot={{ r: 4, strokeWidth: 0 }}
+        />
+      </>
+    );
+  }
+
+  return (
+    <>
+      {series.map((item) => (
+        <Line
+          key={item.key}
+          yAxisId="values"
+          type="linear"
+          dataKey={item.key}
+          name={item.label}
+          stroke={item.color}
+          strokeWidth={3.5}
+          dot={false}
+          activeDot={{ r: 4, strokeWidth: 0 }}
+        />
+      ))}
+      <Line
+        yAxisId="grasa"
+        type="linear"
+        dataKey="porcentajeGrasaCorporal"
+        name="% grasa"
+        stroke="#7eb8e8"
+        strokeWidth={3.5}
+        strokeDasharray="8 4"
+        dot={false}
+        activeDot={{ r: 4, strokeWidth: 0 }}
+      />
+    </>
+  );
+}
+
 export const PlieguesHistoryChart = memo(function PlieguesHistoryChart({
   mediciones,
   sexo,
   metodo,
 }: PlieguesHistoryChartProps) {
+  const [chartKind, setChartKind] = useState<ChartKind>("line");
   const series = getSeries(metodo, sexo);
   const chartData = buildChartData(mediciones, metodo);
   const isEmpty = mediciones.length === 0;
   const valueUnit = metodo === "us-navy" ? "cm" : "mm";
+  const ChartFrame =
+    chartKind === "bar" ? BarChart : chartKind === "area" ? AreaChart : LineChart;
+  const legendIcon =
+    chartKind === "bar" ? "rect" : chartKind === "area" ? "square" : "plainline";
 
   return (
     <section
       className={`pliegues-chart${isEmpty ? " pliegues-chart--empty" : ""}`}
     >
-      <h2>Evolución</h2>
+      <div className="pliegues-chart__head">
+        <h2>Evolución</h2>
+        <ChartTypeToggle value={chartKind} onChange={setChartKind} />
+      </div>
       <div
         className="pliegues-chart__canvas"
         aria-label="Gráfica de composición corporal"
@@ -205,7 +318,8 @@ export const PlieguesHistoryChart = memo(function PlieguesHistoryChart({
           </p>
         ) : null}
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart
+          <ChartFrame
+            key={chartKind}
             data={chartData}
             margin={{ top: 12, right: 16, left: 4, bottom: 24 }}
           >
@@ -251,7 +365,7 @@ export const PlieguesHistoryChart = memo(function PlieguesHistoryChart({
             />
             <Tooltip content={<ChartTooltip unit={valueUnit} />} />
             <Legend
-              iconType="plainline"
+              iconType={legendIcon}
               iconSize={20}
               wrapperStyle={{
                 color: "rgb(245 245 245)",
@@ -259,31 +373,8 @@ export const PlieguesHistoryChart = memo(function PlieguesHistoryChart({
                 paddingTop: "0.5rem",
               }}
             />
-            {series.map((item) => (
-              <Line
-                key={item.key}
-                yAxisId="values"
-                type="linear"
-                dataKey={item.key}
-                name={item.label}
-                stroke={item.color}
-                strokeWidth={3.5}
-                dot={false}
-                activeDot={{ r: 4, strokeWidth: 0 }}
-              />
-            ))}
-            <Line
-              yAxisId="grasa"
-              type="linear"
-              dataKey="porcentajeGrasaCorporal"
-              name="% grasa"
-              stroke="#7eb8e8"
-              strokeWidth={3.5}
-              strokeDasharray="8 4"
-              dot={false}
-              activeDot={{ r: 4, strokeWidth: 0 }}
-            />
-          </LineChart>
+            <HistorySeries kind={chartKind} series={series} />
+          </ChartFrame>
         </ResponsiveContainer>
       </div>
     </section>

@@ -12,6 +12,7 @@ import {
   ChallengeDaySheet,
   type SheetContainment,
 } from "./ChallengeDaySheet";
+import { PlanMonthCalendar } from "./PlanMonthCalendar";
 
 type PlanDaysDashboardProps = {
   rutina: RutinaDetail;
@@ -133,31 +134,11 @@ export const PlanDaysDashboard = memo(function PlanDaysDashboard({
         <span style={{ width: `${stats.progress}%` }} />
       </div>
 
-      <div className="challenge28__grid">
-        {days.map((day) => {
-          const isLocked = day.state === "locked";
-          return (
-            <button
-              className={`challenge28__day challenge28__day--${day.state}${
-                day.isToday ? " challenge28__day--today" : ""
-              }`}
-              key={day.dayNumber}
-              type="button"
-              disabled={isLocked}
-              onClick={() => setSelectedDay(day)}
-              aria-label={`Día ${day.dayNumber}: ${day.title}`}
-            >
-              {day.thumbnail ? (
-                <img src={day.thumbnail.url} alt="" loading="lazy" />
-              ) : (
-                <span className="challenge28__day-orb" aria-hidden="true" />
-              )}
-              <strong>{day.dayNumber}</strong>
-              <span>{isLocked ? "Bloqueado" : day.title}</span>
-            </button>
-          );
-        })}
-      </div>
+      <PlanMonthCalendar
+        key={days.find((day) => day.isToday)?.dateKey ?? days[0]?.dateKey}
+        days={days}
+        onSelectDay={setSelectedDay}
+      />
 
       <ChallengeDaySheet
         day={selectedDay}

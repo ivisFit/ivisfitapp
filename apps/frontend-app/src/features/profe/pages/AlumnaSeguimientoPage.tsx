@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/Button";
-import { CardSkeleton, ListSkeleton, PageHeaderSkeleton, SkeletonStack } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import { SeguimientoDayTimeline } from "@/features/profe/components/seguimiento/SeguimientoDayTimeline";
 import { SeguimientoHero } from "@/features/profe/components/seguimiento/SeguimientoHero";
 import { useAlumna } from "@/features/profe/hooks/useAlumna";
@@ -85,11 +85,7 @@ export function SeguimientoContent({
 
   if (loading) {
     return (
-      <SkeletonStack tight aria-busy={true} aria-label="Cargando seguimiento">
-        <CardSkeleton lines={3} elevated />
-        <ListSkeleton items={4} />
-        <CardSkeleton lines={3} elevated />
-      </SkeletonStack>
+      <IvisContentLoader variant="section" label="Cargando seguimiento" />
     );
   }
 
@@ -148,7 +144,7 @@ function AlumnaSeguimientoView({
 
   const renderContent = () => {
     if (alumnaLoading) {
-      return <PageHeaderSkeleton titleWidth="w-48" subtitle={false} />;
+      return <IvisContentLoader variant="section" label="Cargando seguimiento" />;
     }
     if (alumnaError) {
       return <p className="auth-error">{alumnaError}</p>;

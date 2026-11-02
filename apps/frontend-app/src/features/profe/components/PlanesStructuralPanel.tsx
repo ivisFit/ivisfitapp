@@ -4,7 +4,7 @@ import { FeedbackModal } from "@/components/FeedbackModal";
 import { useMemo, useState, type FormEvent } from "react";
 import { Button, Input } from "@/components";
 import { useAppDialog } from "@/components/AppDialogProvider";
-import { ListSkeleton } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import {
   type LandingPlanGestion,
   type LandingPlanPayload,
@@ -239,7 +239,7 @@ export function PlanesStructuralPanel({ onStructureChange }: PlanesStructuralPan
 
       {loading ? (
         <div aria-busy="true" aria-label="Cargando planes">
-          <ListSkeleton items={4} />
+          <IvisContentLoader variant="section" label="Cargando planes" />
         </div>
       ) : null}
 

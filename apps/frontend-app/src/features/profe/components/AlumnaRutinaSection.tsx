@@ -2,7 +2,7 @@
 
 import { memo, useState } from "react";
 import dynamic from "next/dynamic";
-import { CardSkeleton } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import type { AlumnaDetail } from "@/types/usuario";
 import type { PlanTemplate } from "@/features/profe/hooks/usePlanTemplates";
 
@@ -14,13 +14,7 @@ const RutinaBuilder = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div
-        className="alumna-detail-rutina"
-        aria-busy="true"
-        aria-label="Cargando editor de rutina"
-      >
-        <CardSkeleton lines={4} />
-      </div>
+      <IvisContentLoader variant="section" label="Cargando editor de rutina" />
     ),
   },
 );

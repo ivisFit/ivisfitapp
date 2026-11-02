@@ -635,21 +635,6 @@
   margin: 0;
 }
 
-.alimentacion-page:has(> .alimentacion-dashboard--with-plan > .proxima-comida) {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-}
-
-.alimentacion-page:has(> .alimentacion-dashboard--with-plan > .proxima-comida)
-  > .alimentacion-dashboard--with-plan {
-  flex: 1;
-  min-height: 0;
-  gap: 0;
-}
-
-
 .checkin-alimentacion {
   padding: 0.95rem 1rem;
   border-radius: var(--radius-xl);
@@ -827,11 +812,17 @@
   color: var(--color-gold);
 }
 
+.alimentacion-hero__notes--standalone {
+  margin: 0 0 1rem;
+}
+
 .alimentacion-hero__notes p {
   margin: 0;
   color: var(--color-text);
   font-size: 0.92rem;
   line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .alimentacion-hero__notes footer {
@@ -1274,6 +1265,36 @@
   gap: 0.15rem;
   min-width: 0;
   flex: 1;
+}
+
+.alimentacion-comida__estado {
+  justify-self: start;
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  color: var(--color-text-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.alimentacion-comida--hecha .alimentacion-comida__estado {
+  border-color: var(--gold-a22);
+  background: var(--gold-a10);
+  color: var(--color-gold);
+}
+
+.alimentacion-comida--ahora {
+  border-color: var(--color-gold, #c7980a);
+  box-shadow: 0 0 0 1px rgb(199 152 10 / 28%);
+}
+
+.alimentacion-comida--ahora .alimentacion-comida__estado {
+  border-color: transparent;
+  background: linear-gradient(135deg, #e6b422, #c7980a);
+  color: #1a1400;
 }
 
 .alimentacion-comida__title h3 {
@@ -3026,17 +3047,15 @@
 }
 
 /* ── Próxima comida (alumna) ── */
-.proxima-comida {
-  --proxima-comida-chrome: calc(
-    var(--mobile-header-height) + var(--bottom-nav-height) +
-      var(--bottom-nav-inset-bottom) + env(safe-area-inset-bottom) + 1.5rem
-  );
+.comidas-del-dia {
+  display: grid;
+  gap: 0.85rem;
+}
 
+.proxima-comida {
   display: flex;
-  flex: 1;
   flex-direction: column;
   gap: 0.75rem;
-  min-height: max(20rem, calc(100dvh - var(--proxima-comida-chrome)));
   padding: 1.25rem 1rem;
   border: 1px solid rgb(199 152 10 / 40%);
   border-radius: 1.25rem;
@@ -3048,11 +3067,9 @@
 
 .proxima-comida__body {
   display: flex;
-  flex: 1;
   flex-direction: column;
   gap: 0.75rem;
   min-height: 0;
-  overflow: auto;
 }
 
 .proxima-comida__actions {
@@ -3061,7 +3078,6 @@
   flex-direction: column;
   gap: 0.5rem;
   width: 100%;
-  margin-top: auto;
 }
 .proxima-comida__steps { display: flex; gap: 0.3rem; }
 .proxima-comida__steps button {

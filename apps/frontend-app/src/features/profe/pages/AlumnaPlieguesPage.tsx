@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/Button";
-import { CardSkeleton, ChartSkeleton, PageHeaderSkeleton, SkeletonStack } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import { CircunferenciasAlumnaToggleCard } from "@/features/profe/components/pliegues/CircunferenciasAlumnaToggleCard";
 import { SkinfoldForm } from "@/features/profe/components/SkinfoldForm";
 import { PlieguesHistoryTable } from "@/features/profe/components/pliegues/PlieguesHistoryTable";
@@ -37,9 +37,7 @@ const PlieguesHistoryChart = dynamic(
   {
     ssr: false,
     loading: () => (
-      <section className="pliegues-chart">
-        <ChartSkeleton height="chart-md" />
-      </section>
+      <IvisContentLoader variant="section" label="Cargando gráfico" />
     ),
   },
 );
@@ -119,11 +117,7 @@ export function PlieguesContent({
 
   if (loading) {
     return (
-      <SkeletonStack aria-busy={true} aria-label="Cargando pliegues">
-        <PageHeaderSkeleton titleWidth="w-48" subtitle={false} />
-        <CardSkeleton lines={2} elevated />
-        <CardSkeleton lines={3} elevated />
-      </SkeletonStack>
+      <IvisContentLoader label="Cargando pliegues" />
     );
   }
 
@@ -232,7 +226,7 @@ function AlumnaPlieguesView({
 
   const renderContent = () => {
     if (alumnaLoading) {
-      return <PageHeaderSkeleton titleWidth="w-48" subtitle={false} />;
+      return <IvisContentLoader variant="section" label="Cargando pliegues" />;
     }
     if (alumnaError) {
       return <p className="auth-error">{alumnaError}</p>;

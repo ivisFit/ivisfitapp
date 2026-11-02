@@ -4,8 +4,12 @@ export interface SendRutinaAsignadaEmailParams {
     planNombre?: string;
     appName: string;
     appUrl?: string;
+    /** La rutina nueva todavía no es la que la alumna ve hoy. */
+    programada?: boolean;
+    /** Fecha ya formateada en la que empieza esa rutina. */
+    inicioProgramado?: string;
 }
-export declare function sendRutinaAsignadaEmail({ to, alumnaNombre, planNombre, appName, appUrl, }: SendRutinaAsignadaEmailParams): Promise<void>;
+export declare function sendRutinaAsignadaEmail({ to, alumnaNombre, planNombre, appName, appUrl, programada: programadaParam, inicioProgramado, }: SendRutinaAsignadaEmailParams): Promise<void>;
 export interface SendRecordatorioEntrenamientoEmailParams {
     to: string;
     alumnaNombre: string;

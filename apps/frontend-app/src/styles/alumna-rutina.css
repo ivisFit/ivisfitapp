@@ -120,6 +120,7 @@
   min-height: min(74vh, 44rem);
   overflow: hidden;
   isolation: isolate;
+  container: training-story / inline-size;
   border: 1px solid var(--glass-border-amber);
   border-radius: 2rem;
   box-shadow: var(--glass-shadow-float);
@@ -311,6 +312,56 @@
   margin: 0;
   color: rgb(255 255 255 / 78%);
   font-size: 0.95rem;
+}
+
+.training-story__roster {
+  display: grid;
+  gap: 0.65rem;
+  max-height: min(52vh, 28rem);
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  list-style: none;
+}
+
+.training-story__roster li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 0.9rem;
+  background: rgb(9 7 8 / 55%);
+}
+
+.training-story__roster-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  background: rgb(225 170 67 / 16%);
+  color: var(--rutina-yellow, #e1aa43);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.training-story__roster-copy {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.training-story__roster-copy strong {
+  color: #fff;
+  font-size: 0.95rem;
+}
+
+.training-story__roster-copy span {
+  color: rgb(255 255 255 / 72%);
+  font-size: 0.82rem;
 }
 
 .training-story__intro__media,
@@ -597,6 +648,31 @@
   cursor: not-allowed;
   box-shadow: none;
   transform: none;
+}
+
+/* En un story angosto (celular o preview) los tres botones del último paso
+   no entran en una fila: el primario se achica y se monta sobre los otros. */
+@container training-story (max-width: 640px) {
+  .training-story__nav:has(.training-story__nav-actions) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .training-story__nav:has(.training-story__nav-actions) .training-story__nav-actions {
+    flex: none;
+    width: 100%;
+    max-width: none;
+    margin-left: 0;
+  }
+
+  .training-story__nav:has(.training-story__nav-actions) .training-story__nav-btn {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    white-space: normal;
+    line-height: 1.2;
+    text-align: center;
+  }
 }
 
 .training-story__finish-hint {
@@ -1035,12 +1111,195 @@
   -webkit-line-clamp: 2;
 }
 
+.plan-month {
+  display: grid;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.plan-month__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.plan-month__title {
+  margin: 0;
+  color: #fff;
+  font-size: 1.15rem;
+  text-align: center;
+  text-transform: capitalize;
+}
+
+.plan-month__nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  color: #fff;
+  font: inherit;
+  font-size: 1.35rem;
+  line-height: 1;
+  background: rgb(255 255 255 / 6%);
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 0.8rem;
+  cursor: pointer;
+}
+
+.plan-month__nav:hover {
+  border-color: rgb(253 201 21 / 45%);
+}
+
+.plan-month__weekdays,
+.plan-month__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.28rem;
+}
+
+.plan-month__weekday {
+  color: rgb(255 255 255 / 55%);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.plan-month__day {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  min-width: 0;
+  min-height: 4.5rem;
+  padding: 0.28rem;
+  color: #fff;
+  font: inherit;
+  text-align: left;
+  background: rgb(255 255 255 / 4%);
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 0.7rem;
+}
+
+.plan-month__day.is-outside:not(.has-plan) {
+  opacity: 0.38;
+}
+
+.plan-month__day:disabled {
+  cursor: not-allowed;
+}
+
+.plan-month__day:not(:disabled).has-plan {
+  cursor: pointer;
+}
+
+.plan-month__day:not(:disabled).has-plan:hover {
+  border-color: rgb(255 255 255 / 22%);
+}
+
+.plan-month__number {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.2rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.plan-month__day.is-today .plan-month__number {
+  width: 1.45rem;
+  height: 1.45rem;
+  color: #fff;
+  background: #3b6fd8;
+  border-radius: 999px;
+}
+
+.plan-month__chip {
+  display: flex;
+  align-items: center;
+  gap: 0.12rem;
+  max-width: 100%;
+  margin-top: auto;
+  padding: 0.08rem 0.22rem;
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1.2;
+  border-radius: 0.35rem;
+}
+
+.plan-month__chip--completed,
+.plan-month__chip--open {
+  background: #3b6fd8;
+}
+
+.plan-month__chip--missed {
+  background: #7c4dff;
+}
+
+.plan-month__chip--locked {
+  background: #5d7eb8;
+}
+
+.plan-month__check {
+  flex: 0 0 auto;
+}
+
+.plan-month__chip-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rutina-catchup {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  background: rgb(124 77 255 / 18%);
+  border: 1px solid rgb(124 77 255 / 48%);
+  border-radius: 1rem;
+}
+
+.rutina-catchup p {
+  margin: 0;
+  color: #fff;
+}
+
+.rutina-catchup button {
+  padding: 0.45rem 0.9rem;
+  color: #3b2170;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 800;
+  background: #fff;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.challenge-sheet__completed-note {
+  margin: 0.35rem 0 0;
+  color: rgb(255 255 255 / 72%);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
 .challenge-sheet {
   position: fixed;
   inset: 0;
   z-index: 90;
-  display: grid;
-  align-items: end;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-end;
+  box-sizing: border-box;
+  width: auto;
+  height: 100dvh;
+  max-height: 100dvh;
   min-height: 0;
   overflow: hidden;
   padding: 0 0
@@ -1048,17 +1307,29 @@
       var(--bottom-nav-height) + var(--bottom-nav-inset-bottom) +
         env(safe-area-inset-bottom) + 0.85rem
     );
+  pointer-events: none;
 }
 
 .challenge-sheet__backdrop {
-  position: absolute;
-  inset: 0;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+  width: 100vw;
+  height: 100dvh;
+  margin: 0;
+  padding: 0;
   background: rgb(0 0 0 / 58%);
   border: 0;
+  cursor: pointer;
+  pointer-events: auto;
 }
 
 .challenge-sheet__panel {
   position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -1068,6 +1339,7 @@
   padding: 0.85rem;
   margin: 0 auto;
   overflow: hidden;
+  pointer-events: auto;
   border-radius: 1.5rem;
   background:
     linear-gradient(180deg, #1c1815 0%, #12100e 48%, #090708 100%);
@@ -1422,7 +1694,6 @@
   transition: color 180ms ease;
 }
 
-.challenge-sheet__exercises span,
 .challenge-sheet__skip {
   margin-top: 1rem;
   padding-top: 0.75rem;
@@ -2180,6 +2451,17 @@
   display: grid;
   gap: 0.25rem;
   min-width: 0;
+}
+
+.rutina-builder__save-bar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rutina-builder__delete {
+  color: var(--color-error);
 }
 
 .rutina-builder__save-bar-pending,
@@ -3076,6 +3358,20 @@
   border-radius: 0.55rem;
 }
 
+.plan-content-lab__alumna-shell--mobile .plan-month__day {
+  min-height: 3.3rem;
+  padding: 0.14rem;
+}
+
+.plan-content-lab__alumna-shell--mobile .plan-month__chip {
+  font-size: 0.52rem;
+}
+
+.plan-content-lab__alumna-shell--mobile .plan-month__weekday,
+.plan-content-lab__alumna-shell--mobile .plan-month__number {
+  font-size: 0.62rem;
+}
+
 .plan-content-lab__device--mobile .plan-content-lab__viewport {
   width: min(100%, 390px);
   height: min(40rem, 72dvh);
@@ -3151,10 +3447,31 @@
   gap: 0.5rem;
 }
 
+.plan-content-lab__device--mobile .training-story__nav:has(.training-story__nav-actions) {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.plan-content-lab__device--mobile .training-story__nav:has(.training-story__nav-actions) .training-story__nav-actions {
+  flex: none;
+  width: 100%;
+  max-width: none;
+  margin-left: 0;
+}
+
 .plan-content-lab__device--mobile .training-story__nav-btn {
   min-height: 2.5rem;
-  padding: 0 0.85rem;
+  min-width: 0;
+  max-width: none;
+  padding: 0.55rem 0.85rem;
   font-size: 0.82rem;
+  white-space: normal;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.plan-content-lab__device--mobile .training-story__nav:has(.training-story__nav-actions) .training-story__nav-btn {
+  width: 100%;
 }
 
 .plan-content-lab__viewport .challenge-sheet--contained {
@@ -3162,9 +3479,22 @@
   inset: 0;
   left: 0;
   z-index: 20;
-  display: grid;
-  align-items: end;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
   padding: 0;
+  pointer-events: none;
+}
+
+.plan-content-lab__viewport .challenge-sheet--contained .challenge-sheet__backdrop {
+  position: absolute;
+  inset: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .plan-content-lab__viewport .challenge-sheet--contained .challenge-sheet__panel {
@@ -3311,13 +3641,17 @@
 
 @media (min-width: 720px) {
   .challenge-sheet:not(.challenge-sheet--contained) {
+    top: 0;
+    right: 0;
+    bottom: 0;
     left: var(--sidebar-width);
-    padding: 0 1.5rem 1.5rem;
+    justify-content: center;
+    padding: 1.5rem;
   }
 
   .challenge-sheet__panel {
-    width: 100%;
-    max-height: 100%;
+    width: min(100%, 42rem);
+    max-height: min(calc(100dvh - 3rem), 40rem);
   }
 
   .challenge-sheet:not(.challenge-sheet--contained) .challenge-sheet__scroll {
@@ -3422,6 +3756,25 @@
   .challenge28__day {
     min-height: 5.75rem;
     padding: 0.55rem;
+  }
+
+  .plan-month__day {
+    min-height: 3.55rem;
+    padding: 0.16rem;
+  }
+
+  .plan-month__chip {
+    font-size: 0.55rem;
+  }
+
+  .plan-month__weekday,
+  .plan-month__number {
+    font-size: 0.65rem;
+  }
+
+  .plan-month__day.is-today .plan-month__number {
+    width: 1.25rem;
+    height: 1.25rem;
   }
 
   .training-story__content {
@@ -3529,10 +3882,31 @@
 
   .training-story__nav-btn {
     min-height: 2.75rem;
-    flex: 1;
-    max-width: calc(50% - 0.375rem);
-    padding: 0 0.85rem;
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: none;
+    padding: 0.6rem 0.85rem;
     font-size: 0.88rem;
+    white-space: normal;
+    line-height: 1.2;
+    text-align: center;
+  }
+
+  .training-story__nav:has(.training-story__nav-actions) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .training-story__nav:has(.training-story__nav-actions) .training-story__nav-actions {
+    flex: none;
+    width: 100%;
+    max-width: none;
+    margin-left: 0;
+  }
+
+  .training-story__nav:has(.training-story__nav-actions) .training-story__nav-btn {
+    flex: none;
+    width: 100%;
   }
 }
 
@@ -3722,10 +4096,13 @@
 
 .weight-log__unit {
   flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
   color: rgb(255 255 255 / 72%);
   font-size: 0.86rem;
   font-weight: 700;
   line-height: 1;
+  border: 0;
 }
 
 .weight-log--sheet .weight-log__historico {

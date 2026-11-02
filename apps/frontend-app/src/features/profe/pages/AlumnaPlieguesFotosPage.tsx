@@ -3,11 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
-import {
-  CardSkeleton,
-  PageHeaderSkeleton,
-  SkeletonStack,
-} from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import {
   FotosAgrupacionToggle,
   PlieguesFotosComparisonGrid,
@@ -125,10 +121,7 @@ function FotosHistorialContent({
 
   if (loading) {
     return (
-      <SkeletonStack aria-busy={true} aria-label="Cargando fotos de progreso">
-        <PageHeaderSkeleton titleWidth="w-56" subtitle={false} />
-        <CardSkeleton lines={4} elevated />
-      </SkeletonStack>
+      <IvisContentLoader label="Cargando fotos de progreso" />
     );
   }
 
@@ -263,7 +256,7 @@ export function AlumnaPlieguesFotosPage() {
   if (alumnaLoading) {
     return (
       <div className="pliegues-fotos-historial-page page">
-        <PageHeaderSkeleton titleWidth="w-48" subtitle={false} />
+        <IvisContentLoader variant="section" label="Cargando fotos de progreso" />
       </div>
     );
   }

@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { CardSkeleton, SkeletonStack } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import { ProfeChromeTabs } from "@/features/profe/components/ProfeChromeTabs";
 import { AlimentacionTabSummary } from "@/features/profe/components/alimentacion-plan/AlimentacionTabSummary";
 import { ListaComprasSemanasCard } from "@/features/profe/components/alimentacion-plan/ListaComprasSemanasCard";
@@ -22,6 +22,7 @@ import {
   profeAlumnaDetailTabRoute,
   type AlumnaDetailTab,
 } from "@/routes/paths";
+import { resolveModoPlan, type ModoPlan } from "@/lib/modo-plan";
 import type { AlumnaDetail } from "@/types/usuario";
 
 const SeguimientoContent = dynamic(
@@ -31,10 +32,7 @@ const SeguimientoContent = dynamic(
     ),
   {
     loading: () => (
-      <SkeletonStack aria-busy={true} aria-label="Cargando seguimiento">
-        <CardSkeleton lines={3} elevated />
-        <CardSkeleton lines={4} elevated />
-      </SkeletonStack>
+      <IvisContentLoader variant="section" label="Cargando seguimiento" />
     ),
   },
 );
@@ -46,10 +44,7 @@ const PlieguesContent = dynamic(
     ),
   {
     loading: () => (
-      <SkeletonStack aria-busy={true} aria-label="Cargando pliegues">
-        <CardSkeleton lines={2} elevated />
-        <CardSkeleton lines={3} elevated />
-      </SkeletonStack>
+      <IvisContentLoader variant="section" label="Cargando pliegues" />
     ),
   },
 );
@@ -64,7 +59,11 @@ const ALUMNA_DETAIL_TABS: Array<{ id: AlumnaDetailTab; label: string }> = [
   { id: "historial", label: "Historial" },
 ];
 
-const RUTINA_TABS = new Set<AlumnaDetailTab>(["rutina", "seguimiento"]);
+function hiddenTabsFor(modoPlan: ModoPlan): Set<AlumnaDetailTab> {
+  if (modoPlan === "alimentacion") return new Set(["rutina", "seguimiento"]);
+  if (modoPlan === "rutina") return new Set(["alimentacion"]);
+  return new Set();
+}
 
 export function AlumnaDetailTabbedContent({
   alumna,
@@ -74,10 +73,9 @@ export function AlumnaDetailTabbedContent({
   const router = useRouter();
   const searchParams = useSearchParams();
   const tab = getAlumnaDetailTabFromParam(searchParams.get("tab"));
-  const soloAlimentacion = alumna.soloAlimentacion === true;
-  const visibleTabs = soloAlimentacion
-    ? ALUMNA_DETAIL_TABS.filter((item) => !RUTINA_TABS.has(item.id))
-    : ALUMNA_DETAIL_TABS;
+  const modoPlan = resolveModoPlan(alumna);
+  const hiddenTabs = hiddenTabsFor(modoPlan);
+  const visibleTabs = ALUMNA_DETAIL_TABS.filter((item) => !hiddenTabs.has(item.id));
   const { reportSectionDirty } = useAlumnaUnsavedReporter();
   const [showHealthReview, setShowHealthReview] = useState(false);
 
@@ -87,10 +85,9 @@ export function AlumnaDetailTabbedContent({
   }
 
   useEffect(() => {
-    if (soloAlimentacion && RUTINA_TABS.has(tab)) {
-      router.replace(profeAlumnaDetailTabRoute(alumna.id, "perfil"));
-    }
-  }, [alumna.id, router, soloAlimentacion, tab]);
+    if (!hiddenTabsFor(modoPlan).has(tab)) return;
+    router.replace(profeAlumnaDetailTabRoute(alumna.id, "perfil"));
+  }, [alumna.id, modoPlan, router, tab]);
 
   function handleReviewHealthChanges() {
     setShowHealthReview(true);
@@ -105,7 +102,7 @@ export function AlumnaDetailTabbedContent({
   }
 
   function renderActiveTab() {
-    if (soloAlimentacion && RUTINA_TABS.has(tab)) return null;
+    if (hiddenTabs.has(tab)) return null;
     switch (tab) {
       case "perfil":
         return (

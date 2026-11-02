@@ -8,6 +8,7 @@ import { PanelColaHoy } from "@/features/profe/components/panel/PanelColaHoy";
 import { PanelHeader } from "@/features/profe/components/panel/PanelHeader";
 import { PanelMetricCards } from "@/features/profe/components/panel/PanelMetricCards";
 import { PanelSkeleton } from "@/features/profe/components/panel/PanelSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import type { PanelDashboardDto } from "@/features/profe/types/panel";
 import { usePanelDashboard } from "@/features/profe/hooks/usePanelDashboard";
 import { useAuth } from "@/context/AuthContext";
@@ -28,7 +29,7 @@ const PanelWeeklyBarChart = dynamic(
         <h3 className="profe-dashboard__chart-title">
           Entrenamientos completados
         </h3>
-        <span className="sk sk--chart sk--full" aria-hidden />
+        <IvisContentLoader variant="section" label="Cargando gráfico semanal" />
       </section>
     ),
   },
@@ -46,7 +47,7 @@ const PanelPlansPieChart = dynamic(
         <h3 className="profe-dashboard__chart-title">
           Tipos de Planes Asignados
         </h3>
-        <span className="sk sk--chart sk--full" aria-hidden />
+        <IvisContentLoader variant="section" label="Cargando gráfico de planes" />
       </section>
     ),
   },

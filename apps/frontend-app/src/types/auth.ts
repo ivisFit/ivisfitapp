@@ -1,3 +1,4 @@
+import type { ModoPlan } from "@/lib/modo-plan";
 import type { AdmissionStatus } from "@/types/usuario";
 
 export type UserRole = "profe" | "alumna";
@@ -26,6 +27,8 @@ export interface AuthUser {
   admissionStatus: AdmissionStatus;
   photoUrl?: string | null;
   circunferenciasHabilitadas?: boolean;
+  tienePliegues?: boolean;
+  modoPlan?: ModoPlan;
   soloAlimentacion?: boolean;
   tutorialesVistos?: boolean;
   onboardingCompletado?: boolean;

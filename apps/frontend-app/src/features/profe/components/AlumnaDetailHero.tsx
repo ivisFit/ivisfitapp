@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { UserAvatar } from "@/components/UserAvatar";
+import { browserImageUrl } from "@/lib/browser-image-url";
 import { getInitials } from "@/lib/display-name";
 import { profeRoutes } from "@/routes/paths";
 import type { AlumnaDetail } from "@/types/usuario";
@@ -37,7 +38,7 @@ export function AlumnaDetailHeroBackdrop({ initials, photoUrl, loading }: HeroBa
         <span className="alumna-detail-hero__initials alumna-detail-hero__initials--placeholder" />
       ) : photoUrl ? (
         <img
-          src={photoUrl}
+          src={browserImageUrl(photoUrl)}
           alt=""
           className="alumna-detail-hero__photo"
           loading="lazy"

@@ -16,6 +16,7 @@ import { MembresiaEditor } from "./MembresiaEditor";
 import { CoachNotaComposer } from "./CoachNotaComposer";
 import { UserAvatar } from "@/components/UserAvatar";
 import { patchAlumnaField } from "@/features/profe/lib/patch-alumna-field";
+import { resolveModoPlan, type ModoPlan } from "@/lib/modo-plan";
 import { partirNombre } from "@/lib/nombre-alumno";
 import type { AlumnaDetail } from "@/types/usuario";
 import { fechaToDateInputValue } from "@/types/usuario";
@@ -106,30 +107,47 @@ function SheetGroup({
   );
 }
 
-function SoloAlimentacionSwitch({
+const PLAN_MODO_OPTIONS: Array<{ value: ModoPlan; label: string }> = [
+  { value: "rutina", label: "Solo rutina" },
+  { value: "alimentacion", label: "Solo alimentación" },
+  { value: "ambos", label: "Las dos" },
+];
+
+const PLAN_MODO_HINT: Record<ModoPlan, string> = {
+  rutina:
+    "La alumna ve su rutina, el progreso y los entrenos. Alimentación queda oculta.",
+  alimentacion:
+    "La alumna ve solo su plan nutricional. Rutina, seguimiento y progreso de entrenos quedan ocultos.",
+  ambos: "La alumna ve la rutina y la alimentación.",
+};
+
+function PlanModoSwitch({
   alumna,
   onUpdated,
 }: {
   alumna: AlumnaDetail;
   onUpdated?: () => void;
 }) {
-  const [checked, setChecked] = useState(alumna.soloAlimentacion === true);
+  const saved = resolveModoPlan(alumna);
+  const [value, setValue] = useState<ModoPlan>(saved);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setChecked(alumna.soloAlimentacion === true);
-  }, [alumna.soloAlimentacion]);
+    setValue(saved);
+  }, [saved]);
 
-  async function handleChange(next: boolean) {
-    setChecked(next);
+  async function handleChange(next: ModoPlan) {
+    if (saving || next === value) return;
+    const previous = value;
+    setValue(next);
     setSaving(true);
     setError(null);
     try {
-      await patchAlumnaField(alumna.id, { soloAlimentacion: next });
+      await patchAlumnaField(alumna.id, { modoPlan: next });
       onUpdated?.();
     } catch (err) {
-      setChecked(!next);
+      setValue(previous);
       setError(err instanceof Error ? err.message : "No se pudo guardar el cambio");
     } finally {
       setSaving(false);
@@ -139,26 +157,29 @@ function SoloAlimentacionSwitch({
   return (
     <div className="alumna-sheet__plan-toggle">
       <div className="alumna-sheet__plan-toggle-copy">
-        <strong>Solo alimentación</strong>
-        <span>
-          Oculta rutina, seguimiento y progreso de entrenos. La alumna entra
-          directo a su plan nutricional.
-        </span>
-        {error ? <span className="auth-error">{error}</span> : null}
+        <strong>Qué ve la alumna</strong>
+        <span>{PLAN_MODO_HINT[value]}</span>
       </div>
-      <label className="alumna-sheet__switch">
-        <input
-          type="checkbox"
-          role="switch"
-          checked={checked}
-          disabled={saving}
-          aria-label="Solo alimentación"
-          onChange={(event) => void handleChange(event.target.checked)}
-        />
-        <span className="alumna-sheet__switch-track" aria-hidden>
-          <span className="alumna-sheet__switch-thumb" />
-        </span>
-      </label>
+      <div
+        className="alumna-sheet__plan-options"
+        role="radiogroup"
+        aria-label="Plan de la alumna"
+      >
+        {PLAN_MODO_OPTIONS.map((option) => (
+          <label key={option.value} className="alumna-sheet__plan-option">
+            <input
+              type="radio"
+              name={`modo-plan-${alumna.id}`}
+              value={option.value}
+              checked={value === option.value}
+              disabled={saving}
+              onChange={() => void handleChange(option.value)}
+            />
+            <span>{option.label}</span>
+          </label>
+        ))}
+      </div>
+      {error ? <p className="auth-error">{error}</p> : null}
     </div>
   );
 }
@@ -261,7 +282,7 @@ export function AlumnaProfileSections({
           </button>
         </div>
 
-        <SoloAlimentacionSwitch alumna={alumna} onUpdated={onAlumnaUpdated} />
+        <PlanModoSwitch alumna={alumna} onUpdated={onAlumnaUpdated} />
 
         <div className="alumna-sheet__body">
           <SheetGroup title="Contacto e identificación" icon={<Phone size={15} />}>

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { EvaluacionNutricionalShell } from "@/components/layout/EvaluacionNutricionalShell";
+import { PlanModoRouteGuard } from "@/features/alumna/components/PlanModoRouteGuard";
 import { RoleGuard } from "@/routes/RoleGuard";
 import { EvaluacionNutricionalProviders } from "./EvaluacionNutricionalProviders";
 import "@/styles/evaluacion-nutricional-shell.css";
@@ -15,7 +16,9 @@ export default function EvaluacionNutricionalGroupLayout({
   return (
     <EvaluacionNutricionalProviders>
       <RoleGuard allowedRoles={["alumna"]}>
-        <EvaluacionNutricionalShell>{children}</EvaluacionNutricionalShell>
+        <PlanModoRouteGuard>
+          <EvaluacionNutricionalShell>{children}</EvaluacionNutricionalShell>
+        </PlanModoRouteGuard>
       </RoleGuard>
     </EvaluacionNutricionalProviders>
   );

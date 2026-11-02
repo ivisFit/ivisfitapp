@@ -4,7 +4,8 @@ import { FeedbackModal } from "@/components/FeedbackModal";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { Button, Input, Select } from "@/components";
-import { CardSkeleton, ListSkeleton, SkeletonStack } from "@/components/skeletons/AppSkeleton";
+import { useAppDialog } from "@/components/AppDialogProvider";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import { useBancoEjercicios } from "@/features/profe/hooks/useBancoEjercicios";
 import { useAlumnaRutinaEditor } from "@/features/profe/hooks/useAlumnaRutinaEditor";
 import {
@@ -48,7 +49,14 @@ import {
   type PlanTemplateBlueprint,
   type SemanaPlanDraft,
 } from "@/features/profe/lib/rutina-draft";
-import { resolveRutinaDay } from "@/features/alumna/lib/rutina-day";
+import { getTodayDateKey, resolveRutinaDay } from "@/features/alumna/lib/rutina-day";
+import {
+  formatRutinaDateKey,
+  pickPrimaryRutina,
+  rutinaEndInclusiveKey,
+  rutinaStartKey,
+  suggestedNextRutinaStart,
+} from "@/features/alumna/lib/rutina-utils";
 import { apiFetch } from "@/lib/api";
 import { invalidateCache } from "@/lib/apiCache";
 
@@ -214,11 +222,13 @@ export function RutinaBuilder({
     isTemplateMode ? (selectedPlanTemplate?.id ?? null) : null,
   );
   const {
+    rutinas: alumnaRutinas,
     rutinaId: existingRutinaId,
     rutina: existingRutina,
     loading: loadingAlumnaRutina,
     error: alumnaRutinaError,
     refetch: refetchAlumnaRutina,
+    selectRutina,
   } = useAlumnaRutinaEditor(isAlumnaMode ? alumnaIdProp : undefined);
 
   const [nombrePlan, setNombrePlan] = useState("");
@@ -252,10 +262,13 @@ export function RutinaBuilder({
     buildSemanasDraftForPlan(1, DEFAULT_DIAS_POR_SEMANA),
   );
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const dialog = useAppDialog();
   const [saveError, setSaveError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [selectedDiaId, setSelectedDiaId] = useState<string | null>(null);
   const [alumnaEditorReady, setAlumnaEditorReady] = useState(false);
+  const [creatingNew, setCreatingNew] = useState(false);
   const [copyDiaModal, setCopyDiaModal] = useState<{
     weekNumber: number;
     diaLocalId: string;
@@ -297,11 +310,12 @@ export function RutinaBuilder({
       ? "Completá el nombre del plan."
       : null;
 
+  const editingExisting = Boolean(existingRutinaId) && !creatingNew;
   const canSaveAlumnaRutina =
     isAlumnaMode &&
     Boolean(alumnaIdProp) &&
     Boolean(nombrePlan.trim()) &&
-    (existingRutinaId ? true : semanasValid);
+    (editingExisting ? true : semanasValid);
 
   const totalDiasPlan = useMemo(
     () => semanasDraft.reduce((total, sem) => total + sem.dias.length, 0),
@@ -389,7 +403,14 @@ export function RutinaBuilder({
   ]);
 
   useEffect(() => {
-    if (!isAlumnaMode || !existingRutina || loadingAlumnaRutina) return;
+    if (creatingNew) return;
+    hydratedRutinaRef.current = null;
+    setSavedAlumnaJson(null);
+    if (!existingRutina) setAlumnaEditorReady(false);
+  }, [creatingNew, existingRutina?.id]);
+
+  useEffect(() => {
+    if (!isAlumnaMode || creatingNew || !existingRutina || loadingAlumnaRutina) return;
 
     const hasMissingEjercicios = existingRutina.semanas.some((semana) =>
       semana.dias.some((dia) =>
@@ -431,6 +452,7 @@ export function RutinaBuilder({
     }
   }, [
     isAlumnaMode,
+    creatingNew,
     existingRutina,
     loadingAlumnaRutina,
     ejercicios,
@@ -453,12 +475,6 @@ export function RutinaBuilder({
   useEffect(() => {
     hydratedBlueprintRef.current = null;
   }, [selectedPlanTemplate?.id]);
-
-  useEffect(() => {
-    hydratedRutinaRef.current = null;
-    setSavedAlumnaJson(null);
-    if (!existingRutina) setAlumnaEditorReady(false);
-  }, [existingRutina?.id]);
 
   useEffect(() => {
     if (!isTemplateMode) return;
@@ -591,6 +607,25 @@ export function RutinaBuilder({
   ]);
 
   useEffect(() => {
+    if (!isAlumnaMode || !creatingNew || !alumnaEditorReady) return;
+    if (savedAlumnaJson !== null) return;
+    setSavedAlumnaJson(currentBlueprintJson);
+  }, [
+    isAlumnaMode,
+    creatingNew,
+    alumnaEditorReady,
+    savedAlumnaJson,
+    currentBlueprintJson,
+  ]);
+
+  const seenAlumnaIdRef = useRef(alumnaIdProp);
+  useEffect(() => {
+    if (seenAlumnaIdRef.current === alumnaIdProp) return;
+    seenAlumnaIdRef.current = alumnaIdProp;
+    setCreatingNew(false);
+  }, [alumnaIdProp]);
+
+  useEffect(() => {
     if (!isAlumnaMode) return;
     onDirtyChange?.(alumnaHasUnsavedChanges);
   }, [isAlumnaMode, alumnaHasUnsavedChanges, onDirtyChange]);
@@ -671,12 +706,80 @@ export function RutinaBuilder({
         setNumeroSemana(1);
         setAlumnaEditorReady(true);
         setSelectedDiaId(state.semanasDraft[0]?.dias[0]?.localId ?? null);
+        setSavedAlumnaJson(null);
       } catch (err) {
         setSaveError(
           err instanceof Error ? err.message : "No se pudo cargar la plantilla",
         );
       }
     })();
+  }
+
+  function handleStartNewRutina() {
+    const today = getTodayDateKey();
+    setCreatingNew(true);
+    setAlumnaEditorReady(false);
+    setStartDate(suggestedNextRutinaStart(alumnaRutinas, today));
+    setNombrePlan("");
+    setTemplatePickerId("");
+    onSelectPlanTemplate?.(null);
+    setSavedAlumnaJson(null);
+    setSaveError(null);
+    setSuccessMessage(null);
+    setSelectedDiaId(null);
+    hydratedRutinaRef.current = existingRutina?.id ?? null;
+  }
+
+  function handleCancelNewRutina() {
+    hydratedRutinaRef.current = null;
+    setCreatingNew(false);
+    setSaveError(null);
+    setSuccessMessage(null);
+  }
+
+  function handleSelectRutina(id: string) {
+    if (!id || id === existingRutinaId || saving || deleting) return;
+    hydratedRutinaRef.current = null;
+    setCreatingNew(false);
+    setSaveError(null);
+    setSuccessMessage(null);
+    selectRutina(id);
+  }
+
+  async function handleDeleteRutina() {
+    if (!existingRutinaId || !editingExisting || deleting) return;
+
+    const nombre = nombrePlan.trim() || "esta rutina";
+    const alumna = alumnaNombre ?? "La alumna";
+    const esLaVisible = existingRutinaId === pickPrimaryRutina(alumnaRutinas)?.id;
+    const confirmed = await dialog.confirm({
+      title: "Eliminar rutina",
+      message: esLaVisible
+        ? `¿Eliminar "${nombre}"? ${alumna} deja de verla. No se puede deshacer.`
+        : `¿Eliminar "${nombre}"? No se puede deshacer.`,
+      tone: "danger",
+      confirmLabel: "Eliminar",
+    });
+    if (!confirmed) return;
+
+    setDeleting(true);
+    setSaveError(null);
+    setSuccessMessage(null);
+
+    try {
+      await apiFetch(`/api/rutinas/${existingRutinaId}`, { method: "DELETE" });
+      invalidateCache("/api/rutinas");
+      hydratedRutinaRef.current = null;
+      setSavedAlumnaJson(null);
+      setSuccessMessage("Rutina eliminada.");
+      refetchAlumnaRutina();
+    } catch (err) {
+      setSaveError(
+        err instanceof Error ? err.message : "No se pudo eliminar la rutina",
+      );
+    } finally {
+      setDeleting(false);
+    }
   }
 
   const ejerciciosById = useMemo(
@@ -1003,7 +1106,7 @@ export function RutinaBuilder({
       semanasDraft,
     };
     const previousBlueprint =
-      existingRutinaId && existingRutina
+      editingExisting && existingRutina
         ? rutinaDetailToBlueprint(
             existingRutina,
             ejercicios[0]?.id ?? "",
@@ -1020,7 +1123,7 @@ export function RutinaBuilder({
       previousBlueprint ? { previousBlueprint } : undefined,
     );
 
-    if (!existingRutinaId && payload.semanas.length === 0) {
+    if (!editingExisting && payload.semanas.length === 0) {
       setSaveError(
         "Completá al menos una semana con ejercicios antes de guardar.",
       );
@@ -1029,26 +1132,34 @@ export function RutinaBuilder({
     }
 
     try {
-      if (existingRutinaId) {
+      let createdId: string | undefined;
+      if (editingExisting && existingRutinaId) {
         await apiFetch(`/api/rutinas/${existingRutinaId}`, {
           method: "PATCH",
           body: JSON.stringify(payload),
         });
       } else {
-        await apiFetch("/api/rutinas", {
-          method: "POST",
-          body: JSON.stringify(payload),
-        });
+        const created = await apiFetch<{ _id?: string; id?: string }>(
+          "/api/rutinas",
+          {
+            method: "POST",
+            body: JSON.stringify(payload),
+          },
+        );
+        createdId = created._id ?? created.id;
       }
       invalidateCache("/api/rutinas");
       setSuccessMessage(
-        existingRutinaId
+        editingExisting
           ? "Rutina de la alumna actualizada correctamente."
-          : "Rutina de la alumna guardada correctamente.",
+          : creatingNew
+            ? "Rutina nueva guardada. La actual sigue vigente hasta que termine."
+            : "Rutina de la alumna guardada correctamente.",
       );
       setSavedAlumnaJson(currentBlueprintJson);
-      refetchAlumnaRutina();
+      if (creatingNew) setCreatingNew(false);
       hydratedRutinaRef.current = null;
+      refetchAlumnaRutina(createdId);
     } catch (err) {
       setSaveError(
         err instanceof Error ? err.message : "No se pudo guardar la rutina",
@@ -1072,12 +1183,37 @@ export function RutinaBuilder({
   const showAlumnaEmpty =
     isAlumnaMode &&
     !loadingAlumnaRutina &&
-    !existingRutina &&
-    !alumnaEditorReady;
+    !alumnaEditorReady &&
+    (creatingNew || !existingRutina);
   const showAlumnaEditor =
     isAlumnaMode &&
     !loadingAlumnaRutina &&
-    (Boolean(existingRutina) || alumnaEditorReady);
+    (creatingNew
+      ? alumnaEditorReady
+      : Boolean(existingRutina) || alumnaEditorReady);
+  const vigenteRutina = pickPrimaryRutina(alumnaRutinas);
+  const currentEndKey = vigenteRutina
+    ? rutinaEndInclusiveKey(vigenteRutina)
+    : null;
+  const todayKey = getTodayDateKey();
+  const rutinasOrdenadas = [...alumnaRutinas].sort((a, b) => {
+    if (a.id === vigenteRutina?.id) return -1;
+    if (b.id === vigenteRutina?.id) return 1;
+    return (rutinaStartKey(a) ?? "").localeCompare(rutinaStartKey(b) ?? "");
+  });
+  const newRutinaHint = (() => {
+    const nombre = alumnaNombre ?? "La alumna";
+    const inicio = formatRutinaDateKey(startDate);
+    if (!currentEndKey || currentEndKey < todayKey) {
+      return `Esta rutina nueva empieza el ${inicio}.`;
+    }
+    const hasta = formatRutinaDateKey(currentEndKey);
+    const base = `${nombre} sigue con la rutina actual hasta el ${hasta}. Esta nueva empieza el ${inicio}.`;
+    if (startDate <= currentEndKey) {
+      return `${base} Si las fechas se superponen, la actual sigue siendo la que ve.`;
+    }
+    return base;
+  })();
   const copyDiaModalWeek = copyDiaModal
     ? semanasDraft.find((sem) => sem.numeroSemana === copyDiaModal.weekNumber)
     : undefined;
@@ -1222,7 +1358,7 @@ export function RutinaBuilder({
 
   const alumnaSaveBlockedReason = !nombrePlan.trim()
     ? "Completá el nombre del plan."
-    : !existingRutinaId && !semanasValid
+    : !editingExisting && !semanasValid
       ? "Completá el nombre de cada día y asigná un ejercicio en cada uno."
       : null;
 
@@ -1303,18 +1439,16 @@ export function RutinaBuilder({
       ) : null}
 
       {loadingAlumnaRutina || (isTemplateMode && loadingBlueprint) ? (
-        <SkeletonStack tight aria-busy={true} aria-label="Cargando datos de la rutina">
-          <CardSkeleton lines={3} elevated />
-          <CardSkeleton lines={2} elevated />
-        </SkeletonStack>
+        <IvisContentLoader variant="section" label="Cargando datos de la rutina" />
       ) : null}
 
       {showAlumnaEmpty ? (
         <div className="rutina-builder__empty">
-          <h2>Todavía no hay rutina</h2>
+          <h2>{creatingNew ? "Nueva rutina" : "Todavía no hay rutina"}</h2>
           <p>
-            Elegí un plan base y cargá la plantilla para personalizarla para{" "}
-            {alumnaNombre ?? "esta alumna"}.
+            {creatingNew
+              ? newRutinaHint
+              : `Elegí un plan base y cargá la plantilla para personalizarla para ${alumnaNombre ?? "esta alumna"}.`}
           </p>
           <Select
             label="Plan base IVIS"
@@ -1329,13 +1463,20 @@ export function RutinaBuilder({
               </option>
             ))}
           </Select>
-          <Button
-            type="button"
-            disabled={!templatePickerId && !selectedPlanTemplate?.id}
-            onClick={handleLoadTemplateIntoEditor}
-          >
-            Cargar plantilla
-          </Button>
+          <div className="rutina-builder__save-bar-actions">
+            {creatingNew ? (
+              <Button type="button" variant="ghost" onClick={handleCancelNewRutina}>
+                Volver
+              </Button>
+            ) : null}
+            <Button
+              type="button"
+              disabled={!templatePickerId && !selectedPlanTemplate?.id}
+              onClick={handleLoadTemplateIntoEditor}
+            >
+              Cargar plantilla
+            </Button>
+          </div>
         </div>
       ) : null}
 
@@ -1346,10 +1487,37 @@ export function RutinaBuilder({
             {alumnaPlanBadge ? (
               <span className="rutina-builder__plan-badge">{alumnaPlanBadge}</span>
             ) : null}
-            {existingRutina ? (
+            {rutinasOrdenadas.length > 1 && !creatingNew ? (
+              <Select
+                label="Rutina a editar"
+                name="rutinaEditor"
+                value={existingRutinaId ?? ""}
+                onChange={(event) => handleSelectRutina(event.target.value)}
+              >
+                {rutinasOrdenadas.map((item) => {
+                  const start = rutinaStartKey(item);
+                  const when = start ? formatRutinaDateKey(start) : "sin fecha";
+                  const role =
+                    item.id === vigenteRutina?.id
+                      ? "Vigente"
+                      : start && start > todayKey
+                        ? "Próxima"
+                        : "Anterior";
+                  return (
+                    <option key={item.id} value={item.id}>
+                      {role} · {item.nombrePlan} · {when}
+                    </option>
+                  );
+                })}
+              </Select>
+            ) : null}
+            {creatingNew ? (
+              <p className="rutina-builder__toolbar-hint">{newRutinaHint}</p>
+            ) : existingRutina ? (
               <p className="rutina-builder__toolbar-hint">
-                Editá la rutina activa de {alumnaNombre ?? "la alumna"} y usá
-                &quot;Actualizar rutina&quot; para guardar los cambios.
+                {existingRutinaId === vigenteRutina?.id
+                  ? `Editá la rutina vigente de ${alumnaNombre ?? "la alumna"} y usá "Actualizar rutina" para guardar los cambios.`
+                  : `Esta rutina todavía no es la que ve ${alumnaNombre ?? "la alumna"}. Actualizala acá, o creá otra con "Nueva rutina".`}
               </p>
             ) : null}
             <div className="rutina-builder__toolbar-grid">{planStructureFields}</div>
@@ -1479,9 +1647,7 @@ export function RutinaBuilder({
           ) : null}
 
           {loadingEjercicios ? (
-            <div aria-busy="true" aria-label="Cargando ejercicios">
-              <ListSkeleton items={3} />
-            </div>
+            <IvisContentLoader variant="section" label="Cargando ejercicios" />
           ) : null}
 
           {!loadingEjercicios && ejercicios.length === 0 ? (
@@ -1664,22 +1830,55 @@ export function RutinaBuilder({
                   {alumnaSaveBlockedReason}
                 </p>
               ) : null}
-              {existingRutinaId && !semanasValid ? (
+              {editingExisting && !semanasValid ? (
                 <p className="rutina-builder__save-bar-hint">
                   Podés actualizar aunque no hayas completado todas las semanas;
                   las incompletas conservan su versión guardada.
                 </p>
               ) : null}
             </div>
-            <Button type="submit" disabled={saving || !canSaveAlumnaRutina}>
-              {saving
-                ? existingRutinaId
-                  ? "Actualizando rutina..."
-                  : "Guardando rutina..."
-                : existingRutinaId
-                  ? "Actualizar rutina"
-                  : "Guardar rutina"}
-            </Button>
+            <div className="rutina-builder__save-bar-actions">
+              {editingExisting ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="rutina-builder__delete"
+                  disabled={saving || deleting}
+                  onClick={() => void handleDeleteRutina()}
+                >
+                  {deleting ? "Eliminando..." : "Eliminar rutina"}
+                </Button>
+              ) : null}
+              {editingExisting ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  disabled={saving || deleting}
+                  onClick={handleStartNewRutina}
+                >
+                  Nueva rutina
+                </Button>
+              ) : null}
+              {creatingNew ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  disabled={saving || deleting}
+                  onClick={handleCancelNewRutina}
+                >
+                  Volver
+                </Button>
+              ) : null}
+              <Button type="submit" disabled={saving || deleting || !canSaveAlumnaRutina}>
+                {saving
+                  ? editingExisting
+                    ? "Actualizando rutina..."
+                    : "Guardando rutina..."
+                  : editingExisting
+                    ? "Actualizar rutina"
+                    : "Guardar rutina"}
+              </Button>
+            </div>
           </div>
         ) : null}
       </form>

@@ -1,3 +1,5 @@
+import { resolveModoPlan, type ModoPlan } from "@/lib/modo-plan";
+
 export type AdmissionStatus = "pendiente" | "admitida" | "rechazada";
 
 export type Sexo = "hombre" | "mujer";
@@ -83,6 +85,7 @@ export type AlumnaListItem = {
     fechaVencimiento?: string | null;
   };
   tieneRutina?: boolean;
+  modoPlan?: ModoPlan;
   soloAlimentacion?: boolean;
   tieneEvaluacionNutricional?: boolean;
   tienePlanNutricional?: boolean;
@@ -111,6 +114,7 @@ export type AlumnaDetail = {
   fechaAdmision?: string;
   fechaRechazo?: string;
   circunferenciasHabilitadas?: boolean;
+  modoPlan?: ModoPlan;
   soloAlimentacion?: boolean;
   healthChangesPending?: HealthChangesPendingApiDoc;
   gamificacion?: GamificacionApiDoc;
@@ -146,6 +150,8 @@ export type UsuarioApiDoc = {
   fechaRegistro?: string;
   createdAt?: string;
   circunferenciasHabilitadas?: boolean;
+  tienePliegues?: boolean;
+  modoPlan?: ModoPlan;
   soloAlimentacion?: boolean;
   tutorialesVistos?: boolean;
   onboardingCompletado?: boolean;
@@ -215,6 +221,7 @@ export function fechaToDateInputValue(fecha?: string) {
 }
 
 export function mapUsuarioFromApi(doc: UsuarioApiDoc): AlumnaListItem {
+  const modoPlan = resolveModoPlan(doc);
   return {
     id: doc._id ?? doc.id ?? "",
     nombre: doc.nombre,
@@ -229,13 +236,15 @@ export function mapUsuarioFromApi(doc: UsuarioApiDoc): AlumnaListItem {
         }
       : undefined,
     tieneRutina: doc.tieneRutina === true,
-    soloAlimentacion: doc.soloAlimentacion === true,
+    modoPlan,
+    soloAlimentacion: modoPlan === "alimentacion",
     tieneEvaluacionNutricional: doc.tieneEvaluacionNutricional === true,
     tienePlanNutricional: doc.tienePlanNutricional === true,
   };
 }
 
 export function mapUsuarioDetailFromApi(doc: UsuarioApiDoc): AlumnaDetail {
+  const modoPlan = resolveModoPlan(doc);
   return {
     id: doc._id ?? doc.id ?? "",
     nombre: doc.nombre?.trim() || "Sin nombre",
@@ -263,7 +272,8 @@ export function mapUsuarioDetailFromApi(doc: UsuarioApiDoc): AlumnaDetail {
     fechaAdmision: formatFechaRegistro(doc.fechaAdmision),
     fechaRechazo: formatFechaRegistro(doc.fechaRechazo),
     circunferenciasHabilitadas: doc.circunferenciasHabilitadas === true,
-    soloAlimentacion: doc.soloAlimentacion === true,
+    modoPlan,
+    soloAlimentacion: modoPlan === "alimentacion",
     healthChangesPending: doc.healthChangesPending,
     gamificacion: doc.gamificacion,
     notificaciones: doc.notificaciones,

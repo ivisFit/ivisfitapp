@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { Button, Input } from "@/components";
 import { useAppDialog } from "@/components/AppDialogProvider";
-import { ListSkeleton } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import { TutorialesSortableList } from "@/features/profe/components/tutoriales/TutorialesSortableList";
 import {
   type Tutorial,
@@ -293,7 +293,7 @@ export function GestionTutoriales({
 
         {loading ? (
           <div aria-busy="true" aria-label="Cargando tutoriales">
-            <ListSkeleton items={4} withAvatar />
+            <IvisContentLoader variant="section" label="Cargando tutoriales" />
           </div>
         ) : null}
 

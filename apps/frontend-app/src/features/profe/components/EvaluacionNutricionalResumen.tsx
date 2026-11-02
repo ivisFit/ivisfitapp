@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Drumstick, Droplets, Flame, Wheat } from "lucide-react";
 import { InfoTooltip } from "@/components";
-import { FormSkeleton, SkeletonCard } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import { apiFetch } from "@/lib/api";
 import type { EvaluacionNutricionalApiDoc } from "@/features/alumna/types/evaluacion-nutricional";
 import type {
@@ -240,11 +240,7 @@ export function EvaluacionNutricionalResumen({
 
   if (loading) {
     return (
-      <div aria-busy="true" aria-label="Cargando evaluación">
-        <SkeletonCard elevated>
-          <FormSkeleton fields={2} showButton={false} />
-        </SkeletonCard>
-      </div>
+      <IvisContentLoader variant="section" label="Cargando evaluación" />
     );
   }
 

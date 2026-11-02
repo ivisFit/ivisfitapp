@@ -1,6 +1,8 @@
 const MAX_EDGE_PX = 1600;
+const MAX_FOTO_PERFIL_EDGE_PX = 1024;
 const JPEG_QUALITY = 0.82;
 const MAX_PROGRESS_PHOTO_BYTES = 5 * 1024 * 1024;
+const MAX_FOTO_PERFIL_BYTES = 2 * 1024 * 1024;
 
 export const PROGRESS_PHOTO_HEIC_ERROR =
   "No se pudo leer esta foto. Usá Tomar foto, o en el iPhone: Ajustes → Cámara → Formatos → Más compatible.";
@@ -49,7 +51,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promi
   });
 }
 
-async function decodeProgressPhoto(file: File): Promise<ImageBitmap> {
+async function decodeImageFile(file: File, maxEdgePx: number): Promise<ImageBitmap> {
   if (file.size > MAX_SOURCE_BYTES) {
     throw new Error(
       "La foto original es demasiado pesada. Elegí otra o sacala de nuevo.",
@@ -59,10 +61,10 @@ async function decodeProgressPhoto(file: File): Promise<ImageBitmap> {
   const attempts: ImageBitmapOptions[] = [
     {
       imageOrientation: "from-image",
-      resizeWidth: MAX_EDGE_PX,
+      resizeWidth: maxEdgePx,
       resizeQuality: "high",
     },
-    { resizeWidth: MAX_EDGE_PX },
+    { resizeWidth: maxEdgePx },
   ];
   if (file.size <= FULL_DECODE_MAX_BYTES) {
     attempts.push({ imageOrientation: "from-image" }, {});
@@ -100,13 +102,23 @@ async function decodeProgressPhoto(file: File): Promise<ImageBitmap> {
   return bitmap;
 }
 
-/** Baja la foto a JPEG chico. En el iPhone, Safari decodifica HEIC con createImageBitmap. */
-export async function prepareProgressPhoto(file: File): Promise<File> {
-  const bitmap = await decodeProgressPhoto(file);
+async function prepareImageToJpeg(
+  file: File,
+  {
+    maxEdgePx,
+    maxBytes,
+    defaultBaseName,
+  }: {
+    maxEdgePx: number;
+    maxBytes: number;
+    defaultBaseName: string;
+  },
+): Promise<File> {
+  const bitmap = await decodeImageFile(file, maxEdgePx);
 
   try {
     const longest = Math.max(bitmap.width, bitmap.height);
-    const scale = longest > MAX_EDGE_PX ? MAX_EDGE_PX / longest : 1;
+    const scale = longest > maxEdgePx ? maxEdgePx / longest : 1;
     const width = Math.max(1, Math.round(bitmap.width * scale));
     const height = Math.max(1, Math.round(bitmap.height * scale));
 
@@ -121,15 +133,16 @@ export async function prepareProgressPhoto(file: File): Promise<File> {
 
     let quality = JPEG_QUALITY;
     let blob = await canvasToJpeg(canvas, quality);
-    while (blob.size > MAX_PROGRESS_PHOTO_BYTES && quality > 0.5) {
+    while (blob.size > maxBytes && quality > 0.5) {
       quality = Math.round((quality - 0.12) * 100) / 100;
       blob = await canvasToJpeg(canvas, quality);
     }
-    if (blob.size > MAX_PROGRESS_PHOTO_BYTES) {
-      throw new Error("La foto no puede superar 5 MB.");
+    if (blob.size > maxBytes) {
+      const maxMb = Math.round(maxBytes / (1024 * 1024));
+      throw new Error(`La foto no puede superar ${maxMb} MB.`);
     }
 
-    const baseName = file.name.replace(/\.[^.]+$/, "") || "medicion-foto";
+    const baseName = file.name.replace(/\.[^.]+$/, "") || defaultBaseName;
     return new File([blob], `${baseName}.jpg`, {
       type: "image/jpeg",
       lastModified: Date.now(),
@@ -137,4 +150,22 @@ export async function prepareProgressPhoto(file: File): Promise<File> {
   } finally {
     bitmap.close();
   }
+}
+
+/** Baja la foto a JPEG chico. En el iPhone, Safari decodifica HEIC con createImageBitmap. */
+export async function prepareProgressPhoto(file: File): Promise<File> {
+  return prepareImageToJpeg(file, {
+    maxEdgePx: MAX_EDGE_PX,
+    maxBytes: MAX_PROGRESS_PHOTO_BYTES,
+    defaultBaseName: "medicion-foto",
+  });
+}
+
+/** Avatar de perfil: JPEG ≤ 2 MB, lado largo ≤ 1024 px. */
+export async function prepareFotoPerfil(file: File): Promise<File> {
+  return prepareImageToJpeg(file, {
+    maxEdgePx: MAX_FOTO_PERFIL_EDGE_PX,
+    maxBytes: MAX_FOTO_PERFIL_BYTES,
+    defaultBaseName: "foto-perfil",
+  });
 }

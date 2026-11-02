@@ -69,6 +69,23 @@
   color: rgb(255 255 255 / 88%);
 }
 
+.progreso-mediciones-ctas {
+  display: grid;
+  gap: 1rem;
+  margin: 1.25rem 0;
+}
+
+.progreso-mediciones-ctas .progreso-circunferencias-cta {
+  margin: 0;
+  align-content: start;
+}
+
+@media (min-width: 720px) {
+  .progreso-mediciones-ctas {
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  }
+}
+
 .progreso-circunferencias-cta {
   display: grid;
   gap: 0.75rem;
@@ -249,6 +266,27 @@
   font-weight: 600;
 }
 
+.pliegues-chart__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.pliegues-chart__copy {
+  display: grid;
+  gap: 0.35rem;
+  min-width: min(100%, 14rem);
+  flex: 1 1 16rem;
+}
+
+.pliegues-chart__head h2,
+.pliegues-chart__head .pliegues-chart__hint {
+  margin: 0;
+}
+
 .pliegues-form-card p {
   margin: 0 0 1rem;
   color: rgb(255 255 255 / 68%);
@@ -291,6 +329,48 @@
 
 .pliegues-chart__canvas .recharts-default-legend {
   padding-top: 0.5rem !important;
+}
+
+.pliegues-chart__hint {
+  margin: 0 0 0.85rem;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.pliegues-evolucion-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 0.75rem;
+}
+
+.pliegues-evolucion-summary__meta {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+
+.pliegues-evolucion-page .alumna-pliegues-body {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.pliegues-evolucion-page .pliegues-chart,
+.pliegues-evolucion-page .pliegues-fotos-historial__card,
+.pliegues-evolucion-page .pliegues-evolucion-summary {
+  min-width: 0;
+}
+
+.pliegues-evolucion-page .pliegues-chart {
+  height: auto;
+}
+
+.pliegues-evolucion-page .pliegues-chart__canvas {
+  height: 320px;
+  min-height: 280px;
+}
+
+.pliegues-evolucion-page .recharts-legend-item-text {
+  color: var(--color-text) !important;
 }
 
 .pliegues-chart__empty-overlay {
@@ -353,6 +433,8 @@
 }
 
 .pliegues-history-table__wrap {
+  min-width: 0;
+  max-width: 100%;
   overflow-x: auto;
   border-radius: 0.75rem;
 }
@@ -414,16 +496,38 @@
 
 .pliegues-layout {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.pliegues-layout > * {
+  min-width: 0;
+  max-width: 100%;
 }
 
 .pliegues-layout__row {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.pliegues-form-card,
+.pliegues-chart,
+.pliegues-history-table {
+  min-width: 0;
+  max-width: 100%;
 }
 
 .pliegues-form-card {
   height: 100%;
+}
+
+.pliegues-form-card .medicion-fotos__grid {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .app-content:has(.alumna-pliegues-view) {
@@ -497,7 +601,7 @@
   }
 
   .pliegues-form-card .skinfold-form__grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

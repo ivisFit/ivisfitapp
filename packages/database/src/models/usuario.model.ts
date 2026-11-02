@@ -42,6 +42,10 @@ const usuarioSchema = new Schema(
     fechaRegistro: { type: Date, default: Date.now },
     circunferenciasHabilitadas: { type: Boolean, default: false },
     soloAlimentacion: { type: Boolean, default: false },
+    modoPlan: {
+      type: String,
+      enum: ["ambos", "rutina", "alimentacion"],
+    },
     tutorialesVistos: { type: Boolean, default: false },
     onboarding: {
       completado: { type: Boolean, default: false },

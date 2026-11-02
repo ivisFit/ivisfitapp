@@ -97,10 +97,14 @@ export {
   mensajeAutorRolSchema,
   metodoCalculoSchema,
   metodoComprobanteSchema,
+  modoPlanSchema,
   objectIdSchema,
   rolSchema,
   sexoSchema,
+  type ModoPlan,
 } from "./schemas/shared";
+
+export { resolveModoPlan } from "./lib/modo-plan";
 
 export {
   calculateAgeYears,

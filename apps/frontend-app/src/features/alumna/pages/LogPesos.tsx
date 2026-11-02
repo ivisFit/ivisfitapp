@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { ChartSkeleton } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import { useAuth } from "@/context/AuthContext";
 import { useMeProfile } from "@/features/alumna/hooks/useMeProfile";
 import { useProgresoCargas } from "@/features/alumna/hooks/useProgresoCargas";
@@ -21,9 +21,7 @@ const ProgresoCumplimientoChart = dynamic(
   {
     ssr: false,
     loading: () => (
-      <section className="progreso-chart">
-        <ChartSkeleton height="chart-md" />
-      </section>
+      <IvisContentLoader variant="section" label="Cargando cumplimiento" />
     ),
   },
 );
@@ -36,9 +34,7 @@ const ProgresoCargasChart = dynamic(
   {
     ssr: false,
     loading: () => (
-      <section className="progreso-chart">
-        <ChartSkeleton height="chart-md" />
-      </section>
+      <IvisContentLoader variant="section" label="Cargando cargas" />
     ),
   },
 );
@@ -75,6 +71,7 @@ export function LogPesos() {
   });
 
   const circunferenciasHabilitadas = profile?.circunferenciasHabilitadas === true;
+  const tienePliegues = user?.tienePliegues === true;
   const loading =
     authLoading || rutinaLoading || (hasRutina && (cumplimientoLoading || cargasLoading));
   const error = rutinaError ?? cumplimientoError ?? cargasError;
@@ -96,10 +93,7 @@ export function LogPesos() {
       <ResumenSemanalCard />
 
       {loading ? (
-        <div className="progreso-page__charts" aria-busy="true" aria-label="Cargando tu progreso">
-          <ChartSkeleton height="chart" />
-          <ChartSkeleton height="chart" />
-        </div>
+        <IvisContentLoader variant="section" label="Cargando tu progreso" />
       ) : error ? (
         <p className="auth-error">{error}</p>
       ) : !hasRutina ? (
@@ -123,17 +117,33 @@ export function LogPesos() {
         </div>
       )}
 
-      {circunferenciasHabilitadas ? (
-        <section className="progreso-circunferencias-cta">
-          <h2>Circunferencias</h2>
-          <p>
-            Registrá tus mediciones de cuello, cintura y cadera para calcular tu
-            porcentaje de grasa corporal.
-          </p>
-          <Link href={alumnaRoutes.circunferencias} className="btn btn--primary">
-            Ir a Circunferencias
-          </Link>
-        </section>
+      {tienePliegues || circunferenciasHabilitadas ? (
+        <div className="progreso-mediciones-ctas">
+          {tienePliegues ? (
+            <section className="progreso-circunferencias-cta">
+              <h2>Pliegues</h2>
+              <p>
+                Mirá cómo evolucionó tu grasa corporal y las fotos de cada
+                control.
+              </p>
+              <Link href={alumnaRoutes.pliegues} className="btn btn--primary">
+                Ver tu evolución
+              </Link>
+            </section>
+          ) : null}
+          {circunferenciasHabilitadas ? (
+            <section className="progreso-circunferencias-cta">
+              <h2>Circunferencias</h2>
+              <p>
+                Registrá tus mediciones de cuello, cintura y cadera para calcular tu
+                porcentaje de grasa corporal.
+              </p>
+              <Link href={alumnaRoutes.circunferencias} className="btn btn--primary">
+                Ir a Circunferencias
+              </Link>
+            </section>
+          ) : null}
+        </div>
       ) : null}
     </div>
   );

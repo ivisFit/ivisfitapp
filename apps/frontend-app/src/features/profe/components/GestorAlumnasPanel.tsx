@@ -6,9 +6,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { Select } from "@/components/Select";
-import { ListSkeleton } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import { UserAvatar } from "@/components/UserAvatar";
 import { useProfeCola } from "@/features/profe/hooks/useProfeCola";
+import { resolveModoPlan } from "@/lib/modo-plan";
 import { profeAlumnaDetailRoute, profeRoutes } from "@/routes/paths";
 import type { AlumnaListItem, MembresiaEstado } from "@/types/usuario";
 
@@ -119,11 +120,13 @@ export const GestorAlumnasPanel = memo(function GestorAlumnasPanel({
           alumna.email.toLowerCase().includes(q);
         if (!hay) return false;
       }
+      const modoPlan = resolveModoPlan(alumna);
       if (filtro === "sin_rutina") {
-        return alumna.tieneRutina === false && alumna.soloAlimentacion !== true;
+        return alumna.tieneRutina === false && modoPlan !== "alimentacion";
       }
       if (filtro === "eval_sin_plan") {
         return (
+          modoPlan !== "rutina" &&
           alumna.tieneEvaluacionNutricional === true &&
           alumna.tienePlanNutricional !== true
         );
@@ -142,9 +145,7 @@ export const GestorAlumnasPanel = memo(function GestorAlumnasPanel({
 
   if (loading) {
     return (
-      <div aria-busy="true" aria-label="Cargando alumnas">
-        <ListSkeleton items={5} withAvatar />
-      </div>
+      <IvisContentLoader variant="section" label="Cargando alumnas" />
     );
   }
 
@@ -196,6 +197,7 @@ export const GestorAlumnasPanel = memo(function GestorAlumnasPanel({
         <ul className="alumnas-list">
           {filtradas.map((alumna) => {
             const membresia = membresiaLabel(alumna.membresia?.estado);
+            const modoPlan = resolveModoPlan(alumna);
             return (
               <li key={alumna.id}>
                 <Link
@@ -219,12 +221,16 @@ export const GestorAlumnasPanel = memo(function GestorAlumnasPanel({
                           {membresia}
                         </span>
                       ) : null}
-                      {alumna.soloAlimentacion ? (
+                      {modoPlan === "alimentacion" ? (
                         <span className="alumnas-list__badge">Solo alimentación</span>
-                      ) : alumna.tieneRutina === false ? (
+                      ) : modoPlan === "rutina" ? (
+                        <span className="alumnas-list__badge">Solo rutina</span>
+                      ) : null}
+                      {modoPlan !== "alimentacion" && alumna.tieneRutina === false ? (
                         <span className="alumnas-list__badge">Sin rutina</span>
                       ) : null}
-                      {alumna.tieneEvaluacionNutricional &&
+                      {modoPlan !== "rutina" &&
+                      alumna.tieneEvaluacionNutricional &&
                       !alumna.tienePlanNutricional ? (
                         <span className="alumnas-list__badge">Eval. lista</span>
                       ) : null}

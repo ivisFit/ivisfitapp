@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import "@/styles/preview-cms.css";
-import { CardSkeleton, PageHeaderSkeleton, SkeletonStack } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import CmsEditor from "@/lib/preview-cms/components/CmsEditor";
 import { buildPreviewRoutesFromSlugs } from "@/config/cms.config.shared";
 import { useLandingPlanesGestion } from "@/features/profe/hooks/useLandingPlanesGestion";
@@ -39,14 +39,7 @@ export function PlanesLandingAdmin({ embedded = false }: { embedded?: boolean })
 
       <section className="planes-landing-admin__editor">
         {loading ? (
-          <SkeletonStack aria-busy={true} aria-label="Cargando planes">
-            <PageHeaderSkeleton titleWidth="w-60" subtitle={false} />
-            <div className="sk-grid sk-grid--auto">
-              <CardSkeleton lines={4} elevated />
-              <CardSkeleton lines={4} elevated />
-              <CardSkeleton lines={4} elevated />
-            </div>
-          </SkeletonStack>
+          <IvisContentLoader variant="section" label="Cargando planes" />
         ) : (
           <CmsEditor previewRoutes={previewRoutes} plans={previewPlans} reloadKey={editorKey} />
         )}

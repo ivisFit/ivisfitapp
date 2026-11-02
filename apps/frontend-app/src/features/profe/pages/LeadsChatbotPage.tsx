@@ -3,7 +3,7 @@ import { FeedbackModal } from "@/components/FeedbackModal";
 
 import { useEffect, useState } from "react";
 import { Button, Input } from "@/components";
-import { ListSkeleton } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import { useChatbotLeads } from "@/features/profe/hooks/useChatbotLeads";
 
 const OBSTACULO_LABELS: Record<string, string> = {
@@ -195,7 +195,7 @@ export function LeadsChatbotPage({
 
       {loading ? (
         <section aria-busy="true" aria-label="Cargando leads">
-          <ListSkeleton items={5} withAvatar />
+          <IvisContentLoader variant="section" label="Cargando leads" />
         </section>
       ) : null}
 

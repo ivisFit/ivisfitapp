@@ -1,6 +1,6 @@
 "use client";
 
-import { ListSkeleton } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import {
   formatHistorialDate,
   HISTORIAL_CATEGORIA_LABELS,
@@ -20,9 +20,7 @@ export function AlumnaHistorialTimeline({
 }: AlumnaHistorialTimelineProps) {
   if (loading) {
     return (
-      <div aria-busy="true" aria-label="Cargando historial">
-        <ListSkeleton items={4} />
-      </div>
+      <IvisContentLoader variant="section" label="Cargando historial" />
     );
   }
 

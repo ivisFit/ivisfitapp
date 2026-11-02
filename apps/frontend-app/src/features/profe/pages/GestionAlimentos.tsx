@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { Button, Input, Pagination, Select, InfoTooltip } from "@/components";
 import { useAppDialog } from "@/components/AppDialogProvider";
-import { ListSkeleton } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import { useUrlPagination } from "@/hooks/useUrlPagination";
 import { useAlimentos } from "@/features/profe/hooks/useAlimentos";
 import {
@@ -348,7 +348,7 @@ export function GestionAlimentos({
 
         {loading ? (
           <div aria-busy="true" aria-label="Cargando alimentos">
-            <ListSkeleton items={5} />
+            <IvisContentLoader variant="section" label="Cargando alimentos" />
           </div>
         ) : null}
 

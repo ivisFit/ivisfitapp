@@ -33,6 +33,8 @@ function sheetStoryLabel(kind: DayStoryStep["kind"]): string {
       return "Presentación de la semana";
     case "dayIntro":
       return "Presentación del día";
+    case "dayRoster":
+      return "Resumen del día";
     case "dayOutro":
       return "Cierre del día";
     case "weekOutro":
@@ -62,7 +64,16 @@ type ChallengeDaySheetProps = {
 };
 
 const INCOMPLETE_DAY_CONFIRM =
-  "Todavía te faltan ejercicios. ¿Marcar el día como incompleto? Vas a pasar al siguiente día sin sumar XP ni racha. Se guardan los que ya marcaste.";
+  "Todavía te faltan ejercicios. ¿Marcar el día como no hecho? No suma XP ni racha, y podés completarlo otro día. Se guardan los que ya marcaste.";
+
+function formatCompletedOnLabel(dateKey: string): string {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  if (!year || !month || !day) return dateKey;
+  return new Date(year, month - 1, day).toLocaleDateString("es-UY", {
+    day: "numeric",
+    month: "long",
+  });
+}
 
 export function ChallengeDaySheet({
   day,
@@ -120,7 +131,9 @@ export function ChallengeDaySheet({
     if (!rutina || !day) return [];
     const dayInfo = resolveDayInfoForPlanDayNumber(rutina, day.dayNumber);
     if (!dayInfo) return [];
-    return buildDayStorySequence(rutina, dayInfo);
+    return buildDayStorySequence(rutina, dayInfo).filter(
+      (step) => step.kind !== "dayRoster",
+    );
   }, [day, rutina]);
   const introSteps = storySequence.filter(
     (step): step is Extract<DayStoryStep, { kind: "weekIntro" | "dayIntro" }> =>
@@ -140,11 +153,18 @@ export function ChallengeDaySheet({
   useEffect(() => {
     if (!day || isContained) return;
 
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const root = document.documentElement;
+    const appContent = document.querySelector<HTMLElement>(
+      ".app-shell--alumna .app-content, .app-shell--profe .app-content",
+    );
+    const previousAppOverflow = appContent?.style.overflow ?? "";
+
+    root.classList.add("challenge-sheet-open");
+    if (appContent) appContent.style.overflow = "hidden";
 
     return () => {
-      document.body.style.overflow = previousOverflow;
+      root.classList.remove("challenge-sheet-open");
+      if (appContent) appContent.style.overflow = previousAppOverflow;
     };
   }, [day, isContained]);
 
@@ -168,8 +188,13 @@ export function ChallengeDaySheet({
 
   const activeDay = day;
 
-  const dayIsDone =
-    dayProgreso?.diaCompletado === true || dayProgreso?.diaOmitido === true;
+  const dayIsDone = Boolean(
+    dayProgreso?.diaCompletado && !dayProgreso?.diaOmitido,
+  );
+  const completedOnOtherDay =
+    dayIsDone &&
+    Boolean(dayProgreso?.fechaCompletado) &&
+    dayProgreso?.fechaCompletado !== day.dateKey;
   const dayHasSlot = Boolean(day.numeroSemana && day.nombreDia?.trim());
   const allExercisesCompleted =
     day.ejercicios.length === 0 ||
@@ -184,7 +209,7 @@ export function ChallengeDaySheet({
   function handleSkipDay() {
     if (!canSkipDay || !onSkipDay) return;
     const confirmed = window.confirm(
-      "¿Marcar este día como no entrenado? Vas a pasar al siguiente día del plan sin sumar XP ni racha.",
+      "¿Marcar este día como no hecho? No suma XP ni racha, y podés completarlo otro día.",
     );
     if (confirmed) onSkipDay(activeDay);
   }
@@ -244,6 +269,11 @@ export function ChallengeDaySheet({
           <div>
             <span>Día {day.dayNumber}</span>
             <h3>{day.title}</h3>
+            {completedOnOtherDay && dayProgreso?.fechaCompletado ? (
+              <p className="challenge-sheet__completed-note">
+                Completado el {formatCompletedOnLabel(dayProgreso.fechaCompletado)}
+              </p>
+            ) : null}
           </div>
           <button type="button" onClick={onClose}>
             Cerrar

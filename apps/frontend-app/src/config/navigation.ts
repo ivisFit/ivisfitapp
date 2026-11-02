@@ -1,3 +1,4 @@
+import type { ModoPlan } from "@/lib/modo-plan";
 import { alumnaRoutes, profeRoutes, sharedRoutes } from "@/routes/paths";
 
 export type NavIconId =
@@ -32,6 +33,13 @@ export type NavItem = {
   icon: NavIconId;
   shortLabel?: string;
   badgeKey?: "admisiones";
+};
+
+export const alumnaPlieguesNavItem: NavItem = {
+  href: alumnaRoutes.pliegues,
+  label: "Pliegues",
+  icon: "measure",
+  shortLabel: "Pliegues",
 };
 
 export const alumnaCircunferenciasNavItem: NavItem = {
@@ -177,22 +185,50 @@ const RUTINA_NAV_HREFS = new Set<string>([
   alumnaRoutes.progreso,
 ]);
 
-export function omitRutinaNav(items: NavItem[], soloAlimentacion?: boolean): NavItem[] {
-  if (!soloAlimentacion) return items;
-  return items.filter((item) => !RUTINA_NAV_HREFS.has(item.href));
+const ALIMENTACION_NAV_HREFS = new Set<string>([alumnaRoutes.alimentacion]);
+
+export function getAlumnaMobileMoreNav(options?: {
+  tienePliegues?: boolean;
+}): NavItem[] {
+  if (!options?.tienePliegues) return alumnaMobileMoreNav;
+
+  const logrosIndex = alumnaMobileMoreNav.findIndex(
+    (item) => item.href === alumnaRoutes.logros,
+  );
+  const next = [...alumnaMobileMoreNav];
+  next.splice(logrosIndex >= 0 ? logrosIndex + 1 : next.length, 0, alumnaPlieguesNavItem);
+  return next;
+}
+
+export function filterNavByModoPlan(items: NavItem[], modoPlan?: ModoPlan): NavItem[] {
+  if (modoPlan === "alimentacion") {
+    return items.filter((item) => !RUTINA_NAV_HREFS.has(item.href));
+  }
+  if (modoPlan === "rutina") {
+    return items.filter((item) => !ALIMENTACION_NAV_HREFS.has(item.href));
+  }
+  return items;
 }
 
 export function getSidebarNav(
   role: "profe" | "alumna",
   options?: {
     circunferenciasHabilitadas?: boolean | undefined;
+    tienePliegues?: boolean | undefined;
     soloAlimentacion?: boolean | undefined;
+    modoPlan?: ModoPlan | undefined;
   },
 ): NavItem[] {
+  const modoPlan =
+    options?.modoPlan ?? (options?.soloAlimentacion ? "alimentacion" : "ambos");
   const items =
     role === "profe"
       ? [...profeNav]
-      : omitRutinaNav([...alumnaNav], options?.soloAlimentacion);
+      : filterNavByModoPlan([...alumnaNav], modoPlan);
+
+  if (role === "alumna" && options?.tienePliegues) {
+    items.push(alumnaPlieguesNavItem);
+  }
 
   if (role === "alumna" && options?.circunferenciasHabilitadas) {
     items.push(alumnaCircunferenciasNavItem);

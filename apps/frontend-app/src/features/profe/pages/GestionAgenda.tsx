@@ -4,7 +4,7 @@ import { FeedbackModal } from "@/components/FeedbackModal";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components";
 import { useAppDialog } from "@/components/AppDialogProvider";
-import { ListSkeleton } from "@/components/skeletons/AppSkeleton";
+import { IvisContentLoader } from "@/components/IvisContentLoader";
 import { AgendaCalendario } from "@/features/profe/components/agenda/AgendaCalendario";
 import { AgendaDiaDetalle } from "@/features/profe/components/agenda/AgendaDiaDetalle";
 import { ReunionForm } from "@/features/profe/components/agenda/ReunionForm";
@@ -149,7 +149,7 @@ export function GestionAgenda({
 
       {loading ? (
         <div aria-busy="true" aria-label="Cargando agenda">
-          <ListSkeleton items={6} withAvatar />
+          <IvisContentLoader variant="section" label="Cargando agenda" />
         </div>
       ) : (
         <div className="agenda-layout">

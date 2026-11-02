@@ -1,3 +1,4 @@
+import type { ModoPlan } from "@/lib/modo-plan";
 import type { UserRole } from "@/types/auth";
 
 export const publicRoutes = {
@@ -14,10 +15,12 @@ export const sharedRoutes = {
 
 export function getHomeRouteForRole(
   role: UserRole,
-  options?: { soloAlimentacion?: boolean },
+  options?: { soloAlimentacion?: boolean; modoPlan?: ModoPlan },
 ): string {
   if (role === "profe") return profeRoutes.panel;
-  if (options?.soloAlimentacion) return alumnaRoutes.alimentacion;
+  const modo =
+    options?.modoPlan ?? (options?.soloAlimentacion ? "alimentacion" : "ambos");
+  if (modo === "alimentacion") return alumnaRoutes.alimentacion;
   return alumnaRoutes.rutina;
 }
 
@@ -29,6 +32,7 @@ export const alumnaRoutes = {
   alimentacionObjetivo: "/alimentacion/objetivo",
   evaluacionNutricional: "/evaluacion-nutricional",
   progreso: "/progreso",
+  pliegues: "/pliegues",
   circunferencias: "/circunferencias",
   asistente: "/asistente",
   tutoriales: "/tutoriales",

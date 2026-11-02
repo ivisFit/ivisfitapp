@@ -2,6 +2,7 @@ import type { ChallengeDay } from "@/features/alumna/lib/rutina-day";
 import {
   getDateKeyForFlatRoutineDay,
   getFlatRoutineDays,
+  getTodayDateKey,
   type RutinaDay,
 } from "@/features/alumna/lib/rutina-day";
 import type { RutinaDetail } from "@/features/alumna/types/rutina";
@@ -88,6 +89,19 @@ export function writeExerciseHistory(dateKey: string, completedKeys: string[]): 
   }
 }
 
+type DayProgresoFlags = {
+  diaCompletado?: boolean;
+  diaOmitido?: boolean;
+};
+
+export function isRoutineDayReallyComplete(
+  progreso: DayProgresoFlags | undefined,
+  locallyCompleted = false,
+): boolean {
+  if (progreso?.diaOmitido) return false;
+  return Boolean(progreso?.diaCompletado || locallyCompleted);
+}
+
 export function applyManualDayCompletions(
   days: ChallengeDay[],
   completedDateKeys: ReadonlySet<string>,
@@ -95,19 +109,37 @@ export function applyManualDayCompletions(
     dateKey: string,
     numeroSemana?: number,
     nombreDia?: string,
-  ) => { diaCompletado?: boolean; diaOmitido?: boolean } | undefined,
+  ) => DayProgresoFlags | undefined,
 ): ChallengeDay[] {
+  const todayKey = getTodayDateKey();
+
   return days.map((day) => {
     const progreso = getDayProgreso?.(
       day.dateKey,
       day.numeroSemana,
       day.nombreDia,
     );
-    const isCompleted =
-      completedDateKeys.has(day.dateKey) ||
-      Boolean(progreso?.diaCompletado || progreso?.diaOmitido);
+    const reallyComplete = isRoutineDayReallyComplete(
+      progreso,
+      completedDateKeys.has(day.dateKey),
+    );
 
-    return isCompleted ? { ...day, state: "completed" } : day;
+    if (reallyComplete) {
+      return { ...day, state: "completed" };
+    }
+
+    if (
+      progreso?.diaOmitido ||
+      (day.state !== "locked" && day.dateKey < todayKey)
+    ) {
+      return { ...day, state: "missed" };
+    }
+
+    if (day.state === "completed") {
+      return { ...day, state: "unlocked" };
+    }
+
+    return day;
   });
 }
 
