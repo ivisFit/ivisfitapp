@@ -321,17 +321,26 @@ export async function setFotoPerfil(
     throw new AppError(502, "No se pudo subir la foto. Reintentá en unos segundos.");
   }
 
-  usuario.fotoPerfil = {
+  const fotoPerfil = {
     url: uploaded.url,
     publicId: uploaded.publicId,
     uploadedAt: new Date(uploaded.uploadedAt),
   };
 
+  let updated;
   try {
-    await usuario.save();
+    updated = await Usuario.findByIdAndUpdate(
+      usuario._id,
+      { $set: { fotoPerfil } },
+      { new: true, runValidators: true },
+    );
   } catch (error) {
     console.error("[setFotoPerfil] save", { usuarioId: usuario._id, error });
     throw new AppError(500, "No se pudo guardar la foto de perfil.");
+  }
+
+  if (!updated) {
+    throw new AppError(404, "Usuario no encontrado");
   }
 
   if (previousPublicId && previousPublicId !== uploaded.publicId) {
@@ -342,7 +351,7 @@ export async function setFotoPerfil(
     }
   }
 
-  return serializeUsuario(usuario);
+  return serializeUsuario(updated);
 }
 
 export async function removeFotoPerfil(req: Request) {

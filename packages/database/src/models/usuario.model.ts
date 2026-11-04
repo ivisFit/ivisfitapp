@@ -5,7 +5,12 @@ const usuarioSchema = new Schema(
     nombre: { type: String, required: true },
     apellido: { type: String, trim: true },
     correo: { type: String, required: true, unique: true },
-    telefono: { type: String, required: true },
+    telefono: {
+      type: String,
+      required: function (this: { rol?: string }) {
+        return this.rol === "alumna";
+      },
+    },
     rol: { type: String, enum: ["profe", "alumna"], required: true },
     mutualista: { type: String },
     sexo: { type: String, enum: ["hombre", "mujer"] },
