@@ -1,0 +1,115 @@
+
+> @ivisfit/frontend-app@1.0.0 build C:\Users\Gastu\Desktop\RepoIvis\apps\frontend-app
+> next build
+
+   ▲ Next.js 15.5.18
+   - Environments: .env
+   - Experiments (use with caution):
+     ✓ viewTransition
+     · optimizePackageImports
+
+   Creating an optimized production build ...
+ ✓ (pwa) Compiling for server...
+ ✓ (pwa) Compiling for server...
+ ✓ (pwa) Compiling for client (static)...
+ ○ (pwa) Service worker: C:\Users\Gastu\Desktop\RepoIvis\apps\frontend-app\public\sw.js
+ ○ (pwa)   URL: /sw.js
+ ○ (pwa)   Scope: /
+ ○ (pwa) This app will fallback to these precached routes when fetching from the cache and the network fails:
+ ○ (pwa)   Documents (pages): /offline
+ ⚠ Compiled with warnings in 64s
+
+../../node_modules/.pnpm/mongodb@6.20.0/node_modules/mongodb/lib/deps.js
+Module not found: Can't resolve 'aws4' in 'C:\Users\Gastu\Desktop\RepoIvis\node_modules\.pnpm\mongodb@6.20.0\node_modules\mongodb\lib'
+
+Import trace for requested module:
+../../node_modules/.pnpm/mongodb@6.20.0/node_modules/mongodb/lib/deps.js
+../../node_modules/.pnpm/mongodb@6.20.0/node_modules/mongodb/lib/client-side-encryption/client_encryption.js
+../../node_modules/.pnpm/mongodb@6.20.0/node_modules/mongodb/lib/index.js
+../../packages/auth/dist/mongo.js
+../../packages/auth/dist/index.js
+./src/config/cms.config.ts
+./src/lib/preview-cms/lib/site-content-admin.ts
+./src/app/api/site-content/admin/route.ts
+
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/43) ...
+   Generating static pages (10/43) 
+   Generating static pages (21/43) 
+[fetchLandingPlans] API no disponible, usando fallback [TypeError: fetch failed] {
+  [cause]: [AggregateError: ] { code: 'ECONNREFUSED' }
+}
+   Generating static pages (32/43) 
+ ✓ Generating static pages (43/43)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                  Size  First Load JS  Revalidate  Expire
+┌ ○ /                                       205 B         233 kB          5m      1y
+├ ○ /_not-found                              1 kB         120 kB
+├ ƒ /[slug]                                 200 B         202 kB
+├ ○ /admisiones                             161 B         119 kB
+├ ○ /agenda                               7.37 kB         170 kB
+├ ○ /ajustes                              4.72 kB         167 kB
+├ ○ /alimentacion                           232 B         194 kB
+├ ○ /alimentacion/compras                   346 B         194 kB
+├ ○ /alimentacion/objetivo                  357 B         194 kB
+├ ○ /alumnas                              6.17 kB         169 kB
+├ ƒ /alumnas/[id]                         31.8 kB         207 kB
+├ ƒ /alumnas/[id]/alimentacion              161 B         119 kB
+├ ƒ /alumnas/[id]/alimentacion/comidas    18.3 kB         204 kB
+├ ƒ /alumnas/[id]/alimentacion/objetivos   8.5 kB         191 kB
+├ ƒ /alumnas/[id]/alimentacion/perfil      5.3 kB         178 kB
+├ ƒ /alumnas/[id]/alimentacion/revisar    7.29 kB         198 kB
+├ ƒ /alumnas/[id]/pliegues                  161 B         119 kB
+├ ƒ /alumnas/[id]/pliegues/fotos          6.24 kB         148 kB
+├ ƒ /alumnas/[id]/seguimiento               161 B         119 kB
+├ ○ /animaciones                          2.14 kB         121 kB
+├ ƒ /api/site-content/admin                 161 B         119 kB
+├ ƒ /api/site-content/admin/[locale]        161 B         119 kB
+├ ƒ /api/site-content/upload                161 B         119 kB
+├ ƒ /api/uploads/[...path]                  161 B         119 kB
+├ ○ /apple-icon.png                           0 B            0 B
+├ ○ /asistente                            5.94 kB         169 kB
+├ ○ /automatizaciones                       161 B         119 kB
+├ ○ /biblioteca                           6.97 kB         149 kB
+├ ○ /bienvenida                            3.3 kB         166 kB
+├ ○ /catalogo                             10.1 kB         193 kB
+├ ○ /circunferencias                      10.5 kB         182 kB
+├ ○ /cms-preview                          6.53 kB         245 kB
+├ ○ /ejercicios                             161 B         119 kB
+├ ○ /evaluacion-nutricional               6.17 kB         175 kB
+├ ○ /gestion-alimentos                      161 B         119 kB
+├ ○ /icon.png                                 0 B            0 B
+├ ○ /leads-chatbot                          161 B         119 kB
+├ ○ /login                                3.59 kB         166 kB
+├ ○ /login/recuperar                      1.58 kB         164 kB
+├ ○ /login/restablecer                    1.76 kB         164 kB
+├ ○ /logros                                5.5 kB         134 kB
+├ ○ /mensajes                             3.48 kB         138 kB
+├ ○ /mi-perfil                            22.5 kB         186 kB
+├ ○ /notificaciones                       4.47 kB         124 kB
+├ ○ /offline                                510 B         120 kB
+├ ƒ /panel                                11.4 kB         149 kB
+├ ○ /pliegues                             6.46 kB         134 kB
+├ ○ /progreso                              7.6 kB         163 kB
+├ ○ /registro                             5.07 kB         168 kB
+├ ○ /reunion                              5.32 kB         143 kB
+├ ○ /rutina                               6.29 kB         174 kB
+├ ○ /rutinas                              6.11 kB         129 kB
+├ ƒ /rutinas/[id]                         23.7 kB         229 kB
+├ ○ /solicitud-pendiente                  3.02 kB         166 kB
+├ ○ /tutoriales                           4.25 kB         167 kB
+└ ○ /web-config                           14.8 kB         192 kB
++ First Load JS shared by all              119 kB
+  ├ chunks/3248-57c514db09688d9f.js       49.1 kB
+  ├ chunks/f451fbdf-b81c156c164eee3f.js   66.2 kB
+  └ other shared chunks (total)           3.92 kB
+
+
+ƒ Middleware                              34.2 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

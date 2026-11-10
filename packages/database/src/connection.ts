@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
-import type { Db, MongoClient } from "mongodb";
+
+type SharedMongoClient = ReturnType<typeof mongoose.connection.getClient>;
+type SharedDb = NonNullable<typeof mongoose.connection.db>;
 
 const MONGO_CLIENT_OPTIONS = {
   maxPoolSize: 10,
@@ -40,7 +42,7 @@ export function isDbConnected(): boolean {
   return mongoose.connection.readyState === 1;
 }
 
-export function getSharedMongoClient(): MongoClient | null {
+export function getSharedMongoClient(): SharedMongoClient | null {
   if (!isDbConnected()) {
     return null;
   }
@@ -48,7 +50,7 @@ export function getSharedMongoClient(): MongoClient | null {
   return mongoose.connection.getClient();
 }
 
-export function getSharedDb(): Db | null {
+export function getSharedDb(): SharedDb | null {
   if (!isDbConnected() || !mongoose.connection.db) {
     return null;
   }
