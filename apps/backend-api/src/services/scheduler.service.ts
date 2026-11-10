@@ -421,7 +421,6 @@ let timer: ReturnType<typeof setInterval> | null = null;
 
 export function startScheduler() {
   if (process.env.SCHEDULER_ENABLED !== "true") {
-    console.log("[scheduler] deshabilitado (SCHEDULER_ENABLED!=true)");
     return;
   }
 

@@ -53,7 +53,7 @@ export function removeTreeSync(targetPath) {
       ok: false,
       error,
       hint:
-        "Cerrá otros procesos de Next (dev/build) y volvé a correr npm run dev, o usá npm run dev:clean.",
+        "Cerrá otros procesos de Next (dev/build) y volvé a correr pnpm dev, o usá pnpm dev:clean.",
     };
   }
 

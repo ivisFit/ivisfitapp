@@ -11,7 +11,7 @@ Plataforma de coaching fitness personalizado: landing + panel de la profesora + 
 
 ```bash
 npm install
-npm run dev
+pnpm dev
 ```
 
 Frontend: `http://localhost:3000`  

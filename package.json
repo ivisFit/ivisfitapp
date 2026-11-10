@@ -2,7 +2,7 @@
   "name": "ivisfit-monorepo",
   "version": "1.0.0",
   "private": true,
-  "packageManager": "npm@10.9.4",
+  "packageManager": "pnpm@9.15.9",
   "engines": {
     "node": ">=20",
     "npm": "10.9.4"
@@ -12,8 +12,8 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "turbo dev",
-    "dev:clean": "node apps/frontend-app/scripts/clean-dev-cache.mjs && turbo dev",
+    "dev": "turbo dev --filter=@ivisfit/frontend-app --filter=@ivisfit/backend-api",
+    "dev:clean": "node apps/frontend-app/scripts/clean-dev-cache.mjs && turbo dev --filter=@ivisfit/frontend-app --filter=@ivisfit/backend-api",
     "build": "turbo build",
     "lint": "turbo lint",
     "start": "turbo start"

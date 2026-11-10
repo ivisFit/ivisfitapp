@@ -72,16 +72,10 @@ export async function connectDB(): Promise<void> {
   }
 
   if (!connectPromise) {
-    connectPromise = mongoose
-      .connect(uri, MONGO_CLIENT_OPTIONS)
-      .then((connection) => {
-        console.log("MongoDB conectado");
-        return connection;
-      })
-      .catch((error) => {
-        connectPromise = null;
-        throw error;
-      });
+    connectPromise = mongoose.connect(uri, MONGO_CLIENT_OPTIONS).catch((error) => {
+      connectPromise = null;
+      throw error;
+    });
   }
 
   await connectPromise;
