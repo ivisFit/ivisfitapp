@@ -668,6 +668,11 @@ html[data-alumna-color-scheme="light"] .weight-log__field input {
   color: #1c1814;
 }
 
+html[data-alumna-color-scheme="light"] .weight-log__input::placeholder,
+html[data-alumna-color-scheme="light"] .weight-log__field input::placeholder {
+  color: #8a7d6d;
+}
+
 html[data-alumna-color-scheme="light"] .weight-log__step-btn {
   color: var(--color-gold);
   background: #fff;
@@ -945,6 +950,14 @@ html[data-alumna-color-scheme="light"] .onboarding-switch__input:checked
 
 .app-shell--alumna[data-color-scheme="light"] .progreso-circunferencias-cta p {
   color: var(--color-text-muted);
+}
+
+.app-shell--alumna[data-color-scheme="light"] .progreso-checkins__list strong[data-estado="cumpli"] {
+  color: #15803d;
+}
+
+.app-shell--alumna[data-color-scheme="light"] .progreso-checkins__list strong[data-estado="no_pude"] {
+  color: #b91c1c;
 }
 
 .app-shell--alumna[data-color-scheme="light"] .pliegues-fotos-historial-summary__card {

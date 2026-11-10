@@ -1,432 +1,162 @@
 "use client";
 
-import { useState } from "react";
-import {
-  Activity,
-  CalendarDays,
-  CheckCheck,
-  CheckCircle2,
-  Droplets,
-  Drumstick,
-  Flame,
-  Percent,
-  Quote,
-  Scale,
-  Wheat,
-  XCircle,
-} from "lucide-react";
-import type {
-  DiaPlanNutricional,
-  PlanNutricionalApiDoc,
-} from "@/features/alumna/types/plan-nutricional";
-import { useComposicionResumen } from "@/features/alumna/hooks/useComposicionResumen";
-import { useCheckinsAlimentacionSemana } from "@/features/alumna/hooks/useCheckinsAlimentacionSemana";
-import { InfoTooltip } from "@/components";
-import { ComidaCard } from "@/features/alumna/components/alimentacion/ComidaCard";
-import { ProximaComida } from "@/features/alumna/components/alimentacion/ProximaComida";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { CalendarDays, MessageSquareQuote, ShoppingBasket, Utensils } from "lucide-react";
+import { ComidasMiPlan } from "@/features/alumna/components/alimentacion/ComidasMiPlan";
 import { ListaComprasAlumna } from "@/features/alumna/components/alimentacion/ListaComprasAlumna";
-import { getDiaHoyIndex } from "@/features/alumna/lib/alimentacion-dia-hoy";
+import { ProximaComida } from "@/features/alumna/components/alimentacion/ProximaComida";
+import {
+  getTodayDateKey,
+  resolveDiaHoyIndex,
+} from "@/features/alumna/lib/alimentacion-dia-hoy";
+import type { PlanNutricionalApiDoc } from "@/features/alumna/types/plan-nutricional";
 
-type Macros = PlanNutricionalApiDoc["macrosObjetivo"];
+export { ComposicionResumenAlumna, MacrosSummary } from "./MacrosSummary";
 
-const KCAL_POR_GRAMO = { proteina: 4, carbohidratos: 4, grasas: 9 } as const;
+export type AlimentacionVista = "hoy" | "plan" | "compras";
 
-function getCheckinIcon(estado?: string) {
-  switch (estado) {
-    case "cumpli":
-      return <CheckCircle2 size={14} className="checkin-icon--cumpli" aria-hidden />;
-    case "parcial":
-      return <CheckCheck size={14} className="checkin-icon--parcial" aria-hidden />;
-    case "no_pude":
-      return <XCircle size={14} className="checkin-icon--no-pude" aria-hidden />;
-    default:
-      return null;
-  }
-}
-
-function getCheckinLabel(estado?: string) {
-  switch (estado) {
-    case "cumpli":
-      return "Cumplí";
-    case "parcial":
-      return "Parcial";
-    case "no_pude":
-      return "No pude";
-    default:
-      return null;
-  }
-}
-
-function NotaProfe({
-  texto,
-  standalone = false,
-}: {
-  texto: string;
-  standalone?: boolean;
-}) {
-  return (
-    <blockquote
-      className={`alimentacion-hero__notes${
-        standalone ? " alimentacion-hero__notes--standalone" : ""
-      }`}
-    >
-      <Quote size={16} aria-hidden />
-      <p>{texto}</p>
-      <footer>Nota de tu profesora</footer>
-    </blockquote>
-  );
-}
-
-function getDiaKcal(dia: DiaPlanNutricional) {
-  const total = dia.comidas.reduce(
-    (sum, comida) => sum + (comida.macrosComida?.kcal ?? 0),
-    0,
-  );
-  return total > 0 ? total : null;
-}
-
-export function MacrosSummary({ macros }: { macros: Macros }) {
-  const kcalMacros =
-    macros.proteinaG * KCAL_POR_GRAMO.proteina +
-    macros.carbohidratosG * KCAL_POR_GRAMO.carbohidratos +
-    macros.grasasG * KCAL_POR_GRAMO.grasas;
-
-  const items = [
-    {
-      key: "proteina",
-      label: "Proteína",
-      gramos: macros.proteinaG,
-      kcal: macros.proteinaG * KCAL_POR_GRAMO.proteina,
-      icon: Drumstick,
-      tooltip:
-        "Proteínas por día: ayudan a conservar y construir músculo.",
-      tooltipLabel: "Qué es la proteína",
-    },
-    {
-      key: "carbohidratos",
-      label: "Carbohidratos",
-      gramos: macros.carbohidratosG,
-      kcal: macros.carbohidratosG * KCAL_POR_GRAMO.carbohidratos,
-      icon: Wheat,
-      tooltip:
-        "Carbohidratos por día: tu principal fuente de energía para entrenar.",
-      tooltipLabel: "Qué son los carbohidratos",
-    },
-    {
-      key: "grasas",
-      label: "Grasas",
-      gramos: macros.grasasG,
-      kcal: macros.grasasG * KCAL_POR_GRAMO.grasas,
-      icon: Droplets,
-      tooltip:
-        "Grasas saludables por día: importantes para tus hormonas y tu salud en general.",
-      tooltipLabel: "Qué son las grasas",
-    },
-  ];
-
-  return (
-    <section
-      className="alimentacion-macros"
-      aria-labelledby="alimentacion-macros-title"
-    >
-      <div className="alimentacion-section-heading">
-        <h2 id="alimentacion-macros-title">Tu objetivo diario</h2>
-        <p>Distribución de energía y macronutrientes de tu plan.</p>
-      </div>
-
-      <div className="alimentacion-macros__grid">
-        <div className="alimentacion-macros__kcal">
-          <span className="alimentacion-macros__kcal-icon" aria-hidden>
-            <Flame size={22} />
-          </span>
-          <span className="alimentacion-macros__kcal-value">
-            {macros.kcal}
-            <small>kcal</small>
-          </span>
-          <span className="alimentacion-macros__kcal-label">
-            Energía total por día
-            <InfoTooltip
-              text="Energía diaria total de tu plan, calculada según tu objetivo y tu actividad."
-              label="Qué son las calorías"
-            />
-          </span>
-        </div>
-
-        <ul className="alimentacion-macros__list">
-          {items.map((item) => {
-            const porcentaje =
-              kcalMacros > 0 ? Math.round((item.kcal / kcalMacros) * 100) : 0;
-            const Icon = item.icon;
-            return (
-              <li
-                key={item.key}
-                className={`alimentacion-macro alimentacion-macro--${item.key}`}
-              >
-                <span className="alimentacion-macro__icon" aria-hidden>
-                  <Icon size={18} />
-                </span>
-                <span className="alimentacion-macro__body">
-                  <span className="alimentacion-macro__label">
-                    {item.label}
-                    <InfoTooltip text={item.tooltip} label={item.tooltipLabel} />
-                  </span>
-                  <strong className="alimentacion-macro__value">
-                    {item.gramos} g
-                  </strong>
-                </span>
-                <span className="alimentacion-macro__share">{porcentaje}%</span>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-
-      {kcalMacros > 0 ? (
-        <div
-          className="alimentacion-macros__split"
-          role="img"
-          aria-label={`Distribución de calorías: ${Math.round((macros.proteinaG * KCAL_POR_GRAMO.proteina * 100) / kcalMacros)}% proteína, ${Math.round((macros.carbohidratosG * KCAL_POR_GRAMO.carbohidratos * 100) / kcalMacros)}% carbohidratos, ${Math.round((macros.grasasG * KCAL_POR_GRAMO.grasas * 100) / kcalMacros)}% grasas`}
-        >
-          {items.map((item) => (
-            <span
-              key={item.key}
-              className={`alimentacion-macros__split-segment alimentacion-macros__split-segment--${item.key}`}
-              style={{ width: `${(item.kcal / kcalMacros) * 100}%` }}
-            />
-          ))}
-        </div>
-      ) : null}
-    </section>
-  );
-}
-
-export function ComposicionResumenAlumna() {
-  const { composicion, loading } = useComposicionResumen();
-
-  if (loading || !composicion) return null;
-
-  const stats = [
-    composicion.pesoKg
-      ? { icon: Scale, label: "Peso", value: `${composicion.pesoKg} kg` }
-      : null,
-    composicion.imc
-      ? { icon: Activity, label: "IMC", value: String(composicion.imc) }
-      : null,
-    composicion.porcentajeGrasaCorporal != null
-      ? {
-          icon: Percent,
-          label: "% graso",
-          value: `${composicion.porcentajeGrasaCorporal}%`,
-        }
-      : null,
-  ].filter((stat): stat is NonNullable<typeof stat> => Boolean(stat));
-
-  if (stats.length === 0) return null;
-
-  return (
-    <ul className="alimentacion-composicion" aria-label="Tu composición corporal">
-      {stats.map((stat) => {
-        const Icon = stat.icon;
-        return (
-          <li key={stat.label}>
-            <Icon size={15} aria-hidden />
-            <span>{stat.label}</span>
-            <strong>{stat.value}</strong>
-          </li>
-        );
-      })}
-    </ul>
-  );
-}
-
-function PlanDias({
-  dias,
-  checkins,
-  getDateKeyForDia,
-}: {
-  dias: DiaPlanNutricional[];
-  checkins: Record<string, { estado: string }>;
-  getDateKeyForDia: (diaIndex: number) => string;
-}) {
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const safeIndex = Math.min(selectedIndex, dias.length - 1);
-  const dia = dias[safeIndex];
-  const diaKcal = dia ? getDiaKcal(dia) : null;
-  const selectedDateKey = dia ? getDateKeyForDia(safeIndex) : null;
-  const selectedCheckin = selectedDateKey ? checkins[selectedDateKey] : null;
-
-  if (!dia) return null;
-
-  return (
-    <section
-      className="alimentacion-plan"
-      aria-labelledby="alimentacion-plan-title"
-    >
-      <div className="alimentacion-section-heading">
-        <h2 id="alimentacion-plan-title">Tu plan día a día</h2>
-        <p>
-          {dias.length === 1
-            ? "Un día de comidas planificado para vos."
-            : `${dias.length} días de comidas planificados para vos.`}
-        </p>
-      </div>
-
-      {dias.length > 1 ? (
-        <div
-          className="alimentacion-plan__tabs"
-          role="tablist"
-          aria-label="Días del plan"
-        >
-          {dias.map((diaTab, index) => {
-            const selected = index === safeIndex;
-            const kcal = getDiaKcal(diaTab);
-            const dateKey = getDateKeyForDia(index);
-            const checkin = checkins[dateKey];
-            return (
-              <button
-                key={diaTab.nombre}
-                type="button"
-                role="tab"
-                id={`alimentacion-dia-tab-${index}`}
-                aria-selected={selected}
-                aria-controls={`alimentacion-dia-panel-${index}`}
-                tabIndex={selected ? 0 : -1}
-                className={`alimentacion-plan__tab${selected ? " is-active" : ""}`}
-                onClick={() => setSelectedIndex(index)}
-                onKeyDown={(event) => {
-                  if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") {
-                    return;
-                  }
-                  event.preventDefault();
-                  const delta = event.key === "ArrowRight" ? 1 : -1;
-                  const next =
-                    (safeIndex + delta + dias.length) % dias.length;
-                  setSelectedIndex(next);
-                  document
-                    .getElementById(`alimentacion-dia-tab-${next}`)
-                    ?.focus();
-                }}
-              >
-                <span className="alimentacion-plan__tab-name">
-                  {diaTab.nombre}
-                </span>
-                {kcal ? (
-                  <span className="alimentacion-plan__tab-kcal">
-                    {kcal} kcal
-                  </span>
-                ) : null}
-                {checkin ? (
-                  <span className={`alimentacion-plan__tab-checkin checkin-${checkin.estado}`}>
-                    {getCheckinIcon(checkin.estado)}
-                  </span>
-                ) : null}
-              </button>
-            );
-          })}
-        </div>
-      ) : null}
-
-      {selectedCheckin && (
-        <div className="alimentacion-plan__checkin-banner" role="status">
-          <span className={`checkin-badge checkin-${selectedCheckin.estado}`}>
-            {getCheckinIcon(selectedCheckin.estado)}
-            {getCheckinLabel(selectedCheckin.estado)} hoy
-          </span>
-        </div>
-      )}
-
-      <div
-        className="alimentacion-plan__panel"
-        role={dias.length > 1 ? "tabpanel" : undefined}
-        id={dias.length > 1 ? `alimentacion-dia-panel-${safeIndex}` : undefined}
-        aria-labelledby={
-          dias.length > 1 ? `alimentacion-dia-tab-${safeIndex}` : undefined
-        }
-      >
-        <div className="alimentacion-plan__panel-header">
-          <h3>{dia.nombre}</h3>
-          {diaKcal ? (
-            <span className="alimentacion-plan__panel-kcal">
-              <Flame size={14} aria-hidden />
-              {diaKcal} kcal totales
-            </span>
-          ) : null}
-        </div>
-
-        <div className="alimentacion-plan__comidas">
-          {dia.comidas.map((comida, index) => (
-            <ComidaCard key={`${comida.nombre}-${index}`} comida={comida} />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
+const VISTAS: AlimentacionVista[] = ["hoy", "plan", "compras"];
 
 export function PlanNutricionalDashboard({
   plan,
   preview = false,
+  initialView = "hoy",
+  planAnchor,
 }: {
   plan: PlanNutricionalApiDoc;
   preview?: boolean;
+  initialView?: AlimentacionVista;
+  planAnchor?: "macros" | "compras";
 }) {
-  const { checkins, loading: checkinsLoading } = useCheckinsAlimentacionSemana();
-  const diaHoy = plan.dias[getDiaHoyIndex(plan.dias.length, plan.publicadoAt)];
+  const resolvedInitial: AlimentacionVista =
+    planAnchor === "compras" ? "compras" : initialView;
+  const [view, setView] = useState<AlimentacionVista>(resolvedInitial);
+  const hoyRef = useRef<HTMLButtonElement>(null);
+  const planRef = useRef<HTMLButtonElement>(null);
+  const comprasRef = useRef<HTMLButtonElement>(null);
+  const diaHoyIndex = resolveDiaHoyIndex(plan.dias, plan.publicadoAt);
+  const diaHoy = plan.dias[diaHoyIndex];
+  const planId = plan._id ?? plan.id ?? "plan";
+  const storageKey = `ivis-comidas-${planId}-${getTodayDateKey()}`;
 
-  // Calcular dateKey para cada día del plan (asumiendo que día 0 = fecha de publicación o hoy)
-  const getDateKeyForDia = (diaIndex: number): string => {
-    const baseDate = plan.publicadoAt ? new Date(plan.publicadoAt) : new Date();
-    const targetDate = new Date(baseDate);
-    targetDate.setDate(targetDate.getDate() + diaIndex);
-    return targetDate.toISOString().split("T")[0];
+  useEffect(() => {
+    setView(planAnchor === "compras" ? "compras" : initialView);
+  }, [initialView, planAnchor]);
+
+  const tabRefs = { hoy: hoyRef, plan: planRef, compras: comprasRef } as const;
+
+  const onTabKeyDown = (event: KeyboardEvent<HTMLButtonElement>, current: AlimentacionVista) => {
+    if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+    event.preventDefault();
+    const index = VISTAS.indexOf(current);
+    const next =
+      VISTAS[(index + (event.key === "ArrowRight" ? 1 : VISTAS.length - 1)) % VISTAS.length];
+    setView(next);
+    tabRefs[next].current?.focus();
   };
 
+  const tabPanelLabel =
+    view === "hoy"
+      ? "comida-tab-hoy"
+      : view === "plan"
+        ? "comida-tab-plan"
+        : "comida-tab-compras";
+
   return (
-    <div className="alimentacion-dashboard alimentacion-dashboard--with-plan">
-      {preview ? (
-        <header className="alimentacion-hero">
-          <div className="alimentacion-hero__top">
-            <span className="nutricion-wizard__eyebrow">Plan nutricional</span>
-          </div>
-          <h1>{plan.titulo}</h1>
-          {plan.publicadoAt ? (
-            <p className="alimentacion-hero__meta">
-              <CalendarDays size={14} aria-hidden />
-              Publicado el{" "}
-              {new Date(plan.publicadoAt).toLocaleDateString("es-UY", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              })}
+    <div className={`comida-menu${preview ? " comida-menu--preview" : ""}`}>
+      <div
+        className="comida-menu__nav comida-menu__nav--three"
+        role="tablist"
+        aria-label="Alimentación"
+      >
+        <button
+          ref={hoyRef}
+          type="button"
+          role="tab"
+          id="comida-tab-hoy"
+          aria-selected={view === "hoy"}
+          aria-controls="comida-panel"
+          tabIndex={view === "hoy" ? 0 : -1}
+          className={view === "hoy" ? "is-active" : undefined}
+          onClick={() => setView("hoy")}
+          onKeyDown={(e) => onTabKeyDown(e, "hoy")}
+        >
+          <Utensils size={16} aria-hidden />
+          Hoy
+        </button>
+        <button
+          ref={planRef}
+          type="button"
+          role="tab"
+          id="comida-tab-plan"
+          aria-selected={view === "plan"}
+          aria-controls="comida-panel"
+          tabIndex={view === "plan" ? 0 : -1}
+          className={view === "plan" ? "is-active" : undefined}
+          onClick={() => setView("plan")}
+          onKeyDown={(e) => onTabKeyDown(e, "plan")}
+        >
+          <CalendarDays size={16} aria-hidden />
+          Tu plan
+        </button>
+        <button
+          ref={comprasRef}
+          type="button"
+          role="tab"
+          id="comida-tab-compras"
+          aria-selected={view === "compras"}
+          aria-controls="comida-panel"
+          tabIndex={view === "compras" ? 0 : -1}
+          className={view === "compras" ? "is-active" : undefined}
+          onClick={() => setView("compras")}
+          onKeyDown={(e) => onTabKeyDown(e, "compras")}
+        >
+          <ShoppingBasket size={16} aria-hidden />
+          Compras
+        </button>
+      </div>
+
+      {view === "hoy" && plan.observacionesProfe ? (
+        <button type="button" className="comida-nota-link" onClick={() => setView("plan")}>
+          <MessageSquareQuote size={16} aria-hidden />
+          <span>Tu profesora dejó una nota</span>
+          <strong>Ver en Tu plan</strong>
+        </button>
+      ) : null}
+
+      <div id="comida-panel" role="tabpanel" aria-labelledby={tabPanelLabel}>
+      {view === "hoy" ? (
+        diaHoy && diaHoy.comidas.length > 0 ? (
+          <ProximaComida dia={diaHoy} storageKey={storageKey} preview={preview} />
+        ) : (
+          <div className="comida-vacio-panel">
+            <p className="comida-kicker">Hoy</p>
+            <h2>Este día todavía no tiene comidas</h2>
+            <p>
+              Cuando tu profesora cargue el menú, vas a ver cada comida acá.
+              Mientras tanto podés mirar el resto de la semana.
             </p>
-          ) : null}
-          {plan.observacionesProfe ? (
-            <NotaProfe texto={plan.observacionesProfe} />
-          ) : null}
-        </header>
-      ) : plan.observacionesProfe ? (
-        <NotaProfe texto={plan.observacionesProfe} standalone />
-      ) : null}
-
-      {preview || !diaHoy ? null : (
-        <ProximaComida
-          dia={diaHoy}
-          storageKey={`ivis-comidas-${plan._id ?? plan.id}-${new Date().toLocaleDateString("en-CA")}`}
+            <button type="button" className="btn btn--primary" onClick={() => setView("plan")}>
+              Ir a Tu plan
+            </button>
+          </div>
+        )
+      ) : view === "plan" ? (
+        <ComidasMiPlan
+          plan={plan}
+          diaHoyIndex={diaHoyIndex}
+          anchor={planAnchor === "macros" ? "macros" : undefined}
         />
-      )}
-
-      {preview ? <MacrosSummary macros={plan.macrosObjetivo} /> : null}
-
-      {preview ? (
-        <>
-          <PlanDias
+      ) : (
+        <div className="comida-compras-panel">
+          <ListaComprasAlumna
             dias={plan.dias}
-            checkins={checkins}
-            getDateKeyForDia={getDateKeyForDia}
+            diaHoy={diaHoy}
+            semanas={plan.listasComprasSemanas}
           />
-          <ListaComprasAlumna dias={plan.dias} semanas={plan.listasComprasSemanas} />
-        </>
-      ) : null}
+        </div>
+      )}
+      </div>
     </div>
   );
 }

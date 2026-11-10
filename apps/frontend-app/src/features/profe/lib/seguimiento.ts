@@ -22,6 +22,8 @@ export type SeguimientoExerciseView = {
   series: number;
   repeticiones: number;
   repeticionesPorSerie?: number[];
+  unidad: "repeticiones" | "segundos";
+  registro: "peso" | "check";
   descansoSegundos: number;
   completado: boolean;
   pesosPorSerie: number[];
@@ -125,6 +127,8 @@ export function buildExerciseViews(
       nombre: ejercicio.nombre,
       series: ejercicio.series,
       repeticiones: ejercicio.repeticiones,
+      unidad: ejercicio.unidad === "segundos" ? "segundos" : "repeticiones",
+      registro: ejercicio.registro === "check" ? "check" : "peso",
       descansoSegundos: ejercicio.descansoSegundos,
       ...(ejercicio.repeticionesPorSerie &&
       ejercicio.repeticionesPorSerie.length === ejercicio.series

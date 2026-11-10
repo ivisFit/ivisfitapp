@@ -12,6 +12,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { isMobileQuery, useMediaQuery } from "@/hooks/useMediaQuery";
 import { apiFetch } from "@/lib/api";
+import { progressTransform } from "@/lib/progress-scale";
 import { getHomeRouteForRole } from "@/routes/paths";
 
 function elegirVideoTutorial(tutorial: TutorialAlumna, isMobile: boolean) {
@@ -143,7 +144,7 @@ export function TutorialesPage() {
         <span className="tutoriales-progress__track">
           <span
             className="tutoriales-progress__fill"
-            style={{ width: `${((activeIndex + 1) / tutoriales.length) * 100}%` }}
+            style={progressTransform(((activeIndex + 1) / tutoriales.length) * 100)}
           />
         </span>
         <span className="tutoriales-progress__label">

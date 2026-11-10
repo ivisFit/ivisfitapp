@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/Button";
+import { progressTransform } from "@/lib/progress-scale";
 import { IvisContentLoader } from "@/components/IvisContentLoader";
 import { useGamificacion } from "@/features/gamificacion/hooks/useGamificacion";
 import {
@@ -55,10 +56,7 @@ const EVENTO_ICONOS: Record<string, string> = {
 function BadgeCard({ badge }: { badge: GamificacionBadge }) {
   const { desbloqueado } = badge;
   return (
-    <li
-      className={`gamif-badge${desbloqueado ? "" : " gamif-badge--locked"}`}
-      title={desbloqueado ? `${badge.nombre} · ${badge.descripcion}` : "Aún no desbloqueado"}
-    >
+    <li className={`gamif-badge${desbloqueado ? "" : " gamif-badge--locked"}`}>
       <span className="gamif-badge__icon" aria-hidden>
         {desbloqueado ? badge.icono : "🔒"}
       </span>
@@ -67,7 +65,9 @@ function BadgeCard({ badge }: { badge: GamificacionBadge }) {
         <span className="gamif-badge__desc">{badge.descripcion}</span>
         {desbloqueado && badge.desbloqueadoAt ? (
           <span className="gamif-badge__date">Desbloqueado {formatFecha(badge.desbloqueadoAt)}</span>
-        ) : null}
+        ) : (
+          <span className="gamif-badge__status">Aún no desbloqueado</span>
+        )}
       </span>
     </li>
   );
@@ -158,15 +158,17 @@ export function LogrosPage() {
           </div>
           <div className="gamif-level-card__bar">
             <div
-              className="gamif-level-card__bar-fill"
-              style={{ width: `${progreso}%` }}
+              className={`gamif-level-card__bar-fill${
+                progreso >= 100 ? " is-complete" : ""
+              }`}
+              style={progressTransform(progreso)}
             />
           </div>
           <div className="gamif-level-card__stats">
-            <span title="Racha actual">
+            <span>
               <span aria-hidden>🔥</span> Racha actual: {data.rachaActual} días
             </span>
-            <span title="Mejor racha">
+            <span>
               <span aria-hidden>🏅</span> Mejor racha: {data.rachaMaxima} días
             </span>
           </div>

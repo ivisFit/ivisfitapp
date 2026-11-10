@@ -12,6 +12,7 @@ import {
   ChallengeDaySheet,
   type SheetContainment,
 } from "./ChallengeDaySheet";
+import { progressTransform } from "@/lib/progress-scale";
 import { PlanMonthCalendar } from "./PlanMonthCalendar";
 
 type PlanDaysDashboardProps = {
@@ -131,7 +132,7 @@ export const PlanDaysDashboard = memo(function PlanDaysDashboard({
       </div>
 
       <div className="challenge28__progress" aria-hidden="true">
-        <span style={{ width: `${stats.progress}%` }} />
+        <span style={progressTransform(stats.progress)} />
       </div>
 
       <PlanMonthCalendar

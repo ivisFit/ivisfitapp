@@ -85,7 +85,7 @@ function columnaDesdeMedicion(medicion: Medicion): FotoComparacionColumna {
     fecha: medicion.fecha,
     titulo: formatMedicionDate(medicion.fecha),
     pesoCorporalKg: medicion.pesoCorporalKg,
-    porcentajeGrasaCorporal: medicion.metricas.porcentajeGrasaCorporal,
+    porcentajeGrasaCorporal: medicion.metricas?.porcentajeGrasaCorporal ?? null,
     fotos: fotosDeMedicion(medicion),
   };
 }
@@ -142,7 +142,7 @@ export function columnasPorMes(mediciones: Medicion[]): FotoComparacionColumna[]
           ? `${sorted.length} mediciones`
           : formatDiaMes(latest.fecha),
       pesoCorporalKg: latest.pesoCorporalKg,
-      porcentajeGrasaCorporal: latest.metricas.porcentajeGrasaCorporal,
+      porcentajeGrasaCorporal: latest.metricas?.porcentajeGrasaCorporal ?? null,
       fotos: fotosConFecha,
     });
   }

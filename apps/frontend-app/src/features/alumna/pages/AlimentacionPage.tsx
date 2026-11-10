@@ -2,9 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
-import { Salad } from "lucide-react";
 import { AlumnaAlimentacionSkeleton } from "@/components/skeletons/AppSkeleton";
+import { CoachInsightBanner } from "@/features/alumna/components/CoachInsightBanner";
 import { PlanNutricionalDashboard } from "@/features/alumna/components/alimentacion/PlanNutricionalDashboard";
+import type { AlimentacionVista } from "@/features/alumna/components/alimentacion/PlanNutricionalDashboard";
 import { WaitingStateActions } from "@/features/alumna/components/WaitingStateActions";
 import { useEvaluacionBridgeTransition } from "@/features/alumna/components/evaluacion-bridge/EvaluacionBridgeProvider";
 import { useEvaluacionNutricional } from "@/features/alumna/hooks/useEvaluacionNutricional";
@@ -12,19 +13,15 @@ import { usePlanNutricionalAlumna } from "@/features/profe/hooks/useGestionAlime
 import { useAuth } from "@/context/AuthContext";
 import { alumnaRoutes } from "@/routes/paths";
 
-function AlimentacionWaitingDashboard({ nombre }: { nombre?: string }) {
+function AlimentacionWaiting({ nombre }: { nombre?: string }) {
   return (
-    <section className="feature-card alimentacion-waiting">
-      <span className="alimentacion-waiting__icon" aria-hidden>
-        <Salad size={28} />
-      </span>
-      <p className="nutricion-wizard__eyebrow">Plan nutricional</p>
-      <h1>Alimentación</h1>
-      <p className="alimentacion-waiting__text">
-        Tu evaluación inicial fue registrada. Tu profesora está preparando tu
-        plan nutricional personalizado.
+    <section className="comida-espera">
+      <p className="comida-kicker">Menú</p>
+      <h1>Tu menú está en camino</h1>
+      <p>
+        Tu evaluación ya quedó registrada. Cuando tu profesora publique el plan,
+        vas a ver el día acá, comida por comida.
       </p>
-      <p className="alimentacion-dashboard__status">Evaluación completada</p>
       <WaitingStateActions
         nombre={nombre}
         whatsappTema="consulto por mi plan de alimentación"
@@ -33,7 +30,13 @@ function AlimentacionWaitingDashboard({ nombre }: { nombre?: string }) {
   );
 }
 
-export function AlimentacionPage() {
+export function AlimentacionPage({
+  initialView = "hoy",
+  planAnchor,
+}: {
+  initialView?: AlimentacionVista;
+  planAnchor?: "macros" | "compras";
+}) {
   const router = useRouter();
   const { user } = useAuth();
   const runBridgeTransition = useEvaluacionBridgeTransition();
@@ -41,6 +44,7 @@ export function AlimentacionPage() {
     evaluacion,
     loading: evaluacionLoading,
     error: evaluacionError,
+    refetch: evaluacionRefetch,
   } = useEvaluacionNutricional();
   const {
     plan,
@@ -57,6 +61,7 @@ export function AlimentacionPage() {
   useEffect(() => {
     if (
       evaluacionLoading ||
+      evaluacionError ||
       evaluacion?.completada ||
       transitionStartedRef.current
     ) {
@@ -64,12 +69,16 @@ export function AlimentacionPage() {
     }
 
     transitionStartedRef.current = true;
-    runBridgeTransition(
-      "toEvaluacion",
-      alumnaRoutes.evaluacionNutricional,
-      () => router.replace(alumnaRoutes.evaluacionNutricional),
+    runBridgeTransition("toEvaluacion", alumnaRoutes.evaluacionNutricional, () =>
+      router.replace(alumnaRoutes.evaluacionNutricional),
     );
-  }, [evaluacion?.completada, evaluacionLoading, router, runBridgeTransition]);
+  }, [
+    evaluacion?.completada,
+    evaluacionError,
+    evaluacionLoading,
+    router,
+    runBridgeTransition,
+  ]);
 
   useEffect(() => {
     if (evaluacion?.completada) {
@@ -80,28 +89,56 @@ export function AlimentacionPage() {
   const loading = evaluacionLoading || (evaluacion?.completada && planLoading);
   const error = evaluacionError ?? planError;
 
+  function retry() {
+    evaluacionRefetch();
+    void refetchPlan();
+  }
+
   if (loading) {
-    return <AlumnaAlimentacionSkeleton />;
+    return (
+      <>
+        <CoachInsightBanner />
+        <AlumnaAlimentacionSkeleton />
+      </>
+    );
   }
 
   if (error) {
     return (
       <div className="alimentacion-page page">
-        <p className="auth-error">{error}</p>
+        <CoachInsightBanner />
+        <div className="comida-estado" role="alert">
+          <h2>No pudimos cargar tu menú</h2>
+          <p>{error}</p>
+          <button type="button" className="btn btn--primary" onClick={retry}>
+            Reintentar
+          </button>
+        </div>
       </div>
     );
   }
 
   if (!evaluacion?.completada) {
-    return null;
+    return (
+      <div className="alimentacion-page page" aria-busy="true">
+        <CoachInsightBanner />
+        <AlumnaAlimentacionSkeleton />
+        <p className="comida-vacio">Te estamos llevando a tu evaluación nutricional.</p>
+      </div>
+    );
   }
 
   return (
-    <div className="alimentacion-page page">
+    <div className="alimentacion-page alimentacion-page--fill page">
+      <CoachInsightBanner />
       {plan ? (
-        <PlanNutricionalDashboard plan={plan} />
+        <PlanNutricionalDashboard
+          plan={plan}
+          initialView={initialView}
+          planAnchor={planAnchor}
+        />
       ) : (
-        <AlimentacionWaitingDashboard nombre={user?.name} />
+        <AlimentacionWaiting nombre={user?.name} />
       )}
     </div>
   );

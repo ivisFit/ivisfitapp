@@ -57,9 +57,17 @@ export function PlieguesEvolucionPage() {
   const [agrupacion, setAgrupacion] = useState<FotosAgrupacion>("mes");
   const { mediciones, loading, error, refetch } = useMisPliegues();
 
+  const medicionesPliegues = useMemo(
+    () =>
+      mediciones.filter(
+        (medicion) =>
+          medicion.metodoCalculo === "jp3" || medicion.metodoCalculo === "jp7",
+      ),
+    [mediciones],
+  );
   const enPeriodo = useMemo(
-    () => filterMedicionesByPeriod(mediciones, period),
-    [mediciones, period],
+    () => filterMedicionesByPeriod(medicionesPliegues, period),
+    [medicionesPliegues, period],
   );
   const medicionesConFotos = useMemo(
     () => getMedicionesConFotosProgreso(mediciones, period),
@@ -132,7 +140,7 @@ export function PlieguesEvolucionPage() {
               Volver a Progreso
             </Link>
           </div>
-        ) : enPeriodo.length === 0 ? (
+        ) : enPeriodo.length === 0 && medicionesConFotos.length === 0 ? (
           <section className="pliegues-fotos-historial__card">
             <p className="pliegues-fotos-historial__empty">
               No hay mediciones en este período. Probá ampliar el rango, por
@@ -141,7 +149,7 @@ export function PlieguesEvolucionPage() {
           </section>
         ) : (
           <>
-            {summary ? (
+            {enPeriodo.length > 0 && summary ? (
               <div className="pliegues-evolucion-summary">
                 <article className="pliegues-fotos-historial-summary__card">
                   <span className="pliegues-fotos-historial-summary__label">
@@ -202,7 +210,9 @@ export function PlieguesEvolucionPage() {
               </div>
             ) : null}
 
-            <PlieguesEvolucionChart mediciones={enPeriodo} />
+            {enPeriodo.length > 0 ? (
+              <PlieguesEvolucionChart mediciones={enPeriodo} />
+            ) : null}
 
             <section className="pliegues-fotos-historial__card">
               {medicionesConFotos.length > 0 ? (

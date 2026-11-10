@@ -77,6 +77,12 @@ export const alumnaMobileMoreNav: NavItem[] = [
     shortLabel: "Asistente",
   },
   { href: alumnaRoutes.mensajes, label: "Mensajes", icon: "chat" },
+  {
+    href: alumnaRoutes.biblioteca,
+    label: "Biblioteca",
+    icon: "library",
+    shortLabel: "Videos",
+  },
   { href: alumnaRoutes.logros, label: "Logros", icon: "trophy" },
   { href: alumnaRoutes.miPerfil, label: "Mi perfil", icon: "user" },
   { href: sharedRoutes.ajustes, label: "Ajustes", icon: "settings" },
@@ -182,21 +188,22 @@ export const profeNav: NavItem[] = [
 
 const RUTINA_NAV_HREFS = new Set<string>([
   alumnaRoutes.rutina,
-  alumnaRoutes.progreso,
+  alumnaRoutes.biblioteca,
 ]);
 
 const ALIMENTACION_NAV_HREFS = new Set<string>([alumnaRoutes.alimentacion]);
 
 export function getAlumnaMobileMoreNav(options?: {
   tienePliegues?: boolean;
+  circunferenciasHabilitadas?: boolean;
 }): NavItem[] {
-  if (!options?.tienePliegues) return alumnaMobileMoreNav;
-
-  const logrosIndex = alumnaMobileMoreNav.findIndex(
-    (item) => item.href === alumnaRoutes.logros,
-  );
   const next = [...alumnaMobileMoreNav];
-  next.splice(logrosIndex >= 0 ? logrosIndex + 1 : next.length, 0, alumnaPlieguesNavItem);
+  const logrosIndex = next.findIndex((item) => item.href === alumnaRoutes.logros);
+  const insertAt = logrosIndex >= 0 ? logrosIndex + 1 : next.length;
+  const extras: NavItem[] = [];
+  if (options?.tienePliegues) extras.push(alumnaPlieguesNavItem);
+  if (options?.circunferenciasHabilitadas) extras.push(alumnaCircunferenciasNavItem);
+  next.splice(insertAt, 0, ...extras);
   return next;
 }
 

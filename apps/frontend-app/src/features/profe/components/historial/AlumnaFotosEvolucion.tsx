@@ -93,8 +93,8 @@ export function AlumnaFotosEvolucion({
       ) : totalConFotos === 0 ? (
         <div>
           <p className="pliegues-fotos-historial__empty">
-            Todavía no hay fotos de progreso. Subilas al cargar una medición de
-            pliegues.
+            Todavía no hay fotos de progreso. Podés subirlas con o sin una
+            medición de pliegues.
           </p>
           <div className="pliegues-fotos-historial__empty-actions">
             <Link

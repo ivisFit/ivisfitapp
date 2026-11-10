@@ -11,6 +11,7 @@ import {
   useHistoricoPesos,
   useLogsPesos,
 } from "@/features/alumna/hooks/useLogsPesos";
+import { useDayCloseConfirm } from "@/features/alumna/hooks/useDayCloseConfirm";
 import { useSaveLogPeso } from "@/features/alumna/hooks/useSaveLogPeso";
 import { useRutinaProgreso } from "@/features/alumna/hooks/useRutinaProgreso";
 import type { UpsertRutinaProgresoPayload } from "@/features/alumna/types/rutina-progreso";
@@ -29,9 +30,6 @@ import type { RutinaDetail, RutinaMediaAsset } from "@/features/alumna/types/rut
 import { formatSeriesReps } from "@/lib/rutina-reps";
 
 import type { RutinaProgresoRecord } from "@/features/alumna/types/rutina-progreso";
-
-const INCOMPLETE_DAY_CONFIRM =
-  "Todavía te faltan ejercicios. ¿Marcar el día como no hecho? No suma XP ni racha, y podés completarlo otro día. Se guardan los que ya marcaste.";
 
 type TrainingStoryPreviewProps = {
   rutina: RutinaDetail;
@@ -194,6 +192,8 @@ export function TrainingStoryPreview({
   );
   const getDayProgreso = getDayProgresoProp ?? progressFromHook.getDayProgreso;
   const upsertProgreso = upsertProgresoProp ?? progressFromHook.upsertProgreso;
+  const { confirmSkip, confirmIncomplete } = useDayCloseConfirm();
+  const dayLabel = dayInfo.nombreDia?.trim() || "Este día";
   const dayProgreso = getDayProgreso(
     dayDateKey,
     dayInfo.numeroSemana,
@@ -264,18 +264,16 @@ export function TrainingStoryPreview({
     setRestTimerExerciseKey(null);
   }, [dayDateKey]);
 
-  function handleSkipDay() {
+  async function handleSkipDay() {
     if (!onSkipDay || isDayCompleted) return;
-    const confirmed = window.confirm(
-      "¿Marcar este día como no hecho? No suma XP ni racha, y podés completarlo otro día.",
-    );
+    const confirmed = await confirmSkip(dayLabel);
     if (confirmed) onSkipDay();
   }
 
-  function handleFinishDay() {
+  async function handleFinishDay() {
     if (isDayCompleted) return;
     if (!allExercisesCompleted) {
-      const confirmed = window.confirm(INCOMPLETE_DAY_CONFIRM);
+      const confirmed = await confirmIncomplete(dayLabel);
       if (!confirmed) return;
       if (onFinishIncomplete) {
         onFinishIncomplete();
@@ -283,6 +281,19 @@ export function TrainingStoryPreview({
       }
     }
     onFinishDay();
+  }
+
+  async function saveExerciseCompletion(completedIdsNext: string[]) {
+    await upsertProgreso({
+      rutinaId: rutina.id,
+      dateKey: dayDateKey,
+      numeroSemana: dayInfo.numeroSemana,
+      nombreDia: dayInfo.nombreDia,
+      ejerciciosCompletados: completedIdsNext,
+      diaCompletado:
+        getDayProgreso(dayDateKey, dayInfo.numeroSemana, dayInfo.nombreDia)
+          ?.diaCompletado ?? false,
+    });
   }
 
   async function toggleCompleted(ejercicioId: string) {
@@ -294,16 +305,16 @@ export function TrainingStoryPreview({
       ? current.filter((id) => id !== ejercicioId)
       : [...current, ejercicioId];
 
-    await upsertProgreso({
-      rutinaId: rutina.id,
-      dateKey: dayDateKey,
-      numeroSemana: dayInfo.numeroSemana,
-      nombreDia: dayInfo.nombreDia,
-      ejerciciosCompletados: next,
-      diaCompletado:
-        getDayProgreso(dayDateKey, dayInfo.numeroSemana, dayInfo.nombreDia)
-          ?.diaCompletado ?? false,
-    });
+    await saveExerciseCompletion(next);
+  }
+
+  async function markCompleted(ejercicioId: string) {
+    const current = [
+      ...(getDayProgreso(dayDateKey, dayInfo.numeroSemana, dayInfo.nombreDia)
+        ?.ejerciciosCompletados ?? []),
+    ];
+    if (current.includes(ejercicioId)) return;
+    await saveExerciseCompletion([...current, ejercicioId]);
   }
 
   function goToExercise(index: number) {
@@ -441,6 +452,8 @@ export function TrainingStoryPreview({
                         ejercicio.series,
                         ejercicio.repeticiones,
                         ejercicio.repeticionesPorSerie,
+                        "×",
+                        ejercicio.unidad,
                       )}
                     </span>
                   </div>
@@ -558,6 +571,8 @@ export function TrainingStoryPreview({
                   activeEjercicio.series,
                   activeEjercicio.repeticiones,
                   activeEjercicio.repeticionesPorSerie,
+                  "×",
+                  activeEjercicio.unidad,
                 )}
               </span>
             </div>
@@ -587,34 +602,39 @@ export function TrainingStoryPreview({
               </button>
             </div>
 
-            <section className="training-story__weight-log">
-              <h4>Registrá tus pesos</h4>
-              <ExerciseWeightLog
-                ejercicio={activeEjercicio}
-                rutinaId={rutina.id}
-                semana={dayInfo.numeroSemana}
-                dia={dayInfo.nombreDia}
-                initialPesos={logsByEjercicioId[activeEjercicio.id]}
-                historicoPesos={historicoByEjercicioId[activeEjercicio.id]}
-                saveStatus={getStatus(activeEjercicio.id)}
-                variant="story"
-                onPesosChange={scheduleSave}
-              />
-            </section>
-
-            <button
-              type="button"
-              className={`training-story__complete-btn${
-                isActiveCompleted ? " is-completed" : ""
-              }`}
-              aria-pressed={isActiveCompleted}
-              onClick={() => void toggleCompleted(activeExerciseId)}
-            >
-              <span className="training-story__complete-icon" aria-hidden>
-                {isActiveCompleted ? "✓" : ""}
-              </span>
-              {isActiveCompleted ? "Completado" : "Marcar como completado"}
-            </button>
+            {activeEjercicio.registro === "check" ? (
+              <button
+                type="button"
+                className={`training-story__complete-btn${
+                  isActiveCompleted ? " is-completed" : ""
+                }`}
+                aria-pressed={isActiveCompleted}
+                onClick={() => void toggleCompleted(activeExerciseId)}
+              >
+                <span className="training-story__complete-icon" aria-hidden>
+                  {isActiveCompleted ? "✓" : ""}
+                </span>
+                {isActiveCompleted ? "Completado" : "Marcar como completado"}
+              </button>
+            ) : (
+              <section className="training-story__weight-log">
+                <h4>Registrá tus pesos</h4>
+                <ExerciseWeightLog
+                  ejercicio={activeEjercicio}
+                  rutinaId={rutina.id}
+                  semana={dayInfo.numeroSemana}
+                  dia={dayInfo.nombreDia}
+                  initialPesos={logsByEjercicioId[activeEjercicio.id]}
+                  historicoPesos={historicoByEjercicioId[activeEjercicio.id]}
+                  saveStatus={getStatus(activeEjercicio.id)}
+                  variant="story"
+                  onPesosChange={(payload) => {
+                    scheduleSave(payload);
+                    void markCompleted(payload.ejercicioId);
+                  }}
+                />
+              </section>
+            )}
 
             <nav
               className="training-story__nav"

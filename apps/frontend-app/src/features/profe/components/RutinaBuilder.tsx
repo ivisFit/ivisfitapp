@@ -1,6 +1,7 @@
 "use client";
 import { FeedbackModal } from "@/components/FeedbackModal";
 
+import { arrayMove } from "@dnd-kit/sortable";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { Button, Input, Select } from "@/components";
@@ -1015,8 +1016,8 @@ export function RutinaBuilder({
   function moveDraft(
     weekNumber: number,
     diaLocalId: string,
-    draftLocalId: string,
-    direction: "up" | "down",
+    fromIndex: number,
+    toIndex: number,
   ) {
     setSemanasDraft((current) =>
       current.map((sem) => {
@@ -1025,14 +1026,16 @@ export function RutinaBuilder({
           ...sem,
           dias: sem.dias.map((dia) => {
             if (dia.localId !== diaLocalId) return dia;
-            const index = dia.drafts.findIndex((d) => d.localId === draftLocalId);
-            if (index < 0) return dia;
-            const targetIndex = direction === "up" ? index - 1 : index + 1;
-            if (targetIndex < 0 || targetIndex >= dia.drafts.length) return dia;
-            const nextDrafts = [...dia.drafts];
-            const [moved] = nextDrafts.splice(index, 1);
-            nextDrafts.splice(targetIndex, 0, moved);
-            return { ...dia, drafts: nextDrafts };
+            if (
+              fromIndex < 0 ||
+              toIndex < 0 ||
+              fromIndex >= dia.drafts.length ||
+              toIndex >= dia.drafts.length ||
+              fromIndex === toIndex
+            ) {
+              return dia;
+            }
+            return { ...dia, drafts: arrayMove(dia.drafts, fromIndex, toIndex) };
           }),
         };
       }),
@@ -1324,8 +1327,8 @@ export function RutinaBuilder({
         onRemoveDraft={(draftLocalId) =>
           removeDraft(weekNumber, dia.localId, draftLocalId)
         }
-        onMoveDraft={(draftLocalId, direction) =>
-          moveDraft(weekNumber, dia.localId, draftLocalId, direction)
+        onReorderDrafts={(fromIndex, toIndex) =>
+          moveDraft(weekNumber, dia.localId, fromIndex, toIndex)
         }
       />
     );

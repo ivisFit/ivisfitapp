@@ -167,10 +167,12 @@
 
 .nutricion-wizard__progress-fill {
   display: block;
+  width: 100%;
   height: 100%;
   background: linear-gradient(90deg, var(--color-yellow), var(--color-gold));
   border-radius: inherit;
-  transition: width 280ms ease;
+  transform-origin: left center;
+  transition: transform 280ms ease;
 }
 
 .nutricion-wizard__stepper-dots {
@@ -2822,10 +2824,12 @@
 }
 
 .macros-progress__fill {
+  width: 100%;
   height: 100%;
   border-radius: 999px;
   background: var(--color-gold);
-  transition: width 200ms ease;
+  transform-origin: left center;
+  transition: transform 200ms ease;
 }
 
 .macros-progress__fill--over {

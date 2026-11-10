@@ -107,6 +107,8 @@ export type ChallengeDay = {
   title: string;
   tags: string[];
   state: ChallengeDayState;
+  /** Día futuro: se puede mirar, no entrenar. */
+  preview?: boolean;
   isToday: boolean;
   nombreDia?: string;
   comentario?: string;
@@ -613,6 +615,7 @@ export function buildPlanDays(
       title: routineDay.dia.nombreDia,
       tags: buildDayTags(routineDay.dia),
       state,
+      preview: state === "locked",
       isToday: dateKey === todayKey,
       nombreDia: routineDay.dia.nombreDia,
       ...(routineDay.dia.comentario?.trim()
@@ -671,6 +674,7 @@ export function buildChallenge28Days(
       title: configuredDay?.title ?? nombreDia,
       tags: buildDayTags(routineDay?.dia, configuredDay?.tags),
       state,
+      preview: state === "locked",
       isToday: dateKey === todayKey,
       nombreDia,
       ...(routineDay?.dia.comentario?.trim()

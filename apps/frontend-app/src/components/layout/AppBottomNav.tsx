@@ -44,7 +44,13 @@ export function AppBottomNav() {
 
   const isAlumna = user.role === "alumna";
   const moreItems = isAlumna
-    ? getAlumnaMobileMoreNav({ tienePliegues: user.tienePliegues === true })
+    ? filterNavByModoPlan(
+        getAlumnaMobileMoreNav({
+          tienePliegues: user.tienePliegues === true,
+          circunferenciasHabilitadas: user.circunferenciasHabilitadas === true,
+        }),
+        resolveModoPlan(user),
+      )
     : profeMobileMoreNav;
   const nav = (
     isAlumna

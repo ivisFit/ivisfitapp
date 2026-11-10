@@ -85,10 +85,12 @@
 
 .tutoriales-progress__fill {
   display: block;
+  width: 100%;
   height: 100%;
   border-radius: 999px;
   background: linear-gradient(90deg, var(--color-yellow), var(--color-gold));
-  transition: width 0.3s ease;
+  transform-origin: left center;
+  transition: transform 0.3s ease;
 }
 
 .tutoriales-progress__label {

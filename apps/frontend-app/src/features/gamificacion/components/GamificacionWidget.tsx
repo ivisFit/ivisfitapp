@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useId, useState } from "react";
 import { useGamificacion } from "@/features/gamificacion/hooks/useGamificacion";
 import { xpProgresoPorcentaje } from "@/features/gamificacion/types";
+import { progressTransform } from "@/lib/progress-scale";
 import { alumnaRoutes } from "@/routes/paths";
 
 function ChevronIcon({ expanded }: { expanded: boolean }) {
@@ -28,6 +29,7 @@ function ChevronIcon({ expanded }: { expanded: boolean }) {
 export function GamificacionWidget() {
   const detailsId = useId();
   const [expanded, setExpanded] = useState(false);
+  const [openBadge, setOpenBadge] = useState<string | null>(null);
   const { data, isLoading } = useGamificacion();
 
   if (isLoading || !data) {
@@ -66,8 +68,10 @@ export function GamificacionWidget() {
         <span className="gamif-widget__summary-xp">
           <span className="gamif-widget__summary-xp-bar" aria-hidden>
             <span
-              className="gamif-widget__summary-xp-fill"
-              style={{ width: `${progreso}%` }}
+              className={`gamif-widget__summary-xp-fill${
+                progreso >= 100 ? " is-complete" : ""
+              }`}
+              style={progressTransform(progreso)}
             />
           </span>
           <span className="gamif-widget__summary-xp-text">
@@ -75,9 +79,13 @@ export function GamificacionWidget() {
           </span>
         </span>
 
-        <span className="gamif-widget__summary-stats" aria-hidden>
-          <span className="gamif-widget__summary-stat">🔥 {data.rachaActual}</span>
-          <span className="gamif-widget__summary-stat">🏅 {data.rachaMaxima}</span>
+        <span className="gamif-widget__summary-stats">
+          <span className="gamif-widget__summary-stat">
+            <span aria-hidden>🔥</span> Racha {data.rachaActual}
+          </span>
+          <span className="gamif-widget__summary-stat">
+            <span aria-hidden>🏅</span> Mejor {data.rachaMaxima}
+          </span>
         </span>
 
         {unlocked.length > 0 ? (
@@ -126,32 +134,46 @@ export function GamificacionWidget() {
               </div>
               <div className="gamif-widget__xp-bar">
                 <div
-                  className="gamif-widget__xp-bar-fill"
-                  style={{ width: `${progreso}%` }}
+                  className={`gamif-widget__xp-bar-fill${
+                    progreso >= 100 ? " is-complete" : ""
+                  }`}
+                  style={progressTransform(progreso)}
                 />
               </div>
             </div>
 
             <div className="gamif-widget__stats">
-              <span className="gamif-widget__stat" title="Racha actual">
-                <span aria-hidden>🔥</span> {data.rachaActual} días
+              <span className="gamif-widget__stat">
+                <span aria-hidden>🔥</span>
+                <span>Racha actual: {data.rachaActual} días</span>
               </span>
-              <span className="gamif-widget__stat" title="Mejor racha">
-                <span aria-hidden>🏅</span> {data.rachaMaxima} máx
+              <span className="gamif-widget__stat">
+                <span aria-hidden>🏅</span>
+                <span>Mejor racha: {data.rachaMaxima} días</span>
               </span>
             </div>
           </div>
 
           <div className="gamif-widget__badges" aria-label="Logros desbloqueados">
-            {unlocked.slice(0, 5).map((badge) => (
-              <span
-                key={badge.codigo}
-                className="gamif-widget__badge"
-                title={`${badge.nombre}: ${badge.descripcion}`}
-              >
-                {badge.icono}
-              </span>
-            ))}
+            {unlocked.slice(0, 5).map((badge) => {
+              const isOpen = openBadge === badge.codigo;
+              return (
+                <button
+                  key={badge.codigo}
+                  type="button"
+                  className={`gamif-widget__badge${isOpen ? " is-active" : ""}`}
+                  aria-expanded={isOpen}
+                  aria-label={`${badge.nombre}. ${badge.descripcion}`}
+                  onClick={() =>
+                    setOpenBadge((current) =>
+                      current === badge.codigo ? null : badge.codigo,
+                    )
+                  }
+                >
+                  {badge.icono}
+                </button>
+              );
+            })}
             {unlocked.length > 5 ? (
               <span className="gamif-widget__badge-more">+{unlocked.length - 5}</span>
             ) : unlocked.length === 0 ? (
@@ -160,6 +182,14 @@ export function GamificacionWidget() {
               </span>
             ) : null}
           </div>
+          {openBadge ? (
+            <p className="gamif-widget__badge-caption">
+              <strong>
+                {unlocked.find((badge) => badge.codigo === openBadge)?.nombre}.
+              </strong>{" "}
+              {unlocked.find((badge) => badge.codigo === openBadge)?.descripcion}
+            </p>
+          ) : null}
         </div>
       </div>
     </section>

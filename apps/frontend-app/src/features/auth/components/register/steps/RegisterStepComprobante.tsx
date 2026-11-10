@@ -22,7 +22,7 @@ export function RegisterStepComprobante({
             target="_blank"
             rel="noreferrer"
           >
-            Escribile a la profesora por WhatsApp
+            escribime
           </a>
         </p>
       </div>

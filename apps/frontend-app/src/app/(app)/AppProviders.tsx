@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { AppDialogProvider } from "@/components/AppDialogProvider";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { EvaluacionBridgeProvider } from "@/features/alumna/components/evaluacion-bridge/EvaluacionBridgeProvider";
 import { GamificacionToastProvider } from "@/features/gamificacion/components/GamificacionToastProvider";
@@ -8,9 +9,11 @@ import { GamificacionToastProvider } from "@/features/gamificacion/components/Ga
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider>
-      <EvaluacionBridgeProvider>
-        <GamificacionToastProvider>{children}</GamificacionToastProvider>
-      </EvaluacionBridgeProvider>
+      <AppDialogProvider>
+        <EvaluacionBridgeProvider>
+          <GamificacionToastProvider>{children}</GamificacionToastProvider>
+        </EvaluacionBridgeProvider>
+      </AppDialogProvider>
     </ThemeProvider>
   );
 }

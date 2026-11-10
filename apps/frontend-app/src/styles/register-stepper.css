@@ -45,10 +45,12 @@
 
 .register-stepper__progress-fill {
   display: block;
+  width: 100%;
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, var(--color-yellow), var(--color-gold));
-  transition: width 280ms ease;
+  transform-origin: left center;
+  transition: transform 280ms ease;
 }
 
 .register-stepper__dots {

@@ -64,6 +64,7 @@ import {
   type SugerenciaIngrediente,
 } from "@/features/profe/lib/sugerencia-ingredientes";
 import { apiFetch } from "@/lib/api";
+import { progressTransform } from "@/lib/progress-scale";
 
 function createEmptyIngrediente(): IngredientePlan {
   return { nombre: "", cantidad: 100, unidad: "g" };
@@ -782,7 +783,7 @@ export function AlimentacionComidasStep() {
                 <span className="ap-day-tab__bar" aria-hidden="true">
                   <span
                     className="ap-day-tab__bar-fill"
-                    style={{ width: `${progress}%` }}
+                    style={progressTransform(progress)}
                   />
                 </span>
               </button>

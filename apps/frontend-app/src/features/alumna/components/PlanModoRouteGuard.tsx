@@ -14,7 +14,7 @@ function matchesPath(pathname: string, href: string) {
 function isRutinaPath(pathname: string) {
   return (
     matchesPath(pathname, alumnaRoutes.rutina) ||
-    matchesPath(pathname, alumnaRoutes.progreso)
+    matchesPath(pathname, alumnaRoutes.biblioteca)
   );
 }
 

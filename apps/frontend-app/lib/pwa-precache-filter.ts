@@ -16,6 +16,7 @@ const ROUTE_DENY = [
 ];
 
 const ALWAYS_ALLOW = [
+  /^\/login\/?$/i,
   /^\/offline$/i,
   /\/manifest\.json$/i,
   /\/icon-if-/i,

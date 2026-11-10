@@ -174,7 +174,9 @@ async function buildContext(alumnaId: string) {
       EvaluacionNutricional.findOne({ alumnaId, completada: true }),
       PlanNutricional.findOne({ alumnaId, estado: "publicado" }).sort({ publicadoAt: -1 }),
       Rutina.findOne({ alumnaId }).sort({ createdAt: -1 }),
-      Medicion.findOne({ alumnaId }).sort({ fecha: -1 }).select("pesoCorporalKg fecha"),
+      Medicion.findOne({ alumnaId, metodoCalculo: { $ne: "fotos" } })
+        .sort({ fecha: -1 })
+        .select("pesoCorporalKg fecha"),
       RutinaProgreso.countDocuments({
         dateKey: getTodayDateKey(),
         diaCompletado: true,

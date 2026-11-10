@@ -1,4 +1,5 @@
 import type { MacrosObjetivo } from "@/features/alumna/types/plan-nutricional";
+import { progressTransform } from "@/lib/progress-scale";
 
 const ROWS: { key: keyof MacrosObjetivo; label: string; unidad: string }[] = [
   { key: "kcal", label: "Kcal", unidad: "" },
@@ -28,7 +29,7 @@ export function MacrosProgressBar({
             <div className="macros-progress__track">
               <div
                 className={`macros-progress__fill${isOver ? " macros-progress__fill--over" : ""}`}
-                style={{ width: `${pct}%` }}
+                style={progressTransform(pct)}
               />
             </div>
             <span className="macros-progress__value">

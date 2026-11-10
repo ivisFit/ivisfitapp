@@ -20,6 +20,16 @@ import {
 } from "./plan-template-rutina-sync.service.js";
 import { AppError, assertFound } from "../utils/errors.js";
 
+function unidadEjercicio(
+  value: unknown,
+): "repeticiones" | "segundos" {
+  return value === "segundos" ? "segundos" : "repeticiones";
+}
+
+function registroEjercicio(value: unknown): "peso" | "check" {
+  return value === "check" ? "check" : "peso";
+}
+
 type SemanaPlain = {
   numeroSemana: number;
   dias: {
@@ -31,6 +41,8 @@ type SemanaPlain = {
       series: number;
       repeticiones: number;
       repeticionesPorSerie?: number[];
+      unidad?: "repeticiones" | "segundos";
+      registro?: "peso" | "check";
       descansoSegundos: number;
       media?: unknown;
     }[];
@@ -193,6 +205,8 @@ export const rutinasService = {
         ejercicioId: ej.ejercicioId,
         series: ej.series,
         repeticiones: ej.repeticiones,
+        unidad: unidadEjercicio(ej.unidad),
+        registro: registroEjercicio(ej.registro),
         descansoSegundos: ej.descansoSegundos,
         ...(ej.repeticionesPorSerie?.length
           ? { repeticionesPorSerie: [...ej.repeticionesPorSerie] }

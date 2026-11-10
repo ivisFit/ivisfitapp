@@ -1,6 +1,7 @@
 export type Sexo = "hombre" | "mujer";
 
 export type MetodoCalculo = "jp3" | "jp7" | "us-navy";
+export type MetodoMedicion = MetodoCalculo | "fotos";
 
 export type PlieguesJP3 = {
   tricipital?: number;
@@ -49,7 +50,7 @@ export type FotosProgreso = Partial<Record<FotosProgresoSlot, MedicionImagen>>;
 
 export type CreateMedicionPayload = {
   alumnaId?: string;
-  metodoCalculo: MetodoCalculo;
+  metodoCalculo: MetodoMedicion;
   pliegues?: PlieguesMedicion;
   circunferencias?: Circunferencias;
   fecha?: string;
@@ -81,7 +82,7 @@ export type MedicionApiDoc = {
 export type Medicion = {
   id: string;
   alumnaId: string;
-  metodoCalculo: MetodoCalculo;
+  metodoCalculo: MetodoMedicion;
   fecha: Date;
   pliegues?: PlieguesMedicion;
   circunferencias?: Circunferencias;
@@ -90,6 +91,20 @@ export type Medicion = {
   pesoCorporalKg?: number;
   fotosProgreso?: FotosProgreso;
 };
+
+export function resolveMetodoMedicion(
+  metodo?: MetodoMedicion | string | null,
+): MetodoMedicion {
+  if (
+    metodo === "jp3" ||
+    metodo === "jp7" ||
+    metodo === "us-navy" ||
+    metodo === "fotos"
+  ) {
+    return metodo;
+  }
+  return "jp3";
+}
 
 export function resolveMetodoCalculo(
   metodo?: MetodoCalculo | string | null,

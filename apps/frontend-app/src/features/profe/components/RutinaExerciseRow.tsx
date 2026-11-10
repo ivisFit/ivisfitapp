@@ -1,17 +1,22 @@
 "use client";
 
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { useState } from "react";
 import { Button } from "@/components";
 import { EjercicioAutocomplete } from "@/features/profe/components/EjercicioAutocomplete";
 import type { BancoEjercicio } from "@/features/profe/hooks/useBancoEjercicios";
 import type { EjercicioRutinaDraft } from "@/features/profe/lib/rutina-draft";
 import {
+  clampPrescription,
   isRepeticionesPorSerieActive,
-  REPS_MAX,
+  prescriptionMax,
   REPS_MIN,
   resizeRepeticionesPorSerie,
   SERIES_MAX,
   SERIES_MIN,
+  type RegistroEjercicio,
+  type UnidadEjercicio,
 } from "@/lib/rutina-reps";
 
 const DESCANSO_OPTIONS = [30, 45, 60, 90, 120, 180];
@@ -27,19 +32,11 @@ type RutinaExerciseRowProps = {
   index: number;
   ejercicios: BancoEjercicio[];
   canRemove: boolean;
-  canMoveUp: boolean;
-  canMoveDown: boolean;
+  canDrag: boolean;
   disabled?: boolean;
   onUpdate: (patch: Partial<Omit<EjercicioRutinaDraft, "localId">>) => void;
   onRemove: () => void;
-  onMoveUp: () => void;
-  onMoveDown: () => void;
 };
-
-function clamp(value: number, min: number, max: number) {
-  if (!Number.isFinite(value)) return min;
-  return Math.min(max, Math.max(min, value));
-}
 
 function formatDescanso(seconds: number) {
   if (seconds < 60) return `${seconds}s`;
@@ -51,13 +48,10 @@ export function RutinaExerciseRow({
   index,
   ejercicios,
   canRemove,
-  canMoveUp,
-  canMoveDown,
+  canDrag,
   disabled,
   onUpdate,
   onRemove,
-  onMoveUp,
-  onMoveDown,
 }: RutinaExerciseRowProps) {
   const [editingExercise, setEditingExercise] = useState(!draft.ejercicioId);
   const selected = ejercicios.find((ejercicio) => ejercicio.id === draft.ejercicioId);
@@ -65,26 +59,42 @@ export function RutinaExerciseRow({
     draft.series,
     draft.repeticionesPorSerie,
   );
+  const unidad = draft.unidad ?? "repeticiones";
+  const registro = draft.registro ?? "peso";
+  const maxPrescription = prescriptionMax(unidad);
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: draft.localId,
+    disabled: disabled || !canDrag,
+  });
 
   function updateSeries(nextSeries: number) {
-    const series = clamp(nextSeries, SERIES_MIN, SERIES_MAX);
+    const series = clampPrescription(nextSeries, "repeticiones");
+    const boundedSeries = Math.min(SERIES_MAX, Math.max(SERIES_MIN, series));
     if (!perSetMode) {
-      onUpdate({ series });
+      onUpdate({ series: boundedSeries });
       return;
     }
     onUpdate({
-      series,
+      series: boundedSeries,
       repeticionesPorSerie: resizeRepeticionesPorSerie(
-        series,
+        boundedSeries,
         draft.repeticiones,
         draft.repeticionesPorSerie,
-      ),
+      ).map((value) => clampPrescription(value, unidad)),
     });
   }
 
   function updateRepeticiones(nextRepeticiones: number) {
     onUpdate({
-      repeticiones: clamp(nextRepeticiones, REPS_MIN, REPS_MAX),
+      repeticiones: clampPrescription(nextRepeticiones, unidad),
       repeticionesPorSerie: undefined,
     });
   }
@@ -94,12 +104,26 @@ export function RutinaExerciseRow({
       draft.series,
       draft.repeticiones,
       draft.repeticionesPorSerie,
-    );
-    next[serieIndex] = clamp(nextValue, REPS_MIN, REPS_MAX);
+    ).map((value) => clampPrescription(value, unidad));
+    next[serieIndex] = clampPrescription(nextValue, unidad);
     onUpdate({
       repeticiones: next[0] ?? draft.repeticiones,
       repeticionesPorSerie: next,
     });
+  }
+
+  function updateUnidad(nextUnidad: UnidadEjercicio) {
+    onUpdate({
+      unidad: nextUnidad,
+      repeticiones: clampPrescription(draft.repeticiones, nextUnidad),
+      repeticionesPorSerie: draft.repeticionesPorSerie?.map((value) =>
+        clampPrescription(value, nextUnidad),
+      ),
+    });
+  }
+
+  function updateRegistro(nextRegistro: RegistroEjercicio) {
+    onUpdate({ registro: nextRegistro });
   }
 
   function enablePerSetMode() {
@@ -108,7 +132,7 @@ export function RutinaExerciseRow({
         draft.series,
         draft.repeticiones,
         draft.repeticionesPorSerie,
-      ),
+      ).map((value) => clampPrescription(value, unidad)),
     });
   }
 
@@ -121,13 +145,32 @@ export function RutinaExerciseRow({
 
   return (
     <div
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+      }}
       className={
-        perSetMode
-          ? "rutina-builder__exercise-row is-reps-por-serie"
-          : "rutina-builder__exercise-row"
+        [
+          "rutina-builder__exercise-row",
+          perSetMode ? "is-reps-por-serie" : "",
+          isDragging ? "is-dragging" : "",
+        ]
+          .filter(Boolean)
+          .join(" ")
       }
     >
-      <span className="rutina-builder__exercise-index">{index + 1}</span>
+      <button
+        type="button"
+        ref={setActivatorNodeRef}
+        className="rutina-builder__exercise-index rutina-builder__exercise-drag"
+        disabled={disabled || !canDrag}
+        aria-label={`Arrastrar para reordenar el ejercicio ${index + 1}`}
+        {...attributes}
+        {...listeners}
+      >
+        {index + 1}
+      </button>
 
       <div className="rutina-builder__exercise-identity">
         {editingExercise || !selected ? (
@@ -165,12 +208,64 @@ export function RutinaExerciseRow({
                   series: preset.series,
                   repeticiones: preset.repeticiones,
                   repeticionesPorSerie: undefined,
+                  unidad: "repeticiones",
                 })
               }
             >
               {preset.label}
             </button>
           ))}
+        </div>
+
+        <div className="rutina-builder__exercise-modes">
+          <div role="group" aria-label="Cómo se mide el ejercicio">
+            <button
+              type="button"
+              className={`rutina-builder__exercise-preset${
+                unidad === "repeticiones" ? " is-selected" : ""
+              }`}
+              aria-pressed={unidad === "repeticiones"}
+              disabled={disabled}
+              onClick={() => updateUnidad("repeticiones")}
+            >
+              Repeticiones
+            </button>
+            <button
+              type="button"
+              className={`rutina-builder__exercise-preset${
+                unidad === "segundos" ? " is-selected" : ""
+              }`}
+              aria-pressed={unidad === "segundos"}
+              disabled={disabled}
+              onClick={() => updateUnidad("segundos")}
+            >
+              Segundos
+            </button>
+          </div>
+          <div role="group" aria-label="Qué registra la alumna">
+            <button
+              type="button"
+              className={`rutina-builder__exercise-preset${
+                registro === "peso" ? " is-selected" : ""
+              }`}
+              aria-pressed={registro === "peso"}
+              disabled={disabled}
+              onClick={() => updateRegistro("peso")}
+            >
+              Peso
+            </button>
+            <button
+              type="button"
+              className={`rutina-builder__exercise-preset${
+                registro === "check" ? " is-selected" : ""
+              }`}
+              aria-pressed={registro === "check"}
+              disabled={disabled}
+              onClick={() => updateRegistro("check")}
+            >
+              Check
+            </button>
+          </div>
         </div>
       </div>
 
@@ -208,12 +303,16 @@ export function RutinaExerciseRow({
         </label>
 
         <div className="rutina-builder__metric rutina-builder__metric--reps">
-          <span>Reps</span>
+          <span>{unidad === "segundos" ? "Seg" : "Reps"}</span>
           {perSetMode ? (
             <div
               className="rutina-builder__reps-por-serie"
               role="group"
-              aria-label="Repeticiones por serie"
+              aria-label={
+                unidad === "segundos"
+                  ? "Segundos por serie"
+                  : "Repeticiones por serie"
+              }
             >
               {(draft.repeticionesPorSerie ?? []).map((value, serieIndex) => (
                 <label
@@ -224,10 +323,14 @@ export function RutinaExerciseRow({
                   <input
                     type="number"
                     min={REPS_MIN}
-                    max={REPS_MAX}
+                    max={maxPrescription}
                     value={value}
                     disabled={disabled}
-                    aria-label={`Repeticiones de la serie ${serieIndex + 1}`}
+                    aria-label={
+                      unidad === "segundos"
+                        ? `Segundos de la serie ${serieIndex + 1}`
+                        : `Repeticiones de la serie ${serieIndex + 1}`
+                    }
                     onChange={(event) =>
                       updateRepeticionPorSerie(
                         serieIndex,
@@ -244,14 +347,16 @@ export function RutinaExerciseRow({
                 type="button"
                 disabled={disabled || draft.repeticiones <= REPS_MIN}
                 onClick={() => updateRepeticiones(draft.repeticiones - 1)}
-                aria-label="Menos repeticiones"
+                aria-label={
+                  unidad === "segundos" ? "Menos segundos" : "Menos repeticiones"
+                }
               >
                 −
               </button>
               <input
                 type="number"
                 min={REPS_MIN}
-                max={REPS_MAX}
+                max={maxPrescription}
                 value={draft.repeticiones}
                 disabled={disabled}
                 onChange={(event) =>
@@ -260,9 +365,11 @@ export function RutinaExerciseRow({
               />
               <button
                 type="button"
-                disabled={disabled || draft.repeticiones >= REPS_MAX}
+                disabled={disabled || draft.repeticiones >= maxPrescription}
                 onClick={() => updateRepeticiones(draft.repeticiones + 1)}
-                aria-label="Más repeticiones"
+                aria-label={
+                  unidad === "segundos" ? "Más segundos" : "Más repeticiones"
+                }
               >
                 +
               </button>
@@ -274,7 +381,13 @@ export function RutinaExerciseRow({
             disabled={disabled}
             onClick={perSetMode ? disablePerSetMode : enablePerSetMode}
           >
-            {perSetMode ? "Mismas reps" : "Reps distintas por serie"}
+            {perSetMode
+              ? unidad === "segundos"
+                ? "Mismos segundos"
+                : "Mismas reps"
+              : unidad === "segundos"
+                ? "Segundos distintos por serie"
+                : "Reps distintas por serie"}
           </button>
         </div>
 
@@ -298,24 +411,6 @@ export function RutinaExerciseRow({
       </div>
 
       <div className="rutina-builder__exercise-row-actions">
-        <Button
-          type="button"
-          variant="ghost"
-          disabled={disabled || !canMoveUp}
-          onClick={onMoveUp}
-          aria-label="Subir ejercicio"
-        >
-          ↑
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          disabled={disabled || !canMoveDown}
-          onClick={onMoveDown}
-          aria-label="Bajar ejercicio"
-        >
-          ↓
-        </Button>
         <Button
           type="button"
           variant="ghost"

@@ -80,20 +80,33 @@ export function SeguimientoDayPanel({
                         ejercicio.repeticiones,
                         ejercicio.repeticionesPorSerie,
                         "x",
+                        ejercicio.unidad,
                       )}{" "}
                       · Descanso{" "}
                       {ejercicio.descansoSegundos}s
                     </span>
                   </div>
-                  <span
-                    className={
-                      ejercicio.pesosPorSerie.length > 0
-                        ? "seguimiento-exercises__pesos"
-                        : "seguimiento-exercises__pesos is-empty"
-                    }
-                  >
-                    {formatPesosLabel(ejercicio.pesosPorSerie)}
-                  </span>
+                  {ejercicio.registro === "check" ? (
+                    <span
+                      className={
+                        ejercicio.completado
+                          ? "seguimiento-exercises__pesos"
+                          : "seguimiento-exercises__pesos is-empty"
+                      }
+                    >
+                      {ejercicio.completado ? "Hecho" : "Check"}
+                    </span>
+                  ) : (
+                    <span
+                      className={
+                        ejercicio.pesosPorSerie.length > 0
+                          ? "seguimiento-exercises__pesos"
+                          : "seguimiento-exercises__pesos is-empty"
+                      }
+                    >
+                      {formatPesosLabel(ejercicio.pesosPorSerie)}
+                    </span>
+                  )}
                 </li>
               ))}
             </ul>

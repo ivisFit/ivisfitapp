@@ -230,6 +230,41 @@ function SkinfoldPlieguesForm({
       payload.fotosProgreso = fotosPayload;
     }
 
+    await submitMedicion(payload, false);
+  }
+
+  async function handleSaveFotos() {
+    if (fotosUploading || isLoading) return;
+    setError(null);
+    setSuccessMessage(null);
+
+    const fotosPayload = buildFotosProgresoPayload(fotosProgreso);
+    if (!fotosPayload) {
+      setError("Subí al menos una foto.");
+      return;
+    }
+    if (!form.fecha) {
+      setError("Elegí la fecha de las fotos.");
+      return;
+    }
+
+    const payload: CreateMedicionPayload = {
+      alumnaId,
+      metodoCalculo: "fotos",
+      fecha: form.fecha,
+      fotosProgreso: fotosPayload,
+    };
+    const pesoCorporalKg = parseNumber(form.pesoCorporalKg);
+    if (isValidNumber(pesoCorporalKg) && pesoCorporalKg > 0) {
+      payload.pesoCorporalKg = pesoCorporalKg;
+    }
+    const notas = form.notas.trim();
+    if (notas) payload.notas = notas;
+
+    await submitMedicion(payload, true);
+  }
+
+  async function submitMedicion(payload: CreateMedicionPayload, soloFotos: boolean) {
     setIsLoading(true);
 
     try {
@@ -240,11 +275,13 @@ function SkinfoldPlieguesForm({
       invalidateCache("/api/mediciones");
       setForm(getEmptyForm());
       setFotosProgreso(emptyFotosProgresoState());
-      const grasa = created.metricas.porcentajeGrasaCorporal;
+      const grasa = created.metricas?.porcentajeGrasaCorporal;
       setSuccessMessage(
-        grasa != null
-          ? `Medición registrada. Grasa corporal: ${grasa.toLocaleString("es-UY", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%.`
-          : "Medición registrada correctamente.",
+        soloFotos
+          ? "Fotos guardadas."
+          : grasa != null
+            ? `Medición registrada. Grasa corporal: ${grasa.toLocaleString("es-UY", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%.`
+            : "Medición registrada correctamente.",
       );
       onSuccess?.();
     } catch (err) {
@@ -345,6 +382,16 @@ function SkinfoldPlieguesForm({
         <Button type="submit" disabled={isLoading || fotosUploading}>
           {isLoading ? "Guardando..." : fotosUploading ? "Subiendo foto..." : "Registrar medición"}
         </Button>
+        {hasFotosProgreso(fotosProgreso) ? (
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={isLoading || fotosUploading}
+            onClick={() => void handleSaveFotos()}
+          >
+            Guardar solo fotos
+          </Button>
+        ) : null}
       </div>
     </form>
   );

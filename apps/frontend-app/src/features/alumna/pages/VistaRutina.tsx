@@ -5,7 +5,9 @@ import { AlumnaRutinaSkeleton } from "@/components/skeletons/AppSkeleton";
 import { useAuth } from "@/context/AuthContext";
 import { CoachInsightBanner } from "@/features/alumna/components/CoachInsightBanner";
 import { ChallengeDaySheet } from "@/features/alumna/components/ChallengeDaySheet";
+import { DayCloseUndoBar } from "@/features/alumna/components/DayCloseUndoBar";
 import { PlanDaysDashboard } from "@/features/alumna/components/PlanDaysDashboard";
+import { SemanaRutinaPreview } from "@/features/alumna/components/SemanaRutinaPreview";
 import { TrainingStoryPreview } from "@/features/alumna/components/TrainingStoryPreview";
 import { WaitingStateActions } from "@/features/alumna/components/WaitingStateActions";
 import { usePlanDayCompletions } from "@/features/alumna/hooks/usePlanDayCompletions";
@@ -30,6 +32,7 @@ type RutinaView = "story" | "plan";
 export function VistaRutina() {
   const [activeView, setActiveView] = useState<RutinaView>("story");
   const [catchUpDateKey, setCatchUpDateKey] = useState<string | null>(null);
+  const [weekPreviewDay, setWeekPreviewDay] = useState<ChallengeDay | null>(null);
   const { user, loading: authLoading } = useAuth();
   const {
     rutina,
@@ -45,6 +48,7 @@ export function VistaRutina() {
     isDayComplete,
     getDayProgreso,
     upsertProgreso,
+    dayCloseUndo,
   } = usePlanDayCompletions(rutina?.id, rutina);
 
   const dayInfo = useMemo(
@@ -71,6 +75,25 @@ export function VistaRutina() {
   }, [completedDateKeys, dayInfo, getDayProgreso, rutina]);
 
   const todayKey = getTodayDateKey();
+  const weekDays = useMemo(() => {
+    if (!dayInfo) return [];
+    return planDays.filter((day) => day.numeroSemana === dayInfo.numeroSemana);
+  }, [dayInfo, planDays]);
+
+  const openWeekDay = useCallback((day: ChallengeDay) => {
+    if (day.state === "locked") {
+      setCatchUpDateKey(null);
+      setWeekPreviewDay(day);
+      return;
+    }
+    setWeekPreviewDay(null);
+    if (day.isToday || day.dateKey === todayKey) {
+      setActiveView("story");
+      return;
+    }
+    setCatchUpDateKey(day.dateKey);
+    setActiveView("story");
+  }, [todayKey]);
   const pendingDay = useMemo(
     () =>
       planDays.find((day) => day.state === "missed" && day.dateKey < todayKey) ??
@@ -172,7 +195,7 @@ export function VistaRutina() {
 
         {!loading && !error && rutina && dayInfo ? (
           <div className="alumna-rutina__experience">
-            <div className="alumna-rutina__tabs" role="tablist">
+            <div className="alumna-rutina__tabs" role="tablist" aria-label="Tu rutina">
               <button
                 type="button"
                 role="tab"
@@ -180,7 +203,7 @@ export function VistaRutina() {
                 className={activeView === "story" ? "is-active" : ""}
                 onClick={() => setActiveView("story")}
               >
-                Historia
+                Hoy
               </button>
               <button
                 type="button"
@@ -198,13 +221,15 @@ export function VistaRutina() {
                 {pendingDay ? (
                   <div className="rutina-catchup" role="status">
                     <p>
-                      Te quedó {pendingDay.title}. Lo podés completar otro día.
+                      Te quedó <strong>{pendingDay.title}</strong> sin hacer.
+                      Hacerlo ahora no reemplaza el entrenamiento de hoy: hoy
+                      sigue en esta pantalla.
                     </p>
                     <button
                       type="button"
                       onClick={() => setCatchUpDateKey(pendingDay.dateKey)}
                     >
-                      Completar
+                      Hacer ese día
                     </button>
                   </div>
                 ) : null}
@@ -229,6 +254,8 @@ export function VistaRutina() {
             ) : null}
 
             {activeView === "plan" ? (
+              <>
+              <SemanaRutinaPreview days={weekDays} onOpenDay={openWeekDay} />
               <PlanDaysDashboard
                 rutina={rutina}
                 days={planDays}
@@ -238,6 +265,7 @@ export function VistaRutina() {
                 onFinishIncomplete={finishPlanDayIncomplete}
                 onSkipDay={skipPlanDay}
               />
+              </>
             ) : null}
 
             {activeView === "story" && catchUpDay ? (
@@ -253,9 +281,28 @@ export function VistaRutina() {
                 onSkipDay={skipPlanDay}
               />
             ) : null}
+
+            {weekPreviewDay ? (
+              <ChallengeDaySheet
+                day={weekPreviewDay}
+                rutina={rutina}
+                rutinaId={rutina.id}
+                onClose={() => setWeekPreviewDay(null)}
+                getDayProgreso={getDayProgreso}
+                upsertProgreso={upsertProgreso}
+              />
+            ) : null}
           </div>
         ) : null}
       </section>
+      {dayCloseUndo ? (
+        <DayCloseUndoBar
+          message={dayCloseUndo.message}
+          busy={dayCloseUndo.busy}
+          error={dayCloseUndo.error}
+          onUndo={() => void dayCloseUndo.restore()}
+        />
+      ) : null}
     </>
   );
 }

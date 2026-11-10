@@ -50,6 +50,7 @@ export function IvisSprite({
         alt=""
         draggable={false}
         decoding="async"
+        fetchPriority={size === "page" ? "high" : "low"}
       />
     </div>
   );
@@ -74,8 +75,13 @@ export function IvisContentLoader({
       aria-live="polite"
       aria-busy="true"
     >
-      <IvisSprite image={image} size={variant} />
-      <span className="ivis-loader__status">{label}</span>
+      <div className="ivis-loader__mark">
+        <IvisSprite image={image} size={variant} />
+        <span className="ivis-loader__track" aria-hidden="true">
+          <span />
+        </span>
+      </div>
+      <p className="ivis-loader__status">{label}</p>
     </div>
   );
 }

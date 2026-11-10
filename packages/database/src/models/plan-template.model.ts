@@ -36,10 +36,20 @@ const ejercicioRutinaBlueprintSchema = new Schema(
   {
     ejercicioId: { type: String, required: true },
     series: { type: Number, required: true, min: 1, max: 8 },
-    repeticiones: { type: Number, required: true, min: 1, max: 25 },
+    repeticiones: { type: Number, required: true, min: 1, max: 600 },
     repeticionesPorSerie: {
-      type: [{ type: Number, min: 1, max: 25 }],
+      type: [{ type: Number, min: 1, max: 600 }],
       default: undefined,
+    },
+    unidad: {
+      type: String,
+      enum: ["repeticiones", "segundos"],
+      default: "repeticiones",
+    },
+    registro: {
+      type: String,
+      enum: ["peso", "check"],
+      default: "peso",
     },
     descansoSegundos: { type: Number, required: true, min: 1 },
     media: { type: mediaAssetSchema },

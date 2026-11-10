@@ -26,8 +26,10 @@
 .ivis-loader {
   position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 0.7rem;
   width: 100%;
 }
 
@@ -49,16 +51,47 @@
   }
 }
 
-.ivis-loader__status {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
+.ivis-loader__mark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.ivis-loader__track {
+  width: 7.25rem;
+  height: 0.28rem;
   overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-text) 16%, transparent);
+}
+
+.ivis-loader__track > span {
+  display: block;
+  width: 42%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-gold);
+  animation: ivis-loader-slide 1.05s ease-in-out infinite;
+}
+
+.ivis-loader__status {
+  margin: 0;
+  max-width: 16rem;
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.ivis-loader__status::after {
+  content: "";
+  display: inline-block;
+  width: 1.15em;
+  text-align: left;
+  animation: ivis-loader-ellipsis 1.2s steps(4, end) infinite;
 }
 
 .ivis-sprite {
@@ -69,12 +102,12 @@
 }
 
 .ivis-sprite--page {
-  height: min(18rem, 42vh);
+  height: 5.5rem;
   aspect-ratio: var(--ivis-frame-ratio);
 }
 
 .ivis-sprite--section {
-  height: min(12.5rem, 34vh);
+  height: 4.25rem;
   aspect-ratio: var(--ivis-frame-ratio);
 }
 
@@ -128,9 +161,50 @@
   }
 }
 
+@keyframes ivis-loader-slide {
+  0% {
+    transform: translate3d(-130%, 0, 0);
+  }
+
+  100% {
+    transform: translate3d(250%, 0, 0);
+  }
+}
+
+@keyframes ivis-loader-ellipsis {
+  0% {
+    content: "";
+  }
+
+  25% {
+    content: ".";
+  }
+
+  50% {
+    content: "..";
+  }
+
+  75%,
+  100% {
+    content: "...";
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .ivis-sprite__sheet {
+  .ivis-sprite__sheet,
+  .ivis-loader__track > span,
+  .ivis-loader__status::after {
     animation: none;
+  }
+
+  .ivis-loader__track > span {
+    width: 100%;
+    transform: none;
+    opacity: 0.85;
+  }
+
+  .ivis-loader__status::after {
+    content: "...";
   }
 }
 

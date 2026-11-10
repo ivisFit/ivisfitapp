@@ -210,8 +210,8 @@ function FotosHistorialContent({
         {totalConFotos === 0 ? (
           <div>
             <p className="pliegues-fotos-historial__empty">
-              Todavía no hay fotos de progreso registradas. Subilas al cargar una
-              nueva medición de pliegues.
+              Todavía no hay fotos de progreso registradas. Podés subirlas con o
+              sin una medición de pliegues.
             </p>
             <div className="pliegues-fotos-historial__empty-actions">
               <Link

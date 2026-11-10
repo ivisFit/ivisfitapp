@@ -1490,10 +1490,12 @@
 
 .ap-day-tab__bar-fill {
   display: block;
+  width: 100%;
   height: 100%;
   border-radius: 999px;
   background: linear-gradient(90deg, var(--color-yellow), var(--color-gold));
-  transition: width 0.3s ease;
+  transform-origin: left center;
+  transition: transform 0.3s ease;
 }
 
 /* Resumen del día */
@@ -1594,7 +1596,7 @@
 
 .alimentacion-plan-shell .macros-progress__fill {
   background: linear-gradient(90deg, var(--color-yellow), var(--color-gold));
-  transition: width 0.3s ease;
+  transition: transform 0.3s ease;
 }
 
 .alimentacion-plan-shell .macros-progress__row:nth-child(2) .macros-progress__fill {

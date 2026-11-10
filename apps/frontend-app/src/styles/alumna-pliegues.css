@@ -667,3 +667,42 @@
   margin: 1rem 0 1.5rem;
   padding: 0 0.15rem;
 }
+
+.biblioteca-page__empty {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: start;
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: 1.45;
+}
+
+.biblioteca-page__list {
+  display: grid;
+  gap: 0.85rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.biblioteca-page__item {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: start;
+  padding: 1rem 1.05rem;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg);
+}
+
+.biblioteca-page__item-copy h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.biblioteca-page__item-copy p,
+.biblioteca-page__sin-video {
+  margin: 0.35rem 0 0;
+  color: var(--color-text-muted);
+  line-height: 1.45;
+}

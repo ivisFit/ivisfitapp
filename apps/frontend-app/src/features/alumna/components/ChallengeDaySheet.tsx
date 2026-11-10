@@ -12,6 +12,7 @@ import type {
   RutinaProgresoRecord,
   UpsertRutinaProgresoPayload,
 } from "@/features/alumna/types/rutina-progreso";
+import { useDayCloseConfirm } from "@/features/alumna/hooks/useDayCloseConfirm";
 import { useSaveLogPeso } from "@/features/alumna/hooks/useSaveLogPeso";
 import { VideoPlayIcon } from "@/components/icons/exercise-action-icons";
 import { YoutubePlayer } from "@/components/YoutubePlayer";
@@ -64,9 +65,6 @@ type ChallengeDaySheetProps = {
   onSkipDay?: (day: ChallengeDay) => void;
 };
 
-const INCOMPLETE_DAY_CONFIRM =
-  "Todavía te faltan ejercicios. ¿Marcar el día como no hecho? No suma XP ni racha, y podés completarlo otro día. Se guardan los que ya marcaste.";
-
 function formatCompletedOnLabel(dateKey: string): string {
   const [year, month, day] = dateKey.split("-").map(Number);
   if (!year || !month || !day) return dateKey;
@@ -101,8 +99,10 @@ export function ChallengeDaySheet({
   );
   const getDayProgreso = getDayProgresoProp ?? progressFromHook.getDayProgreso;
   const upsertProgreso = upsertProgresoProp ?? progressFromHook.upsertProgreso;
+  const readOnlyPreview = day?.state === "locked";
   const canLogWeights = Boolean(
     day &&
+      !readOnlyPreview &&
       day.state !== "locked" &&
       day.numeroSemana &&
       day.nombreDia?.trim(),
@@ -120,6 +120,7 @@ export function ChallengeDaySheet({
     enabled: canLogWeights,
   });
   const { scheduleSave, getStatus } = useSaveLogPeso();
+  const { confirmSkip, confirmIncomplete } = useDayCloseConfirm();
 
   const dayProgreso = day
     ? getDayProgreso(day.dateKey, day.numeroSemana, day.nombreDia)
@@ -207,18 +208,18 @@ export function ChallengeDaySheet({
     (allExercisesCompleted ? Boolean(onFinishDay) : Boolean(onFinishIncomplete));
   const canSkipDay = Boolean(onSkipDay) && canCloseDay;
 
-  function handleSkipDay() {
+  const dayLabel = activeDay.title?.trim() || activeDay.nombreDia?.trim() || "Este día";
+
+  async function handleSkipDay() {
     if (!canSkipDay || !onSkipDay) return;
-    const confirmed = window.confirm(
-      "¿Marcar este día como no hecho? No suma XP ni racha, y podés completarlo otro día.",
-    );
+    const confirmed = await confirmSkip(dayLabel);
     if (confirmed) onSkipDay(activeDay);
   }
 
-  function handleFinishDay() {
+  async function handleFinishDay() {
     if (!canFinishDay) return;
     if (!allExercisesCompleted) {
-      const confirmed = window.confirm(INCOMPLETE_DAY_CONFIRM);
+      const confirmed = await confirmIncomplete(dayLabel);
       if (confirmed) onFinishIncomplete?.(activeDay);
       return;
     }
@@ -232,8 +233,23 @@ export function ChallengeDaySheet({
     ? getYoutubeWatchUrl(selectedExercise.videoUrl)
     : null;
 
-  async function toggleCompleted(ejercicioId: string) {
+  async function saveExerciseCompletion(
+    ejercicioIds: string[],
+    diaCompletado: boolean,
+  ) {
     if (!day?.numeroSemana || !day.nombreDia) return;
+    await upsertProgreso({
+      rutinaId,
+      dateKey: day.dateKey,
+      numeroSemana: day.numeroSemana,
+      nombreDia: day.nombreDia,
+      ejerciciosCompletados: ejercicioIds,
+      diaCompletado,
+    });
+  }
+
+  async function toggleCompleted(ejercicioId: string) {
+    if (!day?.numeroSemana || !day.nombreDia || readOnlyPreview) return;
 
     const current = [
       ...(getDayProgreso(day.dateKey, day.numeroSemana, day.nombreDia)
@@ -243,16 +259,25 @@ export function ChallengeDaySheet({
       ? current.filter((id) => id !== ejercicioId)
       : [...current, ejercicioId];
 
-    await upsertProgreso({
-      rutinaId,
-      dateKey: day.dateKey,
-      numeroSemana: day.numeroSemana,
-      nombreDia: day.nombreDia,
-      ejerciciosCompletados: next,
-      diaCompletado:
-        getDayProgreso(day.dateKey, day.numeroSemana, day.nombreDia)?.diaCompletado ??
+    await saveExerciseCompletion(
+      next,
+      getDayProgreso(day.dateKey, day.numeroSemana, day.nombreDia)?.diaCompletado ??
         false,
-    });
+    );
+  }
+
+  async function markCompleted(ejercicioId: string) {
+    if (!day?.numeroSemana || !day.nombreDia || readOnlyPreview) return;
+    const current = [
+      ...(getDayProgreso(day.dateKey, day.numeroSemana, day.nombreDia)
+        ?.ejerciciosCompletados ?? []),
+    ];
+    if (current.includes(ejercicioId)) return;
+    await saveExerciseCompletion(
+      [...current, ejercicioId],
+      getDayProgreso(day.dateKey, day.numeroSemana, day.nombreDia)?.diaCompletado ??
+        false,
+    );
   }
 
   const exerciseVideoOverlay =
@@ -369,12 +394,19 @@ export function ChallengeDaySheet({
               </div>
             ) : null}
 
+            {readOnlyPreview ? (
+              <p className="challenge-sheet__preview-note">
+                Vista previa. Este día todavía no está disponible para entrenar.
+              </p>
+            ) : null}
+
             {day.ejercicios.length > 0 ? (
               <ul className="challenge-sheet__exercises">
                 {day.ejercicios.map((ejercicio, index) => {
                   const isCompleted = completedIds.has(ejercicio.id);
                   const embedUrl = getYoutubeEmbedUrl(ejercicio.videoUrl);
                   const exerciseKey = `${ejercicio.id}-${index}`;
+                  const registraCheck = ejercicio.registro === "check";
 
                   return (
                     <li
@@ -382,19 +414,22 @@ export function ChallengeDaySheet({
                       key={exerciseKey}
                     >
                       <div className="challenge-sheet__exercise-row">
-                        <button
-                          className="challenge-sheet__check"
-                          type="button"
-                          aria-pressed={isCompleted}
-                          aria-label={
-                            isCompleted
-                              ? `Marcar ${ejercicio.nombre} como pendiente`
-                              : `Marcar ${ejercicio.nombre} como cumplido`
-                          }
-                          onClick={() => void toggleCompleted(ejercicio.id)}
-                        >
-                          {isCompleted ? "✓" : ""}
-                        </button>
+                        {registraCheck ? (
+                          <button
+                            className="challenge-sheet__check"
+                            type="button"
+                            aria-pressed={isCompleted}
+                            disabled={readOnlyPreview}
+                            aria-label={
+                              isCompleted
+                                ? `Marcar ${ejercicio.nombre} como pendiente`
+                                : `Marcar ${ejercicio.nombre} como cumplido`
+                            }
+                            onClick={() => void toggleCompleted(ejercicio.id)}
+                          >
+                            {isCompleted ? "✓" : ""}
+                          </button>
+                        ) : null}
                         <div className="challenge-sheet__exercise-copy">
                           <strong>{ejercicio.nombre}</strong>
                           <span>
@@ -404,6 +439,7 @@ export function ChallengeDaySheet({
                               ejercicio.repeticiones,
                               ejercicio.repeticionesPorSerie,
                               "x",
+                              ejercicio.unidad,
                             )}
                           </span>
                         </div>
@@ -433,7 +469,10 @@ export function ChallengeDaySheet({
                         </div>
                       </div>
 
-                      {canLogWeights && day.numeroSemana && day.nombreDia ? (
+                      {canLogWeights &&
+                      !registraCheck &&
+                      day.numeroSemana &&
+                      day.nombreDia ? (
                         <ExerciseWeightLog
                           ejercicio={ejercicio}
                           rutinaId={rutinaId}
@@ -443,7 +482,10 @@ export function ChallengeDaySheet({
                           historicoPesos={historicoByEjercicioId[ejercicio.id]}
                           saveStatus={getStatus(ejercicio.id)}
                           variant="sheet"
-                          onPesosChange={scheduleSave}
+                          onPesosChange={(payload) => {
+                            scheduleSave(payload);
+                            void markCompleted(payload.ejercicioId);
+                          }}
                         />
                       ) : null}
                     </li>

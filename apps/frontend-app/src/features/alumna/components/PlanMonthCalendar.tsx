@@ -90,10 +90,11 @@ function chipVariant(state: ChallengeDayState): "completed" | "missed" | "open" 
   return "open";
 }
 
-function stateLabel(state: ChallengeDayState): string {
-  if (state === "completed") return "completo";
-  if (state === "missed") return "no hecho";
-  if (state === "locked") return "más adelante";
+function stateLabel(day: { state: ChallengeDayState; preview?: boolean }): string {
+  if (day.preview && day.state === "locked") return "vista previa";
+  if (day.state === "completed") return "completo";
+  if (day.state === "missed") return "no hecho";
+  if (day.state === "locked") return "más adelante";
   return "pendiente";
 }
 
@@ -170,7 +171,7 @@ export function PlanMonthCalendar({ days, onSelectDay }: PlanMonthCalendarProps)
             );
           }
 
-          const locked = planDay.state === "locked";
+          const locked = planDay.state === "locked" && planDay.preview !== true;
           const variant = chipVariant(planDay.state);
 
           return (
@@ -180,7 +181,7 @@ export function PlanMonthCalendar({ days, onSelectDay }: PlanMonthCalendarProps)
               className={className}
               disabled={locked}
               onClick={() => onSelectDay(planDay)}
-              aria-label={`${cell.dayNumber} de ${monthLabel}, ${planDay.title}, ${stateLabel(planDay.state)}${
+              aria-label={`${cell.dayNumber} de ${monthLabel}, ${planDay.title}, ${stateLabel(planDay)}${
                 isToday ? ", hoy" : ""
               }`}
             >

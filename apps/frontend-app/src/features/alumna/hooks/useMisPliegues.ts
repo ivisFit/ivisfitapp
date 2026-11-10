@@ -33,7 +33,9 @@ export function useMisPliegues() {
         .map(mapMedicionFromApi)
         .filter(
           (medicion) =>
-            medicion.metodoCalculo === "jp3" || medicion.metodoCalculo === "jp7",
+            medicion.metodoCalculo === "jp3" ||
+            medicion.metodoCalculo === "jp7" ||
+            medicion.metodoCalculo === "fotos",
         )
         .sort((a, b) => a.fecha.getTime() - b.fecha.getTime());
       setMediciones(mapped);

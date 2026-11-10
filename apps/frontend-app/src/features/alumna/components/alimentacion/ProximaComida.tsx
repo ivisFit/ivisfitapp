@@ -1,26 +1,26 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { CheckCircle2, ChefHat, Clock3, Flame, Play, StickyNote } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Check, Clock, Lock } from "lucide-react";
+import { CheckinAlimentacionCard } from "@/features/alumna/components/alimentacion/CheckinAlimentacionCard";
 import {
-  ComidaCard,
-  type ComidaCardEstado,
-} from "@/features/alumna/components/alimentacion/ComidaCard";
+  ComidaLeaders,
+  ComidaNotas,
+} from "@/features/alumna/components/alimentacion/ComidaLeaders";
 import type {
   ComidaPlan,
   DiaPlanNutricional,
+  MacrosObjetivo,
 } from "@/features/alumna/types/plan-nutricional";
-import { alumnaRoutes } from "@/routes/paths";
 
 const UNLOCK_MINUTES_BEFORE = 15;
 
 function parseHora(horario?: string): number | null {
-  const m = horario?.match(/(\d{1,2})\s*[:.h]\s*(\d{2})?/i);
-  if (!m) return null;
-  const h = Number(m[1]);
-  const min = Number(m[2] ?? 0);
-  return h < 24 && min < 60 ? h * 60 + min : null;
+  const match = horario?.match(/(\d{1,2})\s*[:.h]\s*(\d{2})?/i);
+  if (!match) return null;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2] ?? 0);
+  return hours < 24 && minutes < 60 ? hours * 60 + minutes : null;
 }
 
 function minutosDelDia(now: Date) {
@@ -33,350 +33,383 @@ function isComidaDesbloqueada(comida: ComidaPlan, now: Date) {
   return minutosDelDia(now) >= target - UNLOCK_MINUTES_BEFORE;
 }
 
-function minutosHastaDesbloqueo(comida: ComidaPlan, now: Date) {
-  const target = parseHora(comida.horario);
-  if (target === null) return 0;
-  return Math.max(0, target - UNLOCK_MINUTES_BEFORE - minutosDelDia(now));
-}
-
 function horaDesbloqueo(horario?: string) {
   const target = parseHora(horario);
   if (target === null) return null;
-  const unlock = target - UNLOCK_MINUTES_BEFORE;
-  const h = Math.floor(unlock / 60);
-  const m = unlock % 60;
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-}
-
-function etiquetaEspera(comida: ComidaPlan, now: Date) {
-  const wait = minutosHastaDesbloqueo(comida, now);
-  if (wait <= 0) return null;
-  if (wait < 60) return `Disponible en ${wait} min`;
-  const h = Math.floor(wait / 60);
-  const m = wait % 60;
-  return `Disponible en ${h} h${m ? ` ${m} min` : ""}`;
+  const unlock = Math.max(0, target - UNLOCK_MINUTES_BEFORE);
+  const hours = Math.floor(unlock / 60);
+  const minutes = unlock % 60;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
 }
 
 function relativo(target: number | null, now: Date): string | null {
   if (target === null) return null;
-  const diff = target - (now.getHours() * 60 + now.getMinutes());
-  if (diff <= -30) return "Ya pasó tu horario";
-  if (diff <= 0) return "¡Es ahora!";
+  const diff = target - minutosDelDia(now);
+  if (diff <= -30) return "Ya pasó el horario";
+  if (diff <= 0) return "Es ahora";
   if (diff < 60) return `En ${diff} min`;
-  const h = Math.floor(diff / 60);
-  const m = diff % 60;
-  return `En ${h} h${m ? ` ${m} min` : ""}`;
+  const hours = Math.floor(diff / 60);
+  const minutes = diff % 60;
+  return `En ${hours} h${minutes ? ` ${minutes} min` : ""}`;
 }
 
-function estadoComida(
-  index: number,
-  done: number[],
-  pendienteIndex: number,
-): ComidaCardEstado {
-  if (done.includes(index)) return "hecha";
-  if (index === pendienteIndex) return "ahora";
-  return "mas-tarde";
+function kcalDelDia(dia: DiaPlanNutricional) {
+  const total = dia.comidas.reduce(
+    (sum, comida) => sum + (comida.macrosComida?.kcal ?? 0),
+    0,
+  );
+  return total > 0 ? total : null;
 }
 
-function ComidasDelDia({
-  dia,
-  done,
-  pendienteIndex,
-}: {
-  dia: DiaPlanNutricional;
-  done: number[];
-  pendienteIndex: number;
-}) {
+function normalizeDone(value: unknown, total: number) {
+  if (!Array.isArray(value)) return [];
+  const indexes = new Set<number>();
+  for (const item of value) {
+    if (typeof item === "number" && item >= 0 && item < total) indexes.add(item);
+  }
+  return [...indexes].sort((a, b) => a - b);
+}
+
+function estadoLabel(done: boolean, current: boolean) {
+  if (done) return "Hecha";
+  if (current) return "Ahora";
+  return "Más tarde";
+}
+
+function MenuRing({ done, total }: { done: number; total: number }) {
+  const radius = 20;
+  const circumference = 2 * Math.PI * radius;
+  const progress = total > 0 ? done / total : 0;
+
   return (
-    <section className="comidas-del-dia" aria-labelledby="comidas-del-dia-title">
-      <div className="alimentacion-section-heading">
-        <h2 id="comidas-del-dia-title">Comidas de hoy</h2>
-        <p>Podés ver todo el día antes de empezar cada comida.</p>
-      </div>
-      <div className="alimentacion-plan__comidas">
-        {dia.comidas.map((comida, index) => (
-          <ComidaCard
-            key={`${comida.nombre}-${index}`}
-            comida={comida}
-            estado={estadoComida(index, done, pendienteIndex)}
-          />
-        ))}
-      </div>
-    </section>
+    <div className="comida-ring" aria-hidden>
+      <svg viewBox="0 0 56 56">
+        <circle className="comida-ring__track" cx="28" cy="28" r={radius} />
+        <circle
+          className={`comida-ring__value${done > 0 ? " is-started" : ""}`}
+          cx="28"
+          cy="28"
+          r={radius}
+          strokeDasharray={`${(circumference * progress).toFixed(2)} ${circumference.toFixed(2)}`}
+          transform="rotate(-90 28 28)"
+        />
+      </svg>
+      <strong>
+        {done}<span>/{total}</span>
+      </strong>
+    </div>
   );
 }
 
-function ComidaDetalle({ comida }: { comida: ComidaPlan }) {
+function PlatoMacros({ macros }: { macros: MacrosObjetivo }) {
+  const items = [
+    { key: "p", label: "Proteína", value: macros.proteinaG, kcal: macros.proteinaG * 4 },
+    { key: "c", label: "Carbos", value: macros.carbohidratosG, kcal: macros.carbohidratosG * 4 },
+    { key: "g", label: "Grasas", value: macros.grasasG, kcal: macros.grasasG * 9 },
+  ];
+  const totalKcal = items.reduce((sum, item) => sum + item.kcal, 0) || 1;
+
   return (
-    <div className="proxima-comida__detail">
-      <ul>
-        {comida.ingredientes.map((ing, i) => (
-          <li key={`${ing.nombre}-${i}`}>
-            <span>{ing.nombre}</span>
-            <strong>
-              {ing.cantidad}
-              {ing.unidad}
-            </strong>
-          </li>
-        ))}
-      </ul>
-      {comida.preparacion ? (
-        <p>
-          <ChefHat size={15} aria-hidden />
-          <span>{comida.preparacion}</span>
-        </p>
-      ) : null}
-      {comida.notas ? (
-        <p>
-          <StickyNote size={15} aria-hidden />
-          <span>{comida.notas}</span>
-        </p>
-      ) : null}
-    </div>
+    <ul className="comida-plato__macros" aria-label="Macros de esta comida">
+      {items.map((item) => (
+        <li key={item.key} className={`is-${item.key}`}>
+          <span>{item.label}</span>
+          <strong>
+            {Math.round(item.value * 10) / 10}
+            <small> g</small>
+          </strong>
+          <i aria-hidden>
+            <b style={{ width: `${Math.round((item.kcal / totalKcal) * 100)}%` }} />
+          </i>
+        </li>
+      ))}
+    </ul>
   );
 }
 
 export function ProximaComida({
   dia,
   storageKey,
+  preview = false,
 }: {
   dia: DiaPlanNutricional;
   storageKey: string;
+  preview?: boolean;
 }) {
   const [done, setDone] = useState<number[]>([]);
-  const [started, setStarted] = useState(false);
-  const [viewingIndex, setViewingIndex] = useState<number | null>(null);
+  const [selection, setSelection] = useState<number | null>(null);
   const [now, setNow] = useState(() => new Date());
+  const itemRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const pickedByUser = useRef(false);
+  const total = dia.comidas.length;
 
   useEffect(() => {
+    pickedByUser.current = false;
+    setSelection(null);
+    if (preview) {
+      setDone([]);
+      return;
+    }
     try {
-      setDone(JSON.parse(localStorage.getItem(storageKey) ?? "[]"));
+      setDone(normalizeDone(JSON.parse(localStorage.getItem(storageKey) ?? "[]"), total));
     } catch {
       setDone([]);
     }
-    setStarted(false);
-    setViewingIndex(null);
-  }, [storageKey]);
+  }, [preview, storageKey, total]);
 
   useEffect(() => {
     const tick = () => setNow(new Date());
-    const id = setInterval(tick, 30000);
-    return () => clearInterval(id);
+    const id = window.setInterval(tick, 30000);
+    return () => window.clearInterval(id);
   }, []);
 
-  const total = dia.comidas.length;
-  const pendienteIndex = dia.comidas.findIndex((_, i) => !done.includes(i));
-  const pendiente = pendienteIndex >= 0 ? dia.comidas[pendienteIndex] : null;
-  const desbloqueada =
-    pendiente !== null && isComidaDesbloqueada(pendiente, now);
-  const modoRevision =
-    viewingIndex !== null && done.includes(viewingIndex);
-  const comida = modoRevision
-    ? dia.comidas[viewingIndex!]
-    : pendienteIndex >= 0
-      ? dia.comidas[pendienteIndex]
+  const pendienteIndex = dia.comidas.findIndex((_, index) => !done.includes(index));
+  const allDone = total > 0 && pendienteIndex < 0;
+  const selectedIndex = selection ?? (allDone ? null : pendienteIndex);
+  const comida = selectedIndex !== null ? dia.comidas[selectedIndex] : null;
+  const isDone = selectedIndex !== null && done.includes(selectedIndex);
+  const isCurrent = selectedIndex === pendienteIndex && !allDone;
+  const isLater = Boolean(comida) && !isDone && !isCurrent && !preview;
+  const locked =
+    !preview &&
+    isCurrent &&
+    comida !== null &&
+    !isComidaDesbloqueada(comida, now);
+  const unlockLabel = locked ? horaDesbloqueo(comida?.horario) : null;
+  const rel =
+    comida && !locked && !isLater
+      ? relativo(parseHora(comida.horario), now)
       : null;
-  const modoBloqueado = !modoRevision && pendiente !== null && !desbloqueada;
+  const diaKcal = kcalDelDia(dia);
+
+  useEffect(() => {
+    if (!pickedByUser.current || selectedIndex === null) return;
+    itemRefs.current[selectedIndex]?.scrollIntoView({
+      behavior: "smooth",
+      inline: "center",
+      block: "nearest",
+    });
+  }, [selectedIndex]);
 
   const finish = () => {
-    if (pendienteIndex < 0 || modoRevision || modoBloqueado) return;
-    const next = [...done, pendienteIndex];
+    if (!isCurrent || locked || pendienteIndex < 0) return;
+    const next = normalizeDone([...done, pendienteIndex], total);
     setDone(next);
-    setStarted(false);
+    setSelection(null);
+    pickedByUser.current = false;
+    if (preview) return;
     try {
       localStorage.setItem(storageKey, JSON.stringify(next));
-    } catch {}
+    } catch {
+      /* el avance de hoy queda en esta sesión */
+    }
+  };
+
+  const pick = (index: number) => {
+    pickedByUser.current = true;
+    setSelection(index);
   };
 
   if (total === 0) return null;
 
-  const quickLinks = (
-    <nav className="proxima-comida__links" aria-label="Accesos rápidos">
-      <Link href={alumnaRoutes.alimentacionCompras} className="proxima-comida__link">
-        Ver lista de compras
-      </Link>
-      <Link href={alumnaRoutes.alimentacionObjetivo} className="proxima-comida__link">
-        Ver Objetivo
-      </Link>
-    </nav>
+  const kcalHechas = done.reduce(
+    (sum, index) => sum + (dia.comidas[index]?.macrosComida?.kcal ?? 0),
+    0,
   );
+  const progreso = diaKcal ? Math.min(100, Math.round((kcalHechas / diaKcal) * 100)) : 0;
+  const badge = isDone
+    ? { label: "Hecha", tone: "done" }
+    : locked
+      ? { label: "Próxima", tone: "locked" }
+      : isCurrent
+        ? { label: "Ahora", tone: "now" }
+        : isLater
+          ? { label: "Más tarde", tone: "later" }
+          : null;
 
-  const preview = (
-    <ComidasDelDia dia={dia} done={done} pendienteIndex={pendienteIndex} />
-  );
-
-  if (!comida) {
-    return (
-      <>
-        <section className="proxima-comida proxima-comida--done" aria-live="polite">
-          <div className="proxima-comida__body">
-            <CheckCircle2 size={40} aria-hidden />
-            <h2>¡Completaste tu día!</h2>
-            <p>Cumpliste las {total} comidas de hoy. Mañana seguimos.</p>
-            {done.length > 0 ? (
-              <ul className="proxima-comida__hechas" aria-label="Comidas completadas hoy">
-                {done.map((i) => (
-                  <li key={i}>
-                    <button
-                      type="button"
-                      className="proxima-comida__hecha"
-                      onClick={() => setViewingIndex(i)}
-                    >
-                      <CheckCircle2 size={16} aria-hidden />
-                      {dia.comidas[i]?.nombre}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-          </div>
-          <div className="proxima-comida__actions">{quickLinks}</div>
-        </section>
-        {preview}
-      </>
-    );
+  const volver = () => {
+    pickedByUser.current = false;
+    setSelection(null);
+  };
+  let cta: { label: string; disabled?: boolean; ghost?: boolean; onClick: () => void } | null =
+    null;
+  if (!allDone && selection !== null && selection !== pendienteIndex) {
+    cta = { label: "Volver a ahora", ghost: true, onClick: volver };
+  } else if (allDone && selection !== null) {
+    cta = { label: "Volver a hoy", ghost: true, onClick: volver };
+  } else if (isCurrent && comida) {
+    cta = {
+      label: `Terminé ${comida.nombre}`,
+      disabled: locked,
+      onClick: finish,
+    };
   }
 
-  const rel = relativo(parseHora(comida.horario), now);
-  const nombre = comida.nombre;
-  const espera = modoBloqueado ? etiquetaEspera(comida, now) : null;
-  const unlockLabel = modoBloqueado ? horaDesbloqueo(comida.horario) : null;
-
   return (
-    <>
-      <section
-        className={`proxima-comida${modoBloqueado ? " proxima-comida--locked" : ""}`}
-        aria-labelledby="proxima-comida-title"
-      >
-      <div className="proxima-comida__body">
-        <div className="proxima-comida__steps" aria-label={`${done.length} de ${total} comidas`}>
-          {dia.comidas.map((c, i) => {
-            let stepClass = "";
-            if (done.includes(i)) stepClass = "is-done";
-            else if (i === pendienteIndex && desbloqueada) stepClass = "is-current";
-            else if (i === pendienteIndex) stepClass = "is-locked";
-            return (
-              <button
-                key={`${c.nombre}-${i}`}
-                type="button"
-                className={stepClass || undefined}
-                disabled={!done.includes(i)}
-                aria-label={
-                  done.includes(i)
-                    ? `Ver ${c.nombre}, completada`
-                    : i === pendienteIndex && !desbloqueada
-                      ? `${c.nombre}, bloqueada`
-                      : c.nombre
-                }
-                onClick={() => {
-                  if (done.includes(i)) {
-                    setViewingIndex(i);
-                    setStarted(false);
-                  }
-                }}
-              />
-            );
-          })}
-        </div>
-
-        {done.length > 0 ? (
-          <ul className="proxima-comida__hechas" aria-label="Comidas completadas hoy">
-            {done.map((i) => (
-              <li key={i}>
-                <button
-                  type="button"
-                  className={`proxima-comida__hecha${viewingIndex === i ? " is-active" : ""}`}
-                  onClick={() => {
-                    setViewingIndex(i);
-                    setStarted(false);
-                  }}
-                >
-                  <CheckCircle2 size={16} aria-hidden />
-                  {dia.comidas[i]?.nombre}
-                </button>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-
-        <span className="proxima-comida__eyebrow">
-          {modoRevision
-            ? "Comida completada"
-            : modoBloqueado
-              ? "Próxima comida (bloqueada)"
-              : done.length === 0
-                ? "Tu primera comida de hoy"
-                : "Tu próxima comida"}
-        </span>
-        <h2 id="proxima-comida-title">{nombre}</h2>
-
-        <div className="proxima-comida__meta">
-          {comida.horario ? (
-            <span>
-              <Clock3 size={15} aria-hidden />
-              {comida.horario}
-            </span>
-          ) : null}
-          {modoBloqueado && unlockLabel ? (
-            <span className="proxima-comida__rel">Se desbloquea a las {unlockLabel}</span>
-          ) : null}
-          {!modoBloqueado && rel ? <span className="proxima-comida__rel">{rel}</span> : null}
-          {modoBloqueado && espera ? (
-            <span className="proxima-comida__rel">{espera}</span>
-          ) : null}
-          {comida.macrosComida ? (
-            <span>
-              <Flame size={15} aria-hidden />
-              {comida.macrosComida.kcal} kcal
-            </span>
-          ) : null}
-        </div>
-
-        {modoBloqueado ? (
-          <p className="proxima-comida__lock-msg">
-            Podés comenzar {UNLOCK_MINUTES_BEFORE} minutos antes del horario de esta comida.
+    <div className="comida-hoy">
+      <header className="comida-hoy__top">
+        <MenuRing done={done.length} total={total} />
+        <div className="comida-hoy__titles">
+          <p className="comida-kicker">Menú de hoy</p>
+          <h2 className="comida-hoy__dia">{dia.nombre}</h2>
+          <p className="comida-hoy__meta">
+            {allDone ? "Día completo" : `${done.length} de ${total} comidas`}
           </p>
+        </div>
+        {diaKcal ? (
+          <div className="comida-hoy__energy">
+            <p>
+              <strong>{kcalHechas}</strong>
+              <span> / {diaKcal} kcal</span>
+            </p>
+            <div
+              className="comida-hoy__bar"
+              role="progressbar"
+              aria-label="Calorías del día"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={progreso}
+            >
+              <span style={{ width: `${progreso}%` }} />
+            </div>
+          </div>
         ) : null}
+      </header>
 
-        {modoRevision || (started && desbloqueada) ? <ComidaDetalle comida={comida} /> : null}
-      </div>
+      <div className="comida-hoy__body">
 
-      <div className="proxima-comida__actions">
-        {quickLinks}
-        {modoRevision ? (
-          <button
-            type="button"
-            className="proxima-comida__cta"
-            onClick={() => setViewingIndex(null)}
-          >
-            Volver a hoy
-          </button>
-        ) : modoBloqueado ? (
-          <button type="button" className="proxima-comida__cta" disabled>
-            {espera ?? "Todavía no disponible"}
-          </button>
-        ) : (
-          <button
-            type="button"
-            className="proxima-comida__cta"
-            onClick={started ? finish : () => setStarted(true)}
-          >
-            {started ? (
-              <>
-                <CheckCircle2 size={20} aria-hidden />
-                Terminé {nombre}
-              </>
+      <ol className="comida-timeline" aria-label="Comidas del día">
+        {dia.comidas.map((item, index) => {
+          const hecha = done.includes(index);
+          const ahora = index === pendienteIndex && !allDone;
+          const selected = index === selectedIndex;
+          return (
+            <li
+              key={`${item.nombre}-${index}`}
+              className={`comida-timeline__item${hecha ? " is-done" : ""}${
+                ahora ? " is-now" : ""
+              }${selected ? " is-selected" : ""}`}
+            >
+              <button
+                ref={(node) => {
+                  itemRefs.current[index] = node;
+                }}
+                type="button"
+                className="comida-timeline__btn"
+                aria-current={selected ? "true" : undefined}
+                aria-label={`${item.nombre}, ${estadoLabel(hecha, ahora)}`}
+                onClick={() => pick(index)}
+              >
+                <span className="comida-timeline__dot" aria-hidden>
+                  {hecha ? <Check size={13} strokeWidth={3} /> : null}
+                </span>
+                <span className="comida-timeline__text">
+                  <span className="comida-timeline__hora">{item.horario ?? "—"}</span>
+                  <span className="comida-timeline__nombre">{item.nombre}</span>
+                </span>
+                {item.macrosComida ? (
+                  <span className="comida-timeline__kcal">{item.macrosComida.kcal} kcal</span>
+                ) : null}
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+
+      <article
+        key={comida ? `${selectedIndex}-${comida.nombre}` : "dia-completo"}
+        className="comida-plato"
+        aria-live="polite"
+      >
+        {allDone && !comida ? (
+          <>
+            <p className="comida-kicker">Día completo</p>
+            <h1>Listo por hoy</h1>
+            <p className="comida-plato__later">
+              Cumpliste las {total} comidas. Si querés, marcá cómo te fue.
+            </p>
+            {preview ? (
+              <div className="checkin-alimentacion checkin-alimentacion--embedded">
+                <h2 className="checkin-alimentacion__title">
+                  ¿Cómo te fue con la alimentación hoy?
+                </h2>
+                <div className="checkin-alimentacion__chips">
+                  {["Cumplí", "Parcial", "No pude"].map((label) => (
+                    <button
+                      key={label}
+                      type="button"
+                      className="checkin-alimentacion__chip"
+                      disabled
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <CheckinAlimentacionCard embedded />
+            )}
+          </>
+        ) : comida ? (
+          <>
+            <div className="comida-plato__head">
+              <div className="comida-plato__meta">
+                {badge ? (
+                  <span className={`comida-badge comida-badge--${badge.tone}`}>
+                    {badge.tone === "done" ? <Check size={12} strokeWidth={3} /> : null}
+                    {badge.label}
+                  </span>
+                ) : null}
+                {comida.horario || (!isDone && rel) ? (
+                  <span className="comida-plato__time">
+                    <Clock size={13} aria-hidden />
+                    {[comida.horario, !isDone ? rel : null].filter(Boolean).join(" · ")}
+                  </span>
+                ) : null}
+              </div>
+              <h1 id="comida-plato-title">{comida.nombre}</h1>
+              {comida.macrosComida ? (
+                <p className="comida-plato__kcal">
+                  <strong>{comida.macrosComida.kcal}</strong> kcal
+                </p>
+              ) : null}
+            </div>
+            {locked && unlockLabel ? (
+              <p className="comida-plato__status" id="comida-plato-status">
+                <Lock size={14} aria-hidden />
+                Vas a poder marcarla desde las {unlockLabel}
+              </p>
+            ) : null}
+            {isLater ? (
+              <p className="comida-plato__later">
+                <Lock size={14} aria-hidden />
+                El detalle se abre cuando llegue esta comida.
+              </p>
             ) : (
               <>
-                <Play size={20} aria-hidden />
-                Comenzar {nombre}
+                {comida.macrosComida ? <PlatoMacros macros={comida.macrosComida} /> : null}
+                <ComidaLeaders comida={comida} />
+                <ComidaNotas comida={comida} />
               </>
             )}
-          </button>
-        )}
+          </>
+        ) : null}
+
+        {cta ? (
+          <div className="comida-plato__footer">
+            <button
+              type="button"
+              className={`comida-plato__cta${cta.ghost ? " comida-plato__cta--ghost" : ""}`}
+              disabled={cta.disabled}
+              aria-describedby={cta.disabled ? "comida-plato-status" : undefined}
+              onClick={cta.onClick}
+            >
+              {cta.label}
+            </button>
+          </div>
+        ) : null}
+      </article>
       </div>
-      </section>
-      {preview}
-    </>
+    </div>
   );
 }

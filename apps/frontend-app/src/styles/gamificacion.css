@@ -100,10 +100,12 @@
 
 .gamif-widget__summary-xp-fill {
   display: block;
+  width: 100%;
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, var(--color-yellow), var(--color-gold, #fdc915));
-  transition: width 0.45s ease;
+  transform-origin: left center;
+  transition: transform 0.45s ease;
 }
 
 .gamif-widget__summary-xp-text {
@@ -281,10 +283,12 @@
 
 .gamif-widget__xp-bar-fill,
 .gamif-level-card__bar-fill {
+  width: 100%;
   height: 100%;
   border-radius: 999px;
   background: linear-gradient(90deg, var(--color-yellow), var(--color-gold, #fdc915));
-  transition: width 0.5s ease;
+  transform-origin: left center;
+  transition: transform 0.5s ease;
 }
 
 .gamif-widget__stats {
@@ -310,8 +314,31 @@
 }
 
 .gamif-widget__badge {
+  padding: 0;
+  font: inherit;
   font-size: 1.25rem;
   line-height: 1;
+  background: none;
+  border: 0;
+  border-radius: 0.4rem;
+  cursor: pointer;
+}
+
+.gamif-widget__badge.is-active {
+  outline: 2px solid var(--color-yellow);
+  outline-offset: 2px;
+}
+
+.gamif-widget__badge-caption {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--color-text-muted);
+}
+
+.gamif-widget__badge-caption strong {
+  color: var(--color-text);
+  font-weight: 650;
 }
 
 .gamif-widget__badge-more {
@@ -502,13 +529,9 @@
   -webkit-backdrop-filter: none;
 }
 
-.gamif-level-card__bar-fill {
-  transition: width 0.5s ease;
-}
-
 /* Brillo al completar la barra de XP */
-.gamif-level-card__bar-fill[style*="100%"],
-.gamif-widget__xp-bar-fill[style*="100%"] {
+.gamif-level-card__bar-fill.is-complete,
+.gamif-widget__xp-bar-fill.is-complete {
   box-shadow: var(--glow-amber);
 }
 
@@ -538,10 +561,19 @@
   color: var(--color-text-muted);
 }
 
-.gamif-badge__date {
+.gamif-badge__date,
+.gamif-badge__status {
   margin-top: 0.25rem;
   font-size: 0.75rem;
+}
+
+.gamif-badge__date {
   color: var(--color-gold, #fdc915);
+}
+
+.gamif-badge__status {
+  font-weight: 650;
+  color: var(--color-text-muted);
 }
 
 .gamif-activity {

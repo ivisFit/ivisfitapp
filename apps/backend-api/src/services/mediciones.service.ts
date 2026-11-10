@@ -57,7 +57,7 @@ export const medicionesService = {
   async listPlieguesPropios(alumnaId: string) {
     return Medicion.find({
       alumnaId,
-      metodoCalculo: { $in: ["jp3", "jp7"] },
+      metodoCalculo: { $in: ["jp3", "jp7", "fotos"] },
     })
       .select(
         "alumnaId metodoCalculo fecha metricas pesoCorporalKg fotosProgreso",
@@ -74,12 +74,18 @@ export const medicionesService = {
   },
 
   async getUltimaByAlumna(alumnaId: string) {
-    return Medicion.findOne({ alumnaId }).sort({ fecha: -1 });
+    return Medicion.findOne({
+      alumnaId,
+      metodoCalculo: { $ne: "fotos" },
+    }).sort({ fecha: -1 });
   },
 
   async getComposicionResumen(alumnaId: string) {
     const [medicion, alumna] = await Promise.all([
-      Medicion.findOne({ alumnaId }).sort({ fecha: -1 }),
+      Medicion.findOne({
+        alumnaId,
+        metodoCalculo: { $ne: "fotos" },
+      }).sort({ fecha: -1 }),
       Usuario.findById(alumnaId).select("alturaCm"),
     ]);
 
@@ -122,6 +128,25 @@ export const medicionesService = {
       if (data.metodoCalculo !== "us-navy") {
         throw new AppError(400, "Solo podés registrar mediciones por circunferencias");
       }
+    }
+
+    if (data.metodoCalculo === "fotos") {
+      const fotos = data.fotosProgreso;
+      const hasFoto = Boolean(
+        fotos && Object.values(fotos).some((imagen) => imagen?.url),
+      );
+      if (!hasFoto || !fotos) {
+        throw new AppError(400, "Subí al menos una foto");
+      }
+      assertFotosProgresoPublicIds(fotos);
+      return Medicion.create({
+        alumnaId: data.alumnaId,
+        metodoCalculo: "fotos",
+        fecha: data.fecha ?? new Date(),
+        notas: data.notas,
+        pesoCorporalKg: data.pesoCorporalKg,
+        fotosProgreso: fotos,
+      });
     }
 
     if (!alumna.sexo || (alumna.sexo !== "hombre" && alumna.sexo !== "mujer")) {
@@ -229,10 +254,14 @@ export const medicionesService = {
   async updateFotos(id: string, data: UpdateFotosProgresoInput) {
     const medicion = await this.getById(id);
 
-    if (medicion.metodoCalculo !== "jp3" && medicion.metodoCalculo !== "jp7") {
+    if (
+      medicion.metodoCalculo !== "jp3" &&
+      medicion.metodoCalculo !== "jp7" &&
+      medicion.metodoCalculo !== "fotos"
+    ) {
       throw new AppError(
         400,
-        "Solo se pueden adjuntar fotos a mediciones de pliegues",
+        "Solo se pueden adjuntar fotos a mediciones de pliegues o a una carga de fotos",
       );
     }
 

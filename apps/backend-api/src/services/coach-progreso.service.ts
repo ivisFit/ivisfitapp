@@ -179,7 +179,12 @@ async function detectarSenalesRutina(alumnaId: string): Promise<Senal[]> {
 }
 
 async function detectarSenalesMedicion(alumnaId: string): Promise<Senal[]> {
-  const mediciones = await Medicion.find({ alumnaId }).sort({ fecha: -1 }).limit(6);
+  const mediciones = await Medicion.find({
+    alumnaId,
+    metodoCalculo: { $ne: "fotos" },
+  })
+    .sort({ fecha: -1 })
+    .limit(6);
   const senales: Senal[] = [];
 
   const pesos = mediciones.filter((m) => typeof m.pesoCorporalKg === "number");

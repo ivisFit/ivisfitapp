@@ -3,6 +3,7 @@ import path from "node:path";
 import withBundleAnalyzer from "@next/bundle-analyzer";
 import withPWA from "@ducanh2912/next-pwa";
 import { shouldPrecacheManifestUrl } from "./lib/pwa-precache-filter";
+import { pwaRuntimeCaching } from "./lib/pwa-runtime-cache";
 import { PERMISSIONS_POLICY } from "./src/lib/permissions-policy";
 
 const cspHeader = `
@@ -29,7 +30,9 @@ const bundleAnalyzer = withBundleAnalyzer({
 const pwaConfig = {
   dest: "public",
   register: true,
-  reloadOnOnline: true,
+  reloadOnOnline: false,
+  dynamicStartUrl: true,
+  dynamicStartUrlRedirect: "/login",
   disable: process.env.NODE_ENV === "development",
   buildExcludes: [/middleware-manifest\.json$/],
   publicExcludes: [
@@ -44,7 +47,11 @@ const pwaConfig = {
   workboxOptions: {
     skipWaiting: false,
     clientsClaim: true,
+    navigationPreload: true,
     maximumFileSizeToCacheInBytes: 2 * 1024 * 1024,
+    // Keep source maps and webpack manifests out of precache, but include
+    // the small local woff2 files. next-pwa drops those fonts by default.
+    exclude: [/\.map$/, /^manifest.*\.js$/],
     manifestTransforms: [
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       async (manifestEntries: any) => {
@@ -55,26 +62,7 @@ const pwaConfig = {
       },
     ],
   },
-  runtimeCaching: [
-    {
-      urlPattern: /^https:\/\/images\.unsplash\.com\/.*/i,
-      handler: "CacheFirst",
-      options: {
-        cacheName: "unsplash-images",
-        expiration: {
-          maxEntries: 50,
-          maxAgeSeconds: 30 * 24 * 60 * 60,
-        },
-      },
-    },
-    {
-      urlPattern: /\/api\/.*$/i,
-      handler: "NetworkOnly",
-      options: {
-        cacheName: "api-cache",
-      },
-    },
-  ],
+  runtimeCaching: pwaRuntimeCaching,
 };
 
 const nextConfig: NextConfig = {

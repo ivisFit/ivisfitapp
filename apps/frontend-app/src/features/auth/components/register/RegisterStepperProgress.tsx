@@ -6,6 +6,7 @@ import {
   getRegisterStepConfig,
   type RegisterStep,
 } from "@/features/auth/lib/register-form";
+import { progressTransform } from "@/lib/progress-scale";
 
 type RegisterStepperProgressProps = {
   currentStep: RegisterStep;
@@ -29,7 +30,7 @@ export function RegisterStepperProgress({
       <div className="register-stepper__progress-track" aria-hidden="true">
         <i
           className="register-stepper__progress-fill"
-          style={{ width: `${percent}%` }}
+          style={progressTransform(percent)}
         />
       </div>
       <div className="register-stepper__dots" aria-hidden="true">

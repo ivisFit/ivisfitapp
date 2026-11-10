@@ -95,7 +95,9 @@ export function filterMedicionesByMetodo(
   metodo: MetodoCalculo,
 ) {
   return mediciones.filter(
-    (medicion) => resolveMetodoCalculo(medicion.metodoCalculo) === metodo,
+    (medicion) =>
+      medicion.metodoCalculo !== "fotos" &&
+      resolveMetodoCalculo(medicion.metodoCalculo) === metodo,
   );
 }
 

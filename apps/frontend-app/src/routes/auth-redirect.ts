@@ -81,7 +81,7 @@ function isBlockedAlumnaReturn(path: string, user: AuthUser): boolean {
   if (modo === "alimentacion") {
     return (
       matchesRoutePrefix(path, alumnaRoutes.rutina) ||
-      matchesRoutePrefix(path, alumnaRoutes.progreso)
+      matchesRoutePrefix(path, alumnaRoutes.biblioteca)
     );
   }
   if (modo === "rutina") {

@@ -5,6 +5,7 @@ import {
   getQuestionProgress,
   type WizardQuestionConfig,
 } from "@/features/alumna/lib/nutricion-wizard";
+import { progressTransform } from "@/lib/progress-scale";
 
 type NutricionWizardProgressProps = {
   questionIndex: number;
@@ -43,7 +44,7 @@ export function NutricionWizardProgress({
       <div className="nutricion-wizard__progress-track" aria-hidden="true">
         <i
           className="nutricion-wizard__progress-fill"
-          style={{ width: `${percent}%` }}
+          style={progressTransform(percent)}
         />
       </div>
       <div className="nutricion-wizard__stepper-dots" aria-hidden="true">

@@ -1,82 +1,63 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Input } from "@/components/Input";
 import { YoutubePlayer } from "@/components/YoutubePlayer";
 import { IvisContentLoader } from "@/components/IvisContentLoader";
-import { apiFetch } from "@/lib/api";
-import { mapDocId, uniqueListKey } from "@/lib/map-doc-id";
+import { useAuth } from "@/context/AuthContext";
+import { WaitingStateActions } from "@/features/alumna/components/WaitingStateActions";
+import { useRutinaActiva } from "@/features/alumna/hooks/useRutinaActiva";
+import { getFlatRoutineDays } from "@/features/alumna/lib/rutina-day";
+import type { RutinaDetail } from "@/features/alumna/types/rutina";
 
-type EjercicioApiDoc = {
-  _id?: unknown;
-  id?: unknown;
-  nombre: string;
-  videoUrl: string;
-  descripcion?: string;
-};
-
-type Ejercicio = {
+type EjercicioPlan = {
   id: string;
   nombre: string;
   videoUrl: string;
-  descripcion?: string;
+  descripcion: string;
 };
 
-function mapEjercicioFromApi(doc: EjercicioApiDoc): Ejercicio | null {
-  const id = mapDocId(doc);
-  if (!id) return null;
-  return {
-    id,
-    nombre: doc.nombre,
-    videoUrl: doc.videoUrl,
-    descripcion: doc.descripcion ?? "",
-  };
+function ejerciciosDelPlan(rutina: RutinaDetail): EjercicioPlan[] {
+  const seen = new Set<string>();
+  const items: EjercicioPlan[] = [];
+
+  for (const { dia } of getFlatRoutineDays(rutina)) {
+    dia.ejercicios.forEach((ejercicio, index) => {
+      const id = ejercicio.id || `${ejercicio.nombre}-${index}`;
+      const key = ejercicio.id || ejercicio.nombre.trim().toLowerCase();
+      if (!key || seen.has(key)) return;
+      seen.add(key);
+      items.push({
+        id,
+        nombre: ejercicio.nombre,
+        videoUrl: ejercicio.videoUrl?.trim() ?? "",
+        descripcion: ejercicio.descripcion?.trim() ?? "",
+      });
+    });
+  }
+
+  return items;
 }
 
 export function BibliotecaPage() {
-  const [ejercicios, setEjercicios] = useState<Ejercicio[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
+  const { rutina, loading, error, refetch } = useRutinaActiva(user?.id);
   const [busqueda, setBusqueda] = useState("");
-
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      try {
-        const data = await apiFetch<EjercicioApiDoc[]>("/api/ejercicios");
-        if (!cancelled) {
-          setEjercicios(
-            (Array.isArray(data) ? data : [])
-              .map(mapEjercicioFromApi)
-              .filter((item): item is Ejercicio => item !== null),
-          );
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(
-            err instanceof Error ? err.message : "No se pudo cargar la biblioteca",
-          );
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
+  const [abiertoId, setAbiertoId] = useState<string | null>(null);
+  const ejercicios = useMemo(
+    () => (rutina ? ejerciciosDelPlan(rutina) : []),
+    [rutina],
+  );
+  const consulta = busqueda.trim();
   const filtrados = useMemo(() => {
-    const q = busqueda.trim().toLowerCase();
+    const q = consulta.toLowerCase();
     if (!q) return ejercicios;
     return ejercicios.filter(
-      (e) =>
-        e.nombre.toLowerCase().includes(q) ||
-        (e.descripcion ?? "").toLowerCase().includes(q),
+      (ejercicio) =>
+        ejercicio.nombre.toLowerCase().includes(q) ||
+        ejercicio.descripcion.toLowerCase().includes(q),
     );
-  }, [busqueda, ejercicios]);
-  const filtradoIds = filtrados.map((item) => item.id);
+  }, [consulta, ejercicios]);
 
   return (
     <div className="page biblioteca-page">
@@ -84,47 +65,96 @@ export function BibliotecaPage() {
         <div className="pliegues-hero__copy">
           <span className="pliegues-hero__eyebrow">Videos</span>
           <h1>Biblioteca</h1>
-          <p>Repasá la técnica de los ejercicios del catálogo.</p>
+          <p>Repasá la técnica de los ejercicios de tu plan.</p>
         </div>
       </section>
 
-      <div className="biblioteca-page__search-wrap">
-        <Input
-          label="Buscar ejercicio"
-          name="busquedaBiblioteca"
-          placeholder="Nombre del ejercicio..."
-          value={busqueda}
-          onChange={(event) => setBusqueda(event.target.value)}
-        />
-      </div>
-
       {loading ? (
-        <IvisContentLoader variant="section" label="Cargando biblioteca" />
-      ) : null}
-      {error ? <p className="auth-error">{error}</p> : null}
-      {!loading && filtrados.length === 0 ? (
-        <p className="alumnas-panel__status">No hay ejercicios para mostrar.</p>
+        <IvisContentLoader variant="section" label="Cargando tu plan" />
       ) : null}
 
-      <ul className="ejercicios-list">
-        {filtrados.map((ejercicio, index) => {
+      {!loading && error ? (
+        <div className="biblioteca-page__empty" role="alert">
+          <p>{error}</p>
+          <button type="button" className="btn btn--ghost" onClick={refetch}>
+            Reintentar
+          </button>
+        </div>
+      ) : null}
+
+      {!loading && !error && !rutina ? (
+        <div className="waiting-state">
+          <p className="waiting-state__title">
+            Tu biblioteca aparece con tu rutina
+          </p>
+          <p className="waiting-state__text">
+            Cuando tu coach te asigne el plan, vas a ver acá solo los ejercicios
+            que te tocan, con su video de técnica.
+          </p>
+          <WaitingStateActions
+            nombre={user?.name}
+            whatsappTema="consulto por los videos de mi rutina"
+          />
+        </div>
+      ) : null}
+
+      {!loading && !error && rutina && ejercicios.length > 0 ? (
+        <div className="biblioteca-page__search-wrap">
+          <Input
+            label="Buscar en tu plan"
+            name="busquedaBiblioteca"
+            placeholder="Nombre del ejercicio..."
+            value={busqueda}
+            onChange={(event) => setBusqueda(event.target.value)}
+          />
+        </div>
+      ) : null}
+
+      {!loading && !error && rutina && ejercicios.length === 0 ? (
+        <p className="biblioteca-page__empty">
+          Tu plan todavía no tiene ejercicios para repasar.
+        </p>
+      ) : null}
+
+      {!loading && !error && ejercicios.length > 0 && filtrados.length === 0 ? (
+        <p className="biblioteca-page__empty">
+          Ningún ejercicio de tu plan coincide con “{consulta}”.
+        </p>
+      ) : null}
+
+      <ul className="biblioteca-page__list">
+        {filtrados.map((ejercicio) => {
+          const abierto = abiertoId === ejercicio.id;
           return (
-            <li
-              className="ejercicio-item"
-              key={uniqueListKey(ejercicio.id, index, filtradoIds)}
-            >
-              <div className="ejercicio-item__body">
-                <div className="ejercicio-item__content">
-                  <h3>{ejercicio.nombre}</h3>
-                  {ejercicio.descripcion ? <p>{ejercicio.descripcion}</p> : null}
-                </div>
-                {ejercicio.videoUrl.trim() ? (
-                  <YoutubePlayer
-                    videoUrl={ejercicio.videoUrl}
-                    title={ejercicio.nombre}
-                  />
-                ) : null}
+            <li className="biblioteca-page__item" key={ejercicio.id}>
+              <div className="biblioteca-page__item-copy">
+                <h2>{ejercicio.nombre}</h2>
+                {ejercicio.descripcion ? <p>{ejercicio.descripcion}</p> : null}
               </div>
+              {ejercicio.videoUrl ? (
+                <>
+                  <button
+                    type="button"
+                    className="btn btn--ghost"
+                    aria-expanded={abierto}
+                    onClick={() =>
+                      setAbiertoId((current) =>
+                        current === ejercicio.id ? null : ejercicio.id,
+                      )
+                    }
+                  >
+                    {abierto ? "Ocultar técnica" : "Ver técnica"}
+                  </button>
+                  {abierto ? (
+                    <YoutubePlayer
+                      videoUrl={ejercicio.videoUrl}
+                      title={ejercicio.nombre}
+                    />
+                  ) : null}
+                </>
+              ) : (
+                <p className="biblioteca-page__sin-video">Sin video de técnica.</p>
+              )}
             </li>
           );
         })}

@@ -148,6 +148,7 @@ export function ExerciseWeightLog({
             ejercicio.repeticiones,
             ejercicio.repeticionesPorSerie,
             "x",
+            ejercicio.unidad,
           )}
         </span>
         {statusLabel ? (
@@ -171,7 +172,7 @@ export function ExerciseWeightLog({
           return (
             <div className="weight-log__field" key={`serie-${index + 1}`}>
               <span className="weight-log__field-label">
-                Peso de la serie ({index + 1})
+                Serie {index + 1} · kg
               </span>
               <div className="weight-log__input-row">
                 <button
@@ -194,11 +195,11 @@ export function ExerciseWeightLog({
                       autoComplete="off"
                       autoCorrect="off"
                       spellCheck={false}
-                      placeholder=""
-                      style={{ width: getInputWidth(value) }}
+                      placeholder="0"
+                      style={{ width: getInputWidth(value || "0") }}
                       value={value}
                       disabled={disabled}
-                      aria-label={`Peso de la serie ${index + 1}`}
+                      aria-label={`Peso en kilogramos de la serie ${index + 1}`}
                       onChange={(event) => handleChange(index, event.target.value)}
                     />
                     <span className="weight-log__unit" aria-hidden="true">

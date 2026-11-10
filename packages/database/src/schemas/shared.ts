@@ -16,7 +16,7 @@ export const metodoComprobanteSchema = z.enum(["adjunto", "whatsapp"]);
 
 export const sexoSchema = z.enum(["hombre", "mujer"]);
 
-export const metodoCalculoSchema = z.enum(["jp3", "jp7", "us-navy"]);
+export const metodoCalculoSchema = z.enum(["jp3", "jp7", "us-navy", "fotos"]);
 
 export const membresiaEstadoSchema = z.enum([
   "al_dia",
@@ -30,8 +30,14 @@ export type ModoPlan = z.infer<typeof modoPlanSchema>;
 
 export const mensajeAutorRolSchema = z.enum(["profe", "alumna"]);
 
+export const PRESCRIPCION_MAX = 600;
+
+export const unidadEjercicioSchema = z.enum(["repeticiones", "segundos"]);
+
+export const registroEjercicioSchema = z.enum(["peso", "check"]);
+
 export const repeticionesPorSerieSchema = z
-  .array(z.number().int().min(1).max(25))
+  .array(z.number().int().min(1).max(PRESCRIPCION_MAX))
   .min(1)
   .max(8)
   .optional();

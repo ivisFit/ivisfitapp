@@ -1,7 +1,10 @@
 import { z } from "zod";
 import {
+  PRESCRIPCION_MAX,
+  registroEjercicioSchema,
   repeticionesPorSerieMatchesSeries,
   repeticionesPorSerieSchema,
+  unidadEjercicioSchema,
 } from "./shared";
 
 export const mediaAssetSchema = z.object({
@@ -15,8 +18,10 @@ export const ejercicioRutinaBlueprintSchema = z
   .object({
     ejercicioId: z.string().min(1),
     series: z.number().int().min(1).max(8),
-    repeticiones: z.number().int().min(1).max(25),
+    repeticiones: z.number().int().min(1).max(PRESCRIPCION_MAX),
     repeticionesPorSerie: repeticionesPorSerieSchema,
+    unidad: unidadEjercicioSchema.optional().default("repeticiones"),
+    registro: registroEjercicioSchema.optional().default("peso"),
     descansoSegundos: z.number().int().positive(),
     media: mediaAssetSchema.optional(),
   })

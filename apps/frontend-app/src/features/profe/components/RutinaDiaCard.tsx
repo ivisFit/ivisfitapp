@@ -1,5 +1,20 @@
 "use client";
 
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { useState } from "react";
 import { Button, Input } from "@/components";
 import { RutinaExerciseRow } from "@/features/profe/components/RutinaExerciseRow";
@@ -26,7 +41,7 @@ type RutinaDiaCardProps = {
     patch: Partial<Omit<DiaPlanDraft["drafts"][number], "localId">>,
   ) => void;
   onRemoveDraft: (draftLocalId: string) => void;
-  onMoveDraft: (draftLocalId: string, direction: "up" | "down") => void;
+  onReorderDrafts: (fromIndex: number, toIndex: number) => void;
   canRemoveDia: boolean;
   canDuplicateDia?: boolean;
   canCopyDiaToDias?: boolean;
@@ -48,12 +63,34 @@ export function RutinaDiaCard({
   onAddDraft,
   onUpdateDraft,
   onRemoveDraft,
-  onMoveDraft,
+  onReorderDrafts,
   canRemoveDia,
   canDuplicateDia = true,
   canCopyDiaToDias = true,
 }: RutinaDiaCardProps) {
   const [showContent, setShowContent] = useState(false);
+  const sortableIds = dia.drafts.map((draft) => draft.localId);
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 180, tolerance: 6 },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+  const exercisesDisabled = loadingEjercicios || ejercicios.length === 0;
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const fromIndex = sortableIds.findIndex((id) => id === active.id);
+    const toIndex = sortableIds.findIndex((id) => id === over.id);
+    if (fromIndex < 0 || toIndex < 0) return;
+    onReorderDrafts(fromIndex, toIndex);
+  }
 
   return (
     <article
@@ -274,22 +311,27 @@ export function RutinaDiaCard({
       )}
 
       <div className="rutina-builder__dia-exercises">
-        {dia.drafts.map((draft, index) => (
-          <RutinaExerciseRow
-            key={draft.localId}
-            draft={draft}
-            index={index}
-            ejercicios={ejercicios}
-            canRemove={dia.drafts.length > 1}
-            canMoveUp={index > 0}
-            canMoveDown={index < dia.drafts.length - 1}
-            disabled={loadingEjercicios || ejercicios.length === 0}
-            onUpdate={(patch) => onUpdateDraft(draft.localId, patch)}
-            onRemove={() => onRemoveDraft(draft.localId)}
-            onMoveUp={() => onMoveDraft(draft.localId, "up")}
-            onMoveDown={() => onMoveDraft(draft.localId, "down")}
-          />
-        ))}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
+            {dia.drafts.map((draft, index) => (
+              <RutinaExerciseRow
+                key={draft.localId}
+                draft={draft}
+                index={index}
+                ejercicios={ejercicios}
+                canRemove={dia.drafts.length > 1}
+                canDrag={dia.drafts.length > 1}
+                disabled={exercisesDisabled}
+                onUpdate={(patch) => onUpdateDraft(draft.localId, patch)}
+                onRemove={() => onRemoveDraft(draft.localId)}
+              />
+            ))}
+          </SortableContext>
+        </DndContext>
 
         <Button
           type="button"

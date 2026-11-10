@@ -106,7 +106,7 @@ const medicionSchema = new Schema(
 
       type: String,
 
-      enum: ["jp3", "jp7", "us-navy"],
+      enum: ["jp3", "jp7", "us-navy", "fotos"],
 
       required: true,
 

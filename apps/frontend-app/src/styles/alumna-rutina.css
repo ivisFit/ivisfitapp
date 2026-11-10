@@ -33,7 +33,7 @@
   box-shadow: var(--glass-shadow-float);
 }
 
-/* Historia: una sola card — la story ocupa el contenedor sin borde duplicado */
+/* Hoy: una sola card — la story ocupa el contenedor sin borde duplicado */
 .alumna-rutina--experience:has(.training-story) {
   --rutina-inset: clamp(0.75rem, 2vw, 1.25rem);
   padding-bottom: 0;
@@ -1121,10 +1121,12 @@
 
 .challenge28__progress span {
   display: block;
+  width: 100%;
   height: 100%;
   background: linear-gradient(90deg, var(--rutina-yellow), var(--rutina-yellow-soft));
   border-radius: inherit;
-  transition: width 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: left center;
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .challenge28__grid {
@@ -1264,6 +1266,7 @@
   gap: 0.2rem;
   min-width: 0;
   min-height: 4.5rem;
+  overflow: hidden;
   padding: 0.28rem;
   color: #fff;
   font: inherit;
@@ -1310,6 +1313,8 @@
   display: flex;
   align-items: center;
   gap: 0.12rem;
+  width: 100%;
+  min-width: 0;
   max-width: 100%;
   margin-top: auto;
   padding: 0.08rem 0.22rem;
@@ -1338,6 +1343,8 @@
 }
 
 .plan-month__chip-label {
+  flex: 1 1 auto;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1358,6 +1365,58 @@
 .rutina-catchup p {
   margin: 0;
   color: #fff;
+}
+
+.day-close-undo {
+  position: fixed;
+  z-index: 45;
+  left: 50%;
+  bottom: calc(
+    var(--bottom-nav-height) + var(--bottom-nav-inset-bottom) +
+      env(safe-area-inset-bottom) + 0.75rem
+  );
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: min(100% - 1.5rem, 28rem);
+  padding: 0.85rem 1rem;
+  color: var(--color-text);
+  background: var(--color-surface-elevated, #241f1b);
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-card);
+  transform: translateX(-50%);
+}
+
+.day-close-undo p {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
+.day-close-undo button {
+  flex: 0 0 auto;
+  padding: 0.45rem 0.85rem;
+  color: #1c1814;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 800;
+  background: var(--color-yellow, #fdc915);
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.day-close-undo button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+@media (min-width: 768px) {
+  .day-close-undo {
+    bottom: 5.75rem;
+  }
 }
 
 .rutina-catchup button {
@@ -2376,14 +2435,35 @@
   align-items: center;
   justify-content: center;
   align-self: start;
-  width: 1.5rem;
-  height: 1.5rem;
-  margin-top: 0.35rem;
+  width: 2rem;
+  height: 2rem;
+  margin-top: 0.15rem;
+  padding: 0;
+  border: 0;
   border-radius: 999px;
   background: rgb(225 170 67 / 15%);
   color: var(--color-gold, #e1aa43);
   font-size: 0.75rem;
   font-weight: 700;
+}
+
+.rutina-builder__exercise-drag {
+  cursor: grab;
+  touch-action: none;
+}
+
+.rutina-builder__exercise-drag:active {
+  cursor: grabbing;
+}
+
+.rutina-builder__exercise-drag:disabled {
+  cursor: default;
+  touch-action: auto;
+}
+
+.rutina-builder__exercise-row.is-dragging {
+  opacity: 0.72;
+  z-index: 2;
 }
 
 .rutina-builder__exercise-row-actions {
@@ -2426,6 +2506,24 @@
 .rutina-builder__exercise-preset:focus-visible {
   border-color: rgb(225 170 67 / 35%);
   color: var(--color-text);
+}
+
+.rutina-builder__exercise-preset.is-selected {
+  border-color: rgb(225 170 67 / 55%);
+  background: rgb(225 170 67 / 16%);
+  color: var(--color-text);
+}
+
+.rutina-builder__exercise-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+}
+
+.rutina-builder__exercise-modes > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
 }
 
 .rutina-builder__exercise-metrics {
@@ -3631,6 +3729,11 @@
   flex: 1 1 auto;
 }
 
+.plan-content-lab__device--mobile .plan-content-lab__viewport .challenge-sheet--contained {
+  padding-bottom: 3.35rem;
+  box-sizing: border-box;
+}
+
 .plan-content-lab__viewport .challenge-exercise-video--contained {
   position: absolute;
   inset: 0;
@@ -4188,7 +4291,7 @@
 .weight-log__field input,
 .weight-log__input {
   flex: 0 0 auto;
-  min-width: 1ch;
+  min-width: 2.75ch;
   padding: 0;
   color: #fff;
   font: inherit;
@@ -4210,8 +4313,9 @@
   margin: 0;
 }
 
-.weight-log__field input::placeholder {
-  color: var(--color-placeholder);
+.weight-log__field input::placeholder,
+.weight-log__input::placeholder {
+  color: rgb(255 255 255 / 48%);
 }
 
 .weight-log__unit {
@@ -4368,4 +4472,105 @@ a.coach-insight-banner__accion:hover {
 .coach-insight-banner--sin_plan_alimentacion {
   background: linear-gradient(135deg, rgb(251 146 60 / 14%) 0%, rgb(20 17 15 / 85%) 100%);
   border-color: rgb(251 146 60 / 28%);
+}
+
+.challenge-sheet__preview-note {
+  margin: 0 0 0.85rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: 0.75rem;
+  background: rgb(225 170 67 / 12%);
+  color: var(--color-text, #fff);
+  font-size: 0.92rem;
+}
+
+.challenge-sheet__check:disabled {
+  cursor: default;
+  opacity: 0.72;
+}
+
+.semana-preview {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+}
+
+.semana-preview__head h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.semana-preview__head p {
+  margin: 0.2rem 0 0;
+  color: var(--color-text-muted, rgb(255 255 255 / 68%));
+  font-size: 0.88rem;
+}
+
+.semana-preview__days {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.semana-preview__day {
+  display: grid;
+  gap: 0.55rem;
+  width: 100%;
+  padding: 0.8rem 0.9rem;
+  text-align: left;
+  color: inherit;
+  background: rgb(255 255 255 / 3%);
+  border: 1px solid var(--color-border, rgb(255 255 255 / 12%));
+  border-radius: 0.9rem;
+  cursor: pointer;
+}
+
+.semana-preview__day.is-today {
+  border-color: rgb(225 170 67 / 55%);
+}
+
+.semana-preview__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.65rem;
+}
+
+.semana-preview__meta strong {
+  font-size: 0.98rem;
+}
+
+.semana-preview__badge {
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  background: rgb(225 170 67 / 16%);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.semana-preview__exercises {
+  display: grid;
+  gap: 0.28rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.semana-preview__exercises li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.86rem;
+}
+
+.semana-preview__exercises li span:last-child {
+  color: var(--color-text-muted, rgb(255 255 255 / 68%));
+  white-space: nowrap;
+}
+
+.semana-preview__empty {
+  margin: 0;
+  color: var(--color-text-muted, rgb(255 255 255 / 68%));
+  font-size: 0.86rem;
 }

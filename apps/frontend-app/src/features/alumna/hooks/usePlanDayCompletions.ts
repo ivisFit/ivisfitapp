@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   getRutinaDayDateKey,
   useRutinaProgreso,
 } from "@/features/alumna/hooks/useRutinaProgreso";
 import type { RutinaDetail } from "@/features/alumna/types/rutina";
 import type { RutinaDay } from "@/features/alumna/lib/rutina-day";
+import type { RutinaProgresoRecord } from "@/features/alumna/types/rutina-progreso";
 
 type MarkDayCompleteInput = {
   dateKey: string;
@@ -14,6 +15,21 @@ type MarkDayCompleteInput = {
   nombreDia: string;
   ejerciciosCompletados?: string[];
 };
+
+type DayCloseSnapshot = {
+  ejerciciosCompletados: string[];
+  diaCompletado: boolean;
+  diaOmitido: boolean;
+};
+
+export type DayCloseUndo = {
+  message: string;
+  busy: boolean;
+  error: string | null;
+  restore: () => Promise<void>;
+};
+
+const UNDO_MS = 8000;
 
 export function usePlanDayCompletions(
   rutinaId: string | null | undefined,
@@ -27,6 +43,73 @@ export function usePlanDayCompletions(
     error,
     refetch,
   } = useRutinaProgreso(rutinaId, rutina);
+  const [dayCloseUndo, setDayCloseUndo] = useState<DayCloseUndo | null>(null);
+  const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearUndoTimer = useCallback(() => {
+    if (!undoTimerRef.current) return;
+    clearTimeout(undoTimerRef.current);
+    undoTimerRef.current = null;
+  }, []);
+
+  useEffect(() => clearUndoTimer, [clearUndoTimer]);
+
+  const armUndo = useCallback(
+    (
+      message: string,
+      input: MarkDayCompleteInput,
+      previous: RutinaProgresoRecord | undefined,
+    ) => {
+      if (!rutinaId) return;
+      clearUndoTimer();
+      const snapshot: DayCloseSnapshot | null = previous
+        ? {
+            ejerciciosCompletados: previous.ejerciciosCompletados,
+            diaCompletado: previous.diaCompletado,
+            diaOmitido: previous.diaOmitido,
+          }
+        : null;
+
+      const restore = async () => {
+        clearUndoTimer();
+        setDayCloseUndo((current) =>
+          current ? { ...current, busy: true, error: null } : current,
+        );
+        try {
+          await upsertProgreso({
+            rutinaId,
+            dateKey: input.dateKey,
+            numeroSemana: input.numeroSemana,
+            nombreDia: input.nombreDia,
+            ejerciciosCompletados: snapshot?.ejerciciosCompletados ?? [],
+            diaCompletado: snapshot?.diaCompletado ?? false,
+            diaOmitido: snapshot?.diaOmitido ?? false,
+          });
+          setDayCloseUndo(null);
+        } catch (err) {
+          setDayCloseUndo((current) =>
+            current
+              ? {
+                  ...current,
+                  busy: false,
+                  error:
+                    err instanceof Error
+                      ? err.message
+                      : "No se pudo deshacer",
+                }
+              : current,
+          );
+        }
+      };
+
+      setDayCloseUndo({ message, busy: false, error: null, restore });
+      undoTimerRef.current = setTimeout(() => {
+        undoTimerRef.current = null;
+        setDayCloseUndo(null);
+      }, UNDO_MS);
+    },
+    [clearUndoTimer, rutinaId, upsertProgreso],
+  );
 
   const markDayComplete = useCallback(
     async ({
@@ -62,6 +145,7 @@ export function usePlanDayCompletions(
       if (!rutinaId) return;
 
       const existing = getDayProgreso(dateKey, numeroSemana, nombreDia);
+      const input = { dateKey, numeroSemana, nombreDia };
       await upsertProgreso({
         rutinaId,
         dateKey,
@@ -72,8 +156,13 @@ export function usePlanDayCompletions(
         diaCompletado: false,
         diaOmitido: true,
       });
+      armUndo(
+        "Cerraste el día con ejercicios pendientes. No suma XP ni racha.",
+        input,
+        existing,
+      );
     },
-    [getDayProgreso, rutinaId, upsertProgreso],
+    [armUndo, getDayProgreso, rutinaId, upsertProgreso],
   );
 
   const markDaySkipped = useCallback(
@@ -84,6 +173,8 @@ export function usePlanDayCompletions(
     }: MarkDayCompleteInput) => {
       if (!rutinaId) return;
 
+      const existing = getDayProgreso(dateKey, numeroSemana, nombreDia);
+      const input = { dateKey, numeroSemana, nombreDia };
       await upsertProgreso({
         rutinaId,
         dateKey,
@@ -93,8 +184,13 @@ export function usePlanDayCompletions(
         diaCompletado: false,
         diaOmitido: true,
       });
+      armUndo(
+        "Este día quedó como no hecho. No reemplaza el entrenamiento de hoy.",
+        input,
+        existing,
+      );
     },
-    [rutinaId, upsertProgreso],
+    [armUndo, getDayProgreso, rutinaId, upsertProgreso],
   );
 
   const isDayComplete = useCallback(
@@ -126,6 +222,7 @@ export function usePlanDayCompletions(
     isPlanDayDone,
     upsertProgreso,
     getDayProgreso,
+    dayCloseUndo,
     loading,
     error,
     refetch,

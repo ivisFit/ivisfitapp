@@ -2,14 +2,17 @@
 
 import { useCheckinAlimentacionHoy } from "@/features/alumna/hooks/useCheckinAlimentacionHoy";
 
-export function CheckinAlimentacionCard() {
+export function CheckinAlimentacionCard({ embedded = false }: { embedded?: boolean }) {
   const { checkin, loading, saving, error, save, options } =
     useCheckinAlimentacionHoy();
 
   if (loading) return null;
 
   return (
-    <section className="checkin-alimentacion" aria-label="Check-in de alimentación">
+    <section
+      className={`checkin-alimentacion${embedded ? " checkin-alimentacion--embedded" : ""}`}
+      aria-label="Check-in de alimentación"
+    >
       <h2 className="checkin-alimentacion__title">
         ¿Cómo te fue con la alimentación hoy?
       </h2>

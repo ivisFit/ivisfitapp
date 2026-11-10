@@ -15,6 +15,8 @@ type SemanaPlanDraftLike = {
       series: number;
       repeticiones: number;
       repeticionesPorSerie?: number[];
+      unidad?: "repeticiones" | "segundos";
+      registro?: "peso" | "check";
       descansoSegundos: number;
     }[];
   }[];
@@ -406,6 +408,8 @@ export function draftSemanasToRutinaSemanas(
             videoUrl: ejercicio?.videoUrl ?? "",
             series: draft.series,
             repeticiones: draft.repeticiones,
+            unidad: draft.unidad,
+            registro: draft.registro,
             descansoSegundos: draft.descansoSegundos,
             ...(draft.repeticionesPorSerie &&
             draft.repeticionesPorSerie.length === draft.series

@@ -9,8 +9,13 @@ import {
   type PlanContentMediaType,
 } from "@/features/profe/lib/plan-content";
 import {
+  clampPrescription,
   isRepeticionesPorSerieActive,
+  normalizeRegistro,
+  normalizeUnidad,
   persistRepeticionesPorSerie,
+  type RegistroEjercicio,
+  type UnidadEjercicio,
 } from "@/lib/rutina-reps";
 import { addCalendarDays, profeCalendarDateKey } from "@ivisfit/database/calendar";
 
@@ -22,6 +27,8 @@ export type EjercicioRutinaDraft = {
   series: number;
   repeticiones: number;
   repeticionesPorSerie?: number[];
+  unidad: UnidadEjercicio;
+  registro: RegistroEjercicio;
   descansoSegundos: number;
   mediaType: MediaType;
   mediaUrl: string;
@@ -62,6 +69,8 @@ export type PlanTemplateBlueprint = {
         series: number;
         repeticiones: number;
         repeticionesPorSerie?: number[];
+        unidad?: UnidadEjercicio;
+        registro?: RegistroEjercicio;
         descansoSegundos: number;
         media?: {
           type: MediaType;
@@ -100,6 +109,8 @@ export function createDraftEjercicio(ejercicioId = ""): EjercicioRutinaDraft {
     ejercicioId,
     series: 3,
     repeticiones: 10,
+    unidad: "repeticiones",
+    registro: "peso",
     descansoSegundos: 60,
     mediaType: "gif",
     mediaUrl: "",
@@ -310,6 +321,24 @@ export function planContentDefaultsFromTemplate(
 
 export { mergePlanContentEditorWithDefaults } from "@/features/profe/lib/plan-content";
 
+function draftModoFromSource(source: {
+  repeticiones: number;
+  repeticionesPorSerie?: number[];
+  unidad?: unknown;
+  registro?: unknown;
+}) {
+  const unidad = normalizeUnidad(source.unidad);
+  const registro = normalizeRegistro(source.registro);
+  return {
+    unidad,
+    registro,
+    repeticiones: clampPrescription(source.repeticiones, unidad),
+    repeticionesPorSerie: source.repeticionesPorSerie?.map((value) =>
+      clampPrescription(value, unidad),
+    ),
+  };
+}
+
 function repeticionesPorSerieFromSource(
   series: number,
   repeticionesPorSerie?: number[],
@@ -352,15 +381,18 @@ function semanasFromBlueprint(
       fecha: "",
       fechaManual: false,
       drafts: dia.ejercicios.map((ej) => {
+        const modo = draftModoFromSource(ej);
         const repeticionesPorSerie = repeticionesPorSerieFromSource(
           ej.series,
-          ej.repeticionesPorSerie,
+          modo.repeticionesPorSerie,
         );
         return {
           localId: createLocalId(),
           ejercicioId: resolveEjercicioId(ej.ejercicioId),
           series: ej.series,
-          repeticiones: ej.repeticiones,
+          repeticiones: modo.repeticiones,
+          unidad: modo.unidad,
+          registro: modo.registro,
           descansoSegundos: ej.descansoSegundos,
           mediaType: ej.media?.type ?? "gif",
           mediaUrl: ej.media?.url ?? "",
@@ -437,6 +469,8 @@ export function rutinaDocToFormState(
           series: number;
           repeticiones: number;
           repeticionesPorSerie?: number[];
+          unidad?: UnidadEjercicio;
+          registro?: RegistroEjercicio;
           descansoSegundos: number;
           media?: { type: MediaType; url: string; posterUrl?: string };
         }[];
@@ -466,15 +500,18 @@ export function rutinaDocToFormState(
         fecha,
         fechaManual: true,
         drafts: dia.ejercicios.map((ej) => {
+        const modo = draftModoFromSource(ej);
         const repeticionesPorSerie = repeticionesPorSerieFromSource(
           ej.series,
-          ej.repeticionesPorSerie,
+          modo.repeticionesPorSerie,
         );
         return {
           localId: createLocalId(),
           ejercicioId: ej.id ?? defaultEjercicioId,
           series: ej.series,
-          repeticiones: ej.repeticiones,
+          repeticiones: modo.repeticiones,
+          unidad: modo.unidad,
+          registro: modo.registro,
           descansoSegundos: ej.descansoSegundos,
           mediaType: ej.media?.type ?? "gif",
           mediaUrl: ej.media?.url ?? "",
@@ -600,6 +637,8 @@ function diaDraftToBlueprint(dia: DiaPlanDraft): BlueprintDia | undefined {
           ejercicioId: draft.ejercicioId,
           series: draft.series,
           repeticiones: draft.repeticiones,
+          unidad: draft.unidad,
+          registro: draft.registro,
           descansoSegundos: draft.descansoSegundos,
           ...(media ? { media } : {}),
         },

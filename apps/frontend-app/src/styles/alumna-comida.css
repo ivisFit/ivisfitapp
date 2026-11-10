@@ -1,0 +1,1439 @@
+﻿/* Menú del día y plan — alumna. Mobile-first + desktop. */
+
+.comida-menu {
+  display: grid;
+  gap: 0.9rem;
+  width: 100%;
+  max-width: 44rem;
+  min-width: 0;
+}
+
+.app-shell--alumna .app-content:has(.alimentacion-page--fill) {
+  display: flex;
+  flex-direction: column;
+}
+
+.app-shell--alumna .app-content:has(.alimentacion-page--fill) .page-transition {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
+}
+
+.alimentacion-page--fill {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: none;
+  min-height: 0;
+  padding: 0;
+}
+
+.alimentacion-page--fill > .coach-insight-banner {
+  flex-shrink: 0;
+}
+
+.alimentacion-page--fill .comida-menu {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 0.9rem;
+  width: 100%;
+  max-width: none;
+  min-height: 0;
+}
+
+.alimentacion-page--fill .comida-menu__nav,
+.alimentacion-page--fill .comida-nota-link {
+  flex-shrink: 0;
+}
+
+.alimentacion-page--fill .comida-menu #comida-panel {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.alimentacion-page--fill .comida-menu #comida-panel > .comida-hoy,
+.alimentacion-page--fill .comida-menu #comida-panel > .comida-plan,
+.alimentacion-page--fill .comida-menu #comida-panel > .comida-compras-panel {
+  width: 100%;
+}
+
+.alimentacion-page--fill .comida-espera {
+  display: grid;
+  flex: 1 1 auto;
+  align-content: center;
+  width: 100%;
+  max-width: none;
+  min-height: 0;
+}
+
+/* Segmented tabs: Hoy / Tu plan */
+.comida-menu__nav {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.25rem;
+  width: 100%;
+  max-width: 22rem;
+  padding: 0.25rem;
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  background: var(--glass-bg);
+}
+
+.comida-menu__nav--three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  max-width: none;
+}
+
+.comida-menu__nav--three button {
+  padding: 0.4rem 0.35rem;
+  font-size: 0.82rem;
+}
+
+.comida-menu__nav--three button svg {
+  display: none;
+}
+
+.comida-compras-panel {
+  min-width: 0;
+}
+
+.comida-compras-panel .alimentacion-compras {
+  padding: 1rem;
+  border-radius: 1.25rem;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg-solid-elevated);
+}
+
+.comida-compras-panel .alimentacion-section-heading h2 {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.comida-compras-panel .alimentacion-compras__weeks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.2rem, 1fr));
+  gap: 0.35rem;
+  padding: 0.22rem;
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  background: var(--glass-bg);
+}
+
+.comida-compras-panel .alimentacion-compras__week {
+  min-height: 2.25rem;
+  padding: 0.35rem 0.65rem;
+  border: 0;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.comida-compras-panel .alimentacion-compras__week.is-active {
+  background: var(--color-yellow);
+  color: #1a1408;
+}
+
+.comida-compras-panel .alimentacion-compras__download {
+  min-height: 2.85rem;
+  border-color: var(--glass-border-amber);
+  border-radius: 999px;
+  background: var(--gold-a08);
+  font-size: 0.88rem;
+  font-weight: 750;
+}
+
+.comida-compras-panel .alimentacion-compras__categoria .alimentacion-compras__list {
+  gap: 0;
+  padding: 0.1rem 0.8rem;
+  border: 1px solid var(--glass-border);
+  border-radius: 0.95rem;
+  background: var(--glass-bg);
+}
+
+.comida-compras-panel .alimentacion-compras__categoria .alimentacion-compras__list li {
+  align-items: center;
+  min-height: 2.6rem;
+  padding: 0.45rem 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.comida-compras-panel .alimentacion-compras__categoria .alimentacion-compras__list li + li {
+  border-top: 1px solid var(--glass-border);
+}
+
+.comida-compras-panel .alimentacion-compras__categoria .alimentacion-compras__list span {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.comida-menu__nav button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.5rem;
+  padding: 0.4rem 0.9rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 750;
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.comida-menu__nav button.is-active {
+  background: var(--color-yellow);
+  color: #1a1408;
+  box-shadow: 0 4px 14px rgb(253 201 21 / 24%);
+}
+
+.comida-kicker,
+.comida-plato__kicker,
+.comida-plato__note span {
+  margin: 0;
+  color: var(--color-gold);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Aviso de nota de la profesora */
+.comida-nota-link {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid var(--glass-border-amber);
+  border-radius: 0.95rem;
+  background: var(--gold-a08);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.comida-nota-link svg {
+  flex-shrink: 0;
+  color: var(--color-gold);
+}
+
+.comida-nota-link span {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.comida-nota-link strong {
+  flex-shrink: 0;
+  color: var(--color-gold);
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+/* ==================== HOY ==================== */
+
+.comida-hoy {
+  display: grid;
+  gap: 0.9rem;
+  min-width: 0;
+}
+
+.comida-hoy__top {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.55rem 0.85rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid var(--glass-border-amber);
+  border-radius: 1.25rem;
+  background:
+    radial-gradient(120% 140% at 0% 0%, var(--gold-a15), transparent 58%),
+    var(--glass-bg-solid-elevated);
+}
+
+.comida-hoy__titles {
+  min-width: 0;
+}
+
+.comida-hoy__dia,
+.comida-plan__intro h2 {
+  margin: 0.1rem 0 0;
+  color: var(--color-text);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1.45rem, 5vw, 1.85rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+
+.comida-hoy__meta,
+.comida-plan__intro p:not(.comida-kicker),
+.comida-plan__heading p,
+.comida-vacio,
+.comida-vacio-panel p,
+.comida-estado p,
+.comida-plato__later {
+  margin: 0.2rem 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.comida-hoy__energy {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 0.35rem;
+  min-width: 0;
+  padding-top: 0.45rem;
+  border-top: 1px solid var(--glass-border);
+}
+
+.comida-hoy__energy p {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.35rem;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+}
+
+.comida-hoy__energy strong {
+  color: var(--color-text);
+  font-size: 0.98rem;
+  font-weight: 800;
+}
+
+.comida-hoy__bar {
+  width: 100%;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--glass-border);
+}
+
+.comida-hoy__bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--color-gold), var(--color-yellow));
+  transition: width 400ms ease;
+}
+
+.comida-vacio-panel,
+.comida-estado {
+  display: grid;
+  gap: 0.7rem;
+  justify-items: start;
+  padding: 1.1rem;
+  border: 1px solid var(--glass-border);
+  border-radius: 1.25rem;
+  background: var(--glass-bg);
+}
+
+.comida-vacio-panel h2,
+.comida-estado h2 {
+  margin: 0;
+  color: var(--color-text);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1.35rem, 4vw, 1.75rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+
+.comida-ring {
+  position: relative;
+  flex-shrink: 0;
+  width: 3.35rem;
+  height: 3.35rem;
+}
+
+.comida-ring svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.comida-ring__track,
+.comida-ring__value {
+  fill: none;
+  stroke-width: 4.5;
+}
+
+.comida-ring__track {
+  stroke: var(--glass-border);
+}
+
+.comida-ring__value {
+  stroke: var(--color-yellow);
+  transition: stroke-dasharray 400ms ease;
+}
+
+.comida-ring__value.is-started {
+  stroke-linecap: round;
+}
+
+.comida-ring strong {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text);
+  font-size: 0.92rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.comida-ring strong span {
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
+  font-weight: 650;
+}
+
+.comida-hoy__body {
+  display: grid;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+/* Selector de comidas del día */
+.comida-timeline {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7.6rem, 1fr));
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.comida-timeline__item {
+  min-width: 0;
+}
+
+.comida-timeline__btn {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  min-height: 3.1rem;
+  padding: 0.45rem 0.65rem 0.45rem 0.5rem;
+  border: 1px solid var(--glass-border);
+  border-radius: 0.95rem;
+  background: var(--glass-bg);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    background 150ms ease,
+    transform 150ms ease;
+}
+
+.comida-timeline__btn:active {
+  transform: scale(0.98);
+}
+
+.comida-timeline__dot {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 1.55rem;
+  height: 1.55rem;
+  border: 2px solid var(--glass-border-amber);
+  border-radius: 999px;
+  color: #1a1408;
+}
+
+.comida-timeline__item.is-done .comida-timeline__dot {
+  border-color: var(--color-gold);
+  background: var(--color-gold);
+}
+
+.comida-timeline__item.is-now .comida-timeline__dot {
+  border-color: var(--color-yellow);
+  background: radial-gradient(circle, var(--color-yellow) 40%, transparent 44%);
+  box-shadow: 0 0 0 3px var(--gold-a20);
+  animation: comida-pulse 2.2s ease-in-out infinite;
+}
+
+.comida-timeline__text {
+  display: grid;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.comida-timeline__hora {
+  color: var(--color-text-muted);
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.comida-timeline__nombre {
+  overflow: hidden;
+  color: var(--color-text);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.comida-timeline__kcal {
+  display: none;
+}
+
+.comida-timeline__item.is-done .comida-timeline__nombre {
+  color: var(--color-text-muted);
+}
+
+.comida-timeline__item.is-selected .comida-timeline__btn {
+  border-color: var(--color-gold);
+  background: var(--gold-a15);
+}
+
+.comida-timeline__item.is-now .comida-timeline__hora,
+.comida-timeline__item.is-selected .comida-timeline__hora {
+  color: var(--color-gold);
+}
+
+.comida-timeline__item.is-selected .comida-timeline__nombre {
+  color: var(--color-text);
+}
+
+/* Tarjeta de la comida activa */
+.comida-plato {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: 0.9rem;
+  min-width: 0;
+  padding: 1.1rem;
+  border: 1px solid var(--glass-border);
+  border-radius: 1.35rem;
+  background: var(--glass-bg-solid-elevated);
+  box-shadow: var(--glass-shadow-float);
+  animation: comida-plato-in 200ms ease;
+}
+
+.comida-plato__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.4rem 0.65rem;
+}
+
+.comida-plato__meta {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.comida-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.comida-badge--now {
+  background: var(--color-yellow);
+  color: #1a1408;
+}
+
+.comida-badge--done {
+  background: rgb(34 165 90 / 16%);
+  color: #25b265;
+}
+
+.comida-badge--locked,
+.comida-badge--later {
+  border: 1px solid var(--glass-border);
+  color: var(--color-text-muted);
+}
+
+.comida-plato__time {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+}
+
+.comida-menu .comida-plato h1 {
+  margin: 0;
+  min-width: 0;
+  color: var(--color-text);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1.65rem, 6.2vw, 2.25rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.comida-plato__kcal {
+  margin: 0;
+  padding: 0.28rem 0.65rem;
+  border: 1px solid var(--glass-border-amber);
+  border-radius: 999px;
+  background: var(--gold-a08);
+  color: var(--color-text-muted);
+  font-size: 0.76rem;
+  font-weight: 650;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.comida-plato__kcal strong {
+  color: var(--color-text);
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+}
+
+.comida-plato__status,
+.comida-plato .comida-plato__later {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.65rem 0.8rem;
+  border-radius: 0.85rem;
+  background: var(--gold-a08);
+  font-size: 0.85rem;
+  font-weight: 650;
+}
+
+.comida-plato__status {
+  color: var(--color-gold);
+}
+
+.comida-plato__status svg,
+.comida-plato__later svg {
+  flex-shrink: 0;
+}
+
+.comida-plato__macros {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.comida-plato__macros li {
+  --macro: var(--color-gold);
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+  padding: 0.55rem 0.65rem 0.6rem;
+  border: 1px solid var(--glass-border);
+  border-radius: 0.9rem;
+  background: var(--glass-bg);
+}
+
+.comida-plato__macros li.is-p {
+  --macro: #e9795a;
+}
+
+.comida-plato__macros li.is-c {
+  --macro: var(--color-yellow);
+}
+
+.comida-plato__macros li.is-g {
+  --macro: #6fae7a;
+}
+
+.comida-plato__macros span {
+  color: var(--color-text-muted);
+  font-size: 0.64rem;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.comida-plato__macros strong {
+  color: var(--color-text);
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.comida-plato__macros small {
+  color: var(--color-text-muted);
+  font-size: 0.74rem;
+  font-weight: 650;
+}
+
+.comida-plato__macros i {
+  display: block;
+  height: 4px;
+  margin-top: 0.25rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--glass-border);
+}
+
+.comida-plato__macros b {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--macro);
+}
+
+/* Ingredientes (Hoy y Tu plan) */
+.comida-leaders {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0.1rem 0.85rem;
+  border: 1px solid var(--glass-border);
+  border-radius: 0.95rem;
+  background: var(--glass-bg);
+  list-style: none;
+}
+
+.comida-leaders li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-width: 0;
+  min-height: 2.75rem;
+  padding: 0.45rem 0;
+}
+
+.comida-leaders li + li {
+  border-top: 1px solid var(--glass-border);
+}
+
+.comida-leaders__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--color-text);
+  font-size: 0.92rem;
+  font-weight: 550;
+}
+
+.comida-leaders__dots {
+  display: none;
+}
+
+.comida-leaders__qty {
+  display: flex;
+  flex-shrink: 0;
+  align-items: baseline;
+  gap: 0.35rem;
+  color: var(--color-text);
+  font-size: 0.9rem;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.comida-leaders__qty small {
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.comida-notas {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.comida-plato__note {
+  padding: 0.75rem 0.85rem;
+  border-radius: 0.9rem;
+  background: var(--gold-a08);
+}
+
+.comida-plato__note p {
+  margin: 0.25rem 0 0;
+  color: var(--color-text);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.comida-plato__footer {
+  margin-top: 0.2rem;
+}
+
+.comida-plato__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 3.15rem;
+  padding: 0.7rem 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-yellow);
+  color: #1a1408;
+  font: inherit;
+  font-size: 0.96rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgb(253 201 21 / 24%);
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.comida-plato__cta--ghost,
+.comida-plato__cta:disabled {
+  background: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--glass-border-amber);
+  box-shadow: none;
+}
+
+.comida-plato__cta:disabled {
+  color: var(--color-text-muted);
+  border-color: var(--glass-border);
+  cursor: not-allowed;
+}
+
+.comida-plato__cta:active:not(:disabled) {
+  transform: scale(0.985);
+}
+
+.comida-menu :is(button, a):focus-visible {
+  outline: 2px solid var(--color-yellow);
+  outline-offset: 3px;
+}
+
+/* ==================== TU PLAN ==================== */
+
+.comida-plan {
+  display: grid;
+  gap: 1.15rem;
+  min-width: 0;
+  padding-bottom: 1rem;
+}
+
+.comida-plan__anchor,
+.comida-dias,
+.comida-dias__layout,
+.comida-dias__list {
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.comida-plan__anchor {
+  scroll-margin-top: 0.75rem;
+}
+
+.comida-plan__intro {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.95rem 1.05rem;
+  border: 1px solid var(--glass-border-amber);
+  border-radius: 1.25rem;
+  background:
+    radial-gradient(120% 140% at 0% 0%, var(--gold-a15), transparent 58%),
+    var(--glass-bg-solid-elevated);
+}
+
+.comida-nota {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--glass-border-amber);
+  border-left: 3px solid var(--color-yellow);
+  border-radius: 1rem;
+  background: var(--gold-a08);
+}
+
+.comida-nota footer {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--color-gold);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.comida-nota p {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.comida-plan__heading {
+  display: grid;
+  gap: 0.15rem;
+  padding-inline: 0.15rem;
+}
+
+.comida-plan__heading h2 {
+  margin: 0;
+  color: var(--color-text);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* Días de la semana (acordeón) */
+.comida-dia {
+  border: 1px solid var(--glass-border);
+  border-radius: 1.2rem;
+  background: var(--glass-bg-solid-elevated);
+  overflow: hidden;
+  scroll-margin-top: 0.75rem;
+}
+
+.comida-dia.is-today {
+  border-color: var(--glass-border-amber);
+}
+
+.comida-dia__heading {
+  margin: 0;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.comida-dia__toggle {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.2rem;
+  width: 100%;
+  min-height: 3.35rem;
+  padding: 0.8rem 1rem 0.85rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.comida-dia__main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.comida-dia__name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  color: var(--color-text);
+  font-size: 1rem;
+}
+
+.comida-dia__badge {
+  padding: 0.14rem 0.5rem;
+  border-radius: 999px;
+  background: var(--color-yellow);
+  color: #1a1408;
+  font-style: normal;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.comida-dia__aside {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--color-text-muted);
+}
+
+.comida-dia__aside svg {
+  transition: transform 180ms ease;
+}
+
+.comida-dia.is-open .comida-dia__aside svg {
+  transform: rotate(180deg);
+}
+
+.comida-dia__kcal {
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  background: var(--gold-a08);
+  color: var(--color-text);
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.comida-dia__resumen {
+  margin: 0;
+  padding: 0;
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.comida-dia.is-open .comida-dia__resumen {
+  display: none;
+}
+
+.comida-dia-panel {
+  display: none;
+}
+
+.comida-dia__body {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.2rem 0.9rem 0.95rem;
+}
+
+.comida-dia__meal {
+  display: grid;
+  gap: 0.65rem;
+  padding: 0.85rem;
+  border: 1px solid var(--glass-border);
+  border-radius: 1rem;
+  background: var(--glass-bg);
+}
+
+.comida-dia__meal-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.55rem;
+}
+
+.comida-dia__meal-head strong {
+  color: var(--color-text);
+  font-size: 0.98rem;
+  font-weight: 750;
+}
+
+.comida-dia__meal-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.comida-dia__meal-kcal {
+  margin-left: auto;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: var(--gold-a08);
+  color: var(--color-gold);
+  font-size: 0.74rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 750;
+}
+
+/* Ajustes de macros dentro de Tu plan */
+.comida-plan .alimentacion-macros {
+  padding: 1rem;
+  border-radius: 1.25rem;
+  background: var(--glass-bg-solid-elevated);
+}
+
+.comida-plan .alimentacion-section-heading h2 {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.comida-espera {
+  display: grid;
+  justify-items: start;
+  gap: 0.45rem;
+  max-width: 36rem;
+}
+
+.comida-espera h1 {
+  margin: 0;
+}
+
+.comida-espera > p:not(.comida-kicker) {
+  margin: 0 0 0.35rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.checkin-alimentacion--embedded {
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+.checkin-alimentacion--embedded .checkin-alimentacion__title {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.15rem;
+}
+
+/* ==================== TABLET & DESKTOP ==================== */
+
+@media (hover: hover) {
+  .comida-timeline__btn:hover {
+    border-color: var(--glass-border-amber);
+  }
+
+  .comida-plato__cta:not(:disabled):not(.comida-plato__cta--ghost):hover {
+    box-shadow: 0 14px 30px rgb(253 201 21 / 34%);
+  }
+}
+
+@media (min-width: 768px) {
+  .app-shell--alumna .app-content:has(.alimentacion-page--fill) {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .app-shell--alumna .app-content:has(.alimentacion-page--fill) .page-transition > .page.alimentacion-page--fill {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .alimentacion-page--fill .comida-menu #comida-panel {
+    overflow: hidden;
+  }
+
+  .alimentacion-page--fill .comida-menu #comida-panel > .comida-hoy {
+    flex: 1 1 auto;
+    min-height: 0;
+    grid-template-rows: auto auto minmax(0, 1fr);
+    align-content: stretch;
+  }
+
+  .alimentacion-page--fill .comida-menu #comida-panel > .comida-hoy .comida-hoy__body {
+    min-height: 0;
+    align-content: stretch;
+  }
+
+  .alimentacion-page--fill .comida-menu #comida-panel > .comida-hoy .comida-plato {
+    min-height: 0;
+    align-self: stretch;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .alimentacion-page--fill .comida-menu #comida-panel > .comida-plan,
+  .alimentacion-page--fill .comida-menu #comida-panel > .comida-compras-panel {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .comida-menu__nav--three {
+    max-width: min(32rem, 100%);
+  }
+
+  .comida-menu__nav--three button {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .comida-menu__nav--three button svg {
+    display: block;
+  }
+
+  .alimentacion-revisar-preview__frame .comida-menu {
+    margin-inline: auto;
+    max-width: 44rem;
+  }
+
+  .comida-hoy__top {
+    grid-template-columns: auto minmax(0, 1fr) minmax(13rem, 16rem);
+    gap: 1.15rem;
+    padding: 1.1rem 1.35rem;
+  }
+
+  .comida-hoy__energy {
+    grid-column: auto;
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .comida-ring {
+    width: 3.9rem;
+    height: 3.9rem;
+  }
+
+  .comida-plato {
+    gap: 1.05rem;
+    padding: 1.4rem 1.5rem;
+  }
+
+  .comida-plato__macros {
+    gap: 0.65rem;
+  }
+
+  .comida-plan__intro {
+    padding: 1.15rem 1.35rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .comida-hoy__body {
+    grid-template-columns: minmax(17rem, 22rem) minmax(0, 1fr);
+    align-items: stretch;
+    gap: 1.35rem;
+    height: 100%;
+    min-height: 0;
+  }
+
+  .comida-timeline {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    max-height: 100%;
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .comida-timeline__btn {
+    min-height: 3.6rem;
+    padding: 0.55rem 0.85rem 0.55rem 0.65rem;
+    border-radius: 1.05rem;
+  }
+
+  .comida-timeline__kcal {
+    display: block;
+    flex-shrink: 0;
+    margin-left: auto;
+    color: var(--color-text-muted);
+    font-size: 0.74rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: 650;
+  }
+
+  .comida-dias__layout {
+    grid-template-columns: minmax(16.5rem, 20.5rem) minmax(0, 1fr);
+    align-items: start;
+    gap: 1.25rem;
+  }
+
+  .comida-dias__list {
+    position: sticky;
+    top: 0;
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .comida-dia {
+    border-radius: 1.05rem;
+    background: var(--glass-bg);
+    transition:
+      border-color 150ms ease,
+      background 150ms ease;
+  }
+
+  .comida-dia:hover {
+    border-color: var(--glass-border-amber);
+  }
+
+  .comida-dia.is-active {
+    border-color: var(--color-gold);
+    background: var(--gold-a15);
+  }
+
+  .comida-dia__toggle {
+    min-height: 3.05rem;
+    padding: 0.7rem 0.9rem;
+  }
+
+  .comida-dia__aside svg {
+    display: none;
+  }
+
+  .comida-dia.is-open .comida-dia__resumen {
+    display: block;
+  }
+
+  .comida-dia__resumen {
+    padding: 0;
+    font-size: 0.78rem;
+  }
+
+  .comida-dia .comida-dia__body {
+    display: none;
+  }
+
+  .comida-dia-panel {
+    display: grid;
+    align-content: start;
+    gap: 1rem;
+    min-width: 0;
+    padding: 1.25rem 1.35rem;
+    border: 1px solid var(--glass-border);
+    border-radius: 1.35rem;
+    background: var(--glass-bg-solid-elevated);
+    box-shadow: var(--glass-shadow-float);
+    animation: comida-plato-in 200ms ease;
+  }
+
+  .comida-dia-panel__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.85rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid var(--glass-border);
+  }
+
+  .comida-dia-panel__titles {
+    display: grid;
+    gap: 0.15rem;
+    min-width: 0;
+  }
+
+  .comida-dia-panel__name {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    min-width: 0;
+  }
+
+  .comida-dia-panel__name h3 {
+    margin: 0;
+    color: var(--color-text);
+    font-family: var(--font-display), Georgia, serif;
+    font-size: 1.55rem;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+  }
+
+  .comida-dia-panel__meta {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.84rem;
+  }
+
+  .comida-dia-panel__kcal {
+    flex-shrink: 0;
+    padding: 0.3rem 0.7rem;
+    border: 1px solid var(--glass-border-amber);
+    border-radius: 999px;
+    background: var(--gold-a08);
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
+    font-weight: 650;
+    white-space: nowrap;
+  }
+
+  .comida-dia-panel__kcal strong {
+    color: var(--color-text);
+    font-size: 0.98rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: 800;
+  }
+
+  .comida-dia__meals-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+    align-items: stretch;
+  }
+
+  .comida-dia__meals-grid .comida-dia__meal {
+    align-content: start;
+  }
+
+  .comida-plan .alimentacion-macros__grid {
+    grid-template-columns: minmax(14rem, 0.85fr) minmax(0, 1.15fr);
+  }
+}
+
+@media (min-width: 1400px) {
+  .comida-hoy__body {
+    grid-template-columns: minmax(19rem, 24rem) minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+
+  .comida-dias__layout {
+    grid-template-columns: minmax(18rem, 22rem) minmax(0, 1fr);
+    gap: 1.45rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .comida-plato,
+  .comida-timeline__dot,
+  .comida-dia__aside svg {
+    animation: none !important;
+    transition: none;
+  }
+}
+
+@keyframes comida-pulse {
+  50% {
+    box-shadow: 0 0 0 6px var(--gold-a08);
+  }
+}
+
+@keyframes comida-plato-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
