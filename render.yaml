@@ -2,7 +2,7 @@
 # https://render.com/docs/blueprint-spec
 #
 # Importante: NODE_ENV=production en Render aplica también al BUILD.
-# Por eso el build usa `npm ci --include=dev` y el turbo local del repo.
+# Por eso el build usa `pnpm install --frozen-lockfile` y el turbo local del repo.
 
 services:
   - type: web
@@ -10,8 +10,8 @@ services:
     runtime: node
     plan: free
     region: oregon
-    buildCommand: npm ci --include=dev && npx turbo run build --filter=@ivisfit/backend-api
-    startCommand: npm run start -w @ivisfit/backend-api
+    buildCommand: pnpm install --frozen-lockfile && pnpm exec turbo run build --filter=@ivisfit/backend-api
+    startCommand: pnpm --filter @ivisfit/backend-api start
     healthCheckPath: /health
     envVars:
       - key: NODE_VERSION
@@ -52,8 +52,8 @@ services:
     runtime: node
     plan: free
     region: oregon
-    buildCommand: npm ci --include=dev && npx turbo run build --filter=@ivisfit/frontend-app
-    startCommand: npm run start -w @ivisfit/frontend-app
+    buildCommand: pnpm install --frozen-lockfile && pnpm exec turbo run build --filter=@ivisfit/frontend-app
+    startCommand: pnpm --filter @ivisfit/frontend-app start
     envVars:
       - key: NODE_VERSION
         value: "22"

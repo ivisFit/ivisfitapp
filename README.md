@@ -10,7 +10,7 @@ Plataforma de coaching fitness personalizado: landing + panel de la profesora + 
 ## Arranque
 
 ```bash
-npm install
+pnpm install
 pnpm dev
 ```
 

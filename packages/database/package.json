@@ -23,7 +23,7 @@
     "zod": "^3.25.28"
   },
   "devDependencies": {
-    "@ivisfit/typescript-config": "*",
+    "@ivisfit/typescript-config": "workspace:*",
     "@types/node": "^22.15.21",
     "typescript": "^5.8.3"
   }

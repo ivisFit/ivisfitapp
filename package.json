@@ -5,12 +5,8 @@
   "packageManager": "pnpm@9.15.9",
   "engines": {
     "node": ">=20",
-    "npm": "10.9.4"
+    "pnpm": "9.15.9"
   },
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
   "scripts": {
     "dev": "turbo dev --filter=@ivisfit/frontend-app --filter=@ivisfit/backend-api",
     "dev:clean": "node apps/frontend-app/scripts/clean-dev-cache.mjs && turbo dev --filter=@ivisfit/frontend-app --filter=@ivisfit/backend-api",

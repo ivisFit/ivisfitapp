@@ -14,16 +14,16 @@
     "sync:rutina-videos": "tsx scripts/sync-rutina-videos-from-templates.ts"
   },
   "dependencies": {
-    "@ivisfit/auth": "*",
-    "@ivisfit/database": "*",
-    "@ivisfit/mail": "*",
+    "@ivisfit/auth": "workspace:*",
+    "@ivisfit/database": "workspace:*",
+    "@ivisfit/mail": "workspace:*",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "@google/genai": "^1.30.0"
   },
   "devDependencies": {
-    "@ivisfit/typescript-config": "*",
+    "@ivisfit/typescript-config": "workspace:*",
     "@types/cors": "^2.8.18",
     "@types/express": "^5.0.2",
     "@types/node": "^22.15.21",

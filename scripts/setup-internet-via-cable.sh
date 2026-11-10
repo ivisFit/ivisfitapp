@@ -53,4 +53,4 @@ else
 fi
 
 echo ""
-echo "Listo. Reiniciá npm run dev para que el backend conecte a MongoDB Atlas."
+echo "Listo. Reiniciá pnpm dev para que el backend conecte a MongoDB Atlas."

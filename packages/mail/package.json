@@ -19,7 +19,7 @@
     "resend": "^4.5.1"
   },
   "devDependencies": {
-    "@ivisfit/typescript-config": "*",
+    "@ivisfit/typescript-config": "workspace:*",
     "@types/node": "^22.19.19",
     "typescript": "^5.8.3"
   }

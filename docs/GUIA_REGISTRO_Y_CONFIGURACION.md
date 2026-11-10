@@ -48,8 +48,8 @@
 
 ### Backend — Render
 1. Conectar el repo y usar `render.yaml` o crear servicio web Node.
-2. Build: `npm ci --include=dev && npx turbo run build --filter=@ivisfit/backend-api`
-3. Start: `npm run start -w @ivisfit/backend-api`
+2. Build: `pnpm install --frozen-lockfile && pnpm exec turbo run build --filter=@ivisfit/backend-api`
+3. Start: `pnpm --filter @ivisfit/backend-api start`
 4. Configurar `MONGODB_URI`, auth y `TRUSTED_ORIGINS` con la URL de Netlify.
 
 ### Frontend — Netlify
@@ -130,7 +130,7 @@ pnpm dev
 Para precargar el catálogo usado en planes nutricionales (idempotente: no duplica por nombre):
 
 ```bash
-npm run seed:alimentos -w @ivisfit/backend-api
+pnpm --filter @ivisfit/backend-api seed:alimentos
 ```
 
 Requiere `MONGODB_URI` en `apps/backend-api/.env`.
