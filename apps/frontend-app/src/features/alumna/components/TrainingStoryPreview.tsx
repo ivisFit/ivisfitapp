@@ -28,6 +28,7 @@ import {
 import type { RutinaDay } from "@/features/alumna/lib/rutina-day";
 import type { RutinaDetail, RutinaMediaAsset } from "@/features/alumna/types/rutina";
 import { formatSeriesReps } from "@/lib/rutina-reps";
+import { isPlanExerciseDone } from "@/features/alumna/lib/rutina-day-progress";
 
 import type { RutinaProgresoRecord } from "@/features/alumna/types/rutina-progreso";
 
@@ -37,7 +38,6 @@ type TrainingStoryPreviewProps = {
   dayDateKey: string;
   isDayCompleted: boolean;
   onFinishDay: () => void;
-  onFinishIncomplete?: () => void;
   onSkipDay?: () => void;
   getDayProgreso?: (
     dateKey: string,
@@ -171,7 +171,6 @@ export function TrainingStoryPreview({
   dayDateKey,
   isDayCompleted,
   onFinishDay,
-  onFinishIncomplete,
   onSkipDay,
   getDayProgreso: getDayProgresoProp,
   upsertProgreso: upsertProgresoProp,
@@ -192,7 +191,7 @@ export function TrainingStoryPreview({
   );
   const getDayProgreso = getDayProgresoProp ?? progressFromHook.getDayProgreso;
   const upsertProgreso = upsertProgresoProp ?? progressFromHook.upsertProgreso;
-  const { confirmSkip, confirmIncomplete } = useDayCloseConfirm();
+  const { confirmSkip } = useDayCloseConfirm();
   const dayLabel = dayInfo.nombreDia?.trim() || "Este día";
   const dayProgreso = getDayProgreso(
     dayDateKey,
@@ -216,13 +215,15 @@ export function TrainingStoryPreview({
   const subtitle =
     story?.subtitle ?? `${dayInfo.nombreDia} · Semana ${dayInfo.numeroSemana}`;
   const totalExercises = dayInfo.ejercicios.length;
-  const completedCount = completedIds.length;
-  const allExerciseIds = dayInfo.ejercicios.map((ejercicio) =>
-    getExerciseKey(ejercicio.id),
-  );
+  const completedIdSet = useMemo(() => new Set(completedIds), [completedIds]);
+  const completedCount = dayInfo.ejercicios.filter((ejercicio) =>
+    isPlanExerciseDone(ejercicio, completedIdSet, logsByEjercicioId),
+  ).length;
   const allExercisesCompleted =
     totalExercises === 0 ||
-    allExerciseIds.every((ejercicioId) => completedIds.includes(ejercicioId));
+    dayInfo.ejercicios.every((ejercicio) =>
+      isPlanExerciseDone(ejercicio, completedIdSet, logsByEjercicioId),
+    );
   const safeStepIndex =
     sequence.length === 0 ? 0 : Math.min(stepIndex, sequence.length - 1);
   const currentStep = sequence[safeStepIndex];
@@ -242,8 +243,8 @@ export function TrainingStoryPreview({
   const activeExerciseId = activeEjercicio
     ? getExerciseKey(activeEjercicio.id)
     : null;
-  const isActiveCompleted = activeExerciseId
-    ? completedIds.includes(activeExerciseId)
+  const isActiveCompleted = activeEjercicio
+    ? isPlanExerciseDone(activeEjercicio, completedIdSet, logsByEjercicioId)
     : false;
   const activeEmbedUrl = activeEjercicio?.videoUrl
     ? getYoutubeEmbedUrl(activeEjercicio.videoUrl)
@@ -270,16 +271,8 @@ export function TrainingStoryPreview({
     if (confirmed) onSkipDay();
   }
 
-  async function handleFinishDay() {
+  function handleFinishDay() {
     if (isDayCompleted) return;
-    if (!allExercisesCompleted) {
-      const confirmed = await confirmIncomplete(dayLabel);
-      if (!confirmed) return;
-      if (onFinishIncomplete) {
-        onFinishIncomplete();
-        return;
-      }
-    }
     onFinishDay();
   }
 
@@ -340,7 +333,7 @@ export function TrainingStoryPreview({
   const steps = sequence.map((step, index) => {
     const completed =
       step.kind === "exercise"
-        ? completedIds.includes(getExerciseKey(step.ejercicio.id))
+        ? isPlanExerciseDone(step.ejercicio, completedIdSet, logsByEjercicioId)
         : isOutroStep(step)
           ? isDayCompleted || index < safeStepIndex
           : index < safeStepIndex;
@@ -356,7 +349,7 @@ export function TrainingStoryPreview({
     ? "Día completado ✓"
     : allExercisesCompleted
       ? "Finalizar día"
-      : "Marcar como incompleto";
+      : "Marcar como completado";
   const showFinishHint =
     isLastExercise &&
     !isDayCompleted &&
@@ -683,8 +676,8 @@ export function TrainingStoryPreview({
             {showFinishHint ? (
               <p className="training-story__finish-hint">
                 {onSkipDay
-                  ? "Podés marcar el día como incompleto aunque te falten ejercicios, o indicar que no entrenaste hoy."
-                  : "Podés marcar el día como incompleto aunque te falten ejercicios."}
+                  ? "Podés marcar el día como completado aunque te falten ejercicios, o indicar que no entrenaste hoy."
+                  : "Podés marcar el día como completado aunque te falten ejercicios."}
               </p>
             ) : null}
           </div>

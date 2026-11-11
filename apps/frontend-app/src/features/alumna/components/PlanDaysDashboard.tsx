@@ -32,7 +32,6 @@ type PlanDaysDashboardProps = {
     payload: UpsertRutinaProgresoPayload,
   ) => Promise<RutinaProgresoRecord>;
   onFinishDay?: (day: ChallengeDay) => void;
-  onFinishIncomplete?: (day: ChallengeDay) => void;
   onSkipDay?: (day: ChallengeDay) => void;
 };
 
@@ -72,7 +71,6 @@ export const PlanDaysDashboard = memo(function PlanDaysDashboard({
   getDayProgreso,
   upsertProgreso,
   onFinishDay,
-  onFinishIncomplete,
   onSkipDay,
 }: PlanDaysDashboardProps) {
   const [selectedDay, setSelectedDay] = useState<ChallengeDay | null>(null);
@@ -150,7 +148,6 @@ export const PlanDaysDashboard = memo(function PlanDaysDashboard({
         getDayProgreso={getDayProgreso}
         upsertProgreso={upsertProgreso}
         onFinishDay={onFinishDay}
-        onFinishIncomplete={onFinishIncomplete}
         onSkipDay={onSkipDay}
       />
     </section>

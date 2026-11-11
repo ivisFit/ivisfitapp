@@ -15,15 +15,5 @@ export function useDayCloseConfirm() {
     });
   }
 
-  async function confirmIncomplete(dayLabel: string) {
-    return confirm({
-      title: "Todavía faltan ejercicios",
-      message: `Si cerrás «${dayLabel}» ahora, no suma XP ni racha. Los ejercicios que ya marcaste se guardan. Vas a poder deshacerlo unos segundos.`,
-      tone: "warning",
-      confirmLabel: "Cerrar igual",
-      cancelLabel: "Seguir entrenando",
-    });
-  }
-
-  return { confirmSkip, confirmIncomplete };
+  return { confirmSkip };
 }

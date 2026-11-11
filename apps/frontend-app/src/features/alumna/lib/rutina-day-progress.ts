@@ -94,6 +94,26 @@ type DayProgresoFlags = {
   diaOmitido?: boolean;
 };
 
+type ExerciseDoneInput = {
+  id: string;
+  registro?: "peso" | "check";
+};
+
+export function hasSavedExerciseWeight(pesos: number[] | undefined): boolean {
+  return Boolean(pesos?.some((peso) => Number.isFinite(peso) && peso >= 0));
+}
+
+/** Un ejercicio de peso cuenta como hecho si está marcado o si ya hay un log de esta semana. */
+export function isPlanExerciseDone(
+  ejercicio: ExerciseDoneInput,
+  completedIds: ReadonlySet<string>,
+  logsByEjercicioId: Record<string, number[]>,
+): boolean {
+  if (ejercicio.id && completedIds.has(ejercicio.id)) return true;
+  if (ejercicio.registro === "check") return false;
+  return hasSavedExerciseWeight(logsByEjercicioId[ejercicio.id]);
+}
+
 export function isRoutineDayReallyComplete(
   progreso: DayProgresoFlags | undefined,
   locallyCompleted = false,

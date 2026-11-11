@@ -41,7 +41,6 @@ export function VistaRutina() {
   const {
     completedDateKeys,
     markDayComplete,
-    markDayIncomplete,
     markDaySkipped,
     isDayComplete,
     getDayProgreso,
@@ -99,18 +98,6 @@ export function VistaRutina() {
     [markDayComplete],
   );
 
-  const finishPlanDayIncomplete = useCallback(
-    (day: ChallengeDay) => {
-      if (!day.numeroSemana || !day.nombreDia) return;
-      void markDayIncomplete({
-        dateKey: day.dateKey,
-        numeroSemana: day.numeroSemana,
-        nombreDia: day.nombreDia,
-      });
-    },
-    [markDayIncomplete],
-  );
-
   const skipPlanDay = useCallback(
     (day: ChallengeDay) => {
       if (!day.numeroSemana || !day.nombreDia) return;
@@ -127,15 +114,6 @@ export function VistaRutina() {
     if (!rutina || !dayInfo) return;
     void markDaySkipped(buildTodayCompletionInput(rutina, dayInfo));
   }, [dayInfo, markDaySkipped, rutina]);
-
-  const handleFinishIncomplete = useCallback(() => {
-    if (!rutina || !dayInfo) return;
-    void markDayIncomplete({
-      dateKey: getRutinaDayDateKey(rutina, dayInfo),
-      numeroSemana: dayInfo.numeroSemana,
-      nombreDia: dayInfo.nombreDia,
-    });
-  }, [dayInfo, markDayIncomplete, rutina]);
 
   const loading = authLoading || rutinaLoading;
   const error = rutinaError;
@@ -226,7 +204,6 @@ export function VistaRutina() {
                   onFinishDay={() =>
                     void markDayComplete(buildTodayCompletionInput(rutina, dayInfo))
                   }
-                  onFinishIncomplete={handleFinishIncomplete}
                   onSkipDay={handleSkipDay}
                 />
               </>
@@ -239,7 +216,6 @@ export function VistaRutina() {
                 getDayProgreso={getDayProgreso}
                 upsertProgreso={upsertProgreso}
                 onFinishDay={finishPlanDay}
-                onFinishIncomplete={finishPlanDayIncomplete}
                 onSkipDay={skipPlanDay}
               />
             ) : null}
@@ -253,7 +229,6 @@ export function VistaRutina() {
                 getDayProgreso={getDayProgreso}
                 upsertProgreso={upsertProgreso}
                 onFinishDay={finishPlanDay}
-                onFinishIncomplete={finishPlanDayIncomplete}
                 onSkipDay={skipPlanDay}
               />
             ) : null}
